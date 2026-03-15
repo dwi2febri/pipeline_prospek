@@ -225,29 +225,7 @@
 
   <div class="mt-3">
     <div class="fw-semibold mb-2">Preview foto dipilih</div>
-
-    {{-- preview client-side --}}
     <div id="photoPreviewWrap" class="row g-2" wire:ignore></div>
-
-    {{-- preview livewire setelah upload selesai --}}
-    @if(!empty($photos))
-      <div id="serverPreviewWrap" class="row g-2 mt-1">
-        @foreach($photos as $idx => $p)
-          <div class="col-6 col-md-3">
-            <div class="card-soft p-2 position-relative">
-              <img src="{{ $p->temporaryUrl() }}" class="w-100"
-                   style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;"
-                   loading="lazy">
-              <button type="button"
-                      class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2"
-                      wire:click="removeTempPhoto({{ $idx }})">
-                <i class="bi bi-x"></i>
-              </button>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    @endif
   </div>
 
   @if($id && isset($docs) && $docs->count())
@@ -353,347 +331,683 @@
     </div>
   @endif
 
- <script>
-(function () {
-  let mediaStream = null;
-  let modalInstance = null;
-  let clientPreviewCache = [];
-
-  function isMobileDevice() {
-    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
-  }
-
-  function getEl(id) {
-    return document.getElementById(id);
-  }
-
-  function clearClientPreview() {
-    const wrap = getEl('photoPreviewWrap');
-    if (wrap) wrap.innerHTML = '';
-    clientPreviewCache = [];
-  }
-
-  function fileToDataUrl(file) {
-    return new Promise(function(resolve, reject) {
-      try {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          resolve(e.target.result);
-        };
-        reader.onerror = function() {
-          reject(new Error('Gagal membaca file'));
-        };
-        reader.readAsDataURL(file);
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
-
-  async function renderClientPreview(files) {
-    const wrap = getEl('photoPreviewWrap');
-    if (!wrap) return;
-
-    clearClientPreview();
-
-    if (!files || !files.length) return;
-
-    const arrFiles = Array.from(files);
-
-    for (let idx = 0; idx < arrFiles.length; idx++) {
-      const file = arrFiles[idx];
-      if (!file.type || !file.type.startsWith('image/')) continue;
-
-      try {
-        const dataUrl = await fileToDataUrl(file);
-        clientPreviewCache.push({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          src: dataUrl
-        });
-
-        const col = document.createElement('div');
-        col.className = 'col-6 col-md-3';
-        col.innerHTML = `
-          <div class="card-soft p-2 position-relative">
-            <img src="${dataUrl}" class="w-100"
-                 style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;"
-                 loading="lazy">
-            <button type="button"
-                    class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2 btn-remove-preview"
-                    data-idx="${idx}">
-              <i class="bi bi-x"></i>
-            </button>
-          </div>
-        `;
-        wrap.appendChild(col);
-      } catch (err) {
-        console.error('Preview gagal:', err);
-      }
+    <script>
+    (function () {
+    function getEl(id) {
+        return document.getElementById(id);
     }
 
-    bindRemovePreview();
-  }
+    function setInputValue(el, value) {
+        if (!el) return;
+        el.value = value || '';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
 
-  function bindRemovePreview() {
-    const wrap = getEl('photoPreviewWrap');
-    const lwPhotos = getEl('lwPhotos');
-    if (!wrap || !lwPhotos) return;
+    function setHint(msg, isError) {
+        var hint = getEl('locHint');
+        if (!hint) return;
+        hint.innerHTML = msg;
+        hint.className = 'small mt-2 ' + (isError ? 'text-danger' : 'text-muted');
+    }
 
-    wrap.querySelectorAll('.btn-remove-preview').forEach(function(btn) {
-      btn.onclick = function() {
-        const removeIdx = parseInt(this.getAttribute('data-idx'), 10);
-        if (!lwPhotos.files) return;
+    function isSecurePage() {
+        return window.isSecureContext === true
+        || location.protocol === 'https:'
+        || location.hostname === 'localhost'
+        || location.hostname === '127.0.0.1';
+    }
+
+    async function fetchJson(url) {
+        const res = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+        });
+
+        if (!res.ok) {
+        throw new Error('HTTP ' + res.status + ' - ' + url);
+        }
+
+        return await res.json();
+    }
+
+    function normalizeText(str) {
+        return String(str || '')
+        .toUpperCase()
+        .replace(/\./g, '')
+        .replace(/KABUPATEN/g, '')
+        .replace(/KOTA/g, '')
+        .replace(/KECAMATAN/g, '')
+        .replace(/KELURAHAN/g, '')
+        .replace(/DESA/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function findByNameLoose(list, text) {
+        if (!text) return null;
+        const target = normalizeText(text);
+
+        let found = list.find(function(item) {
+        return normalizeText(item.name) === target;
+        });
+        if (found) return found;
+
+        found = list.find(function(item) {
+        const n = normalizeText(item.name);
+        return n.includes(target) || target.includes(n);
+        });
+
+        return found || null;
+    }
+
+    async function reverseGeocode(lat, lng) {
+        const url1 = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
+        const url2 = 'https://geocode.maps.co/reverse?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
+
+        async function tryFetch(url) {
+        try {
+            const res = await fetch(url, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+            });
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (data && data.display_name) return data.display_name;
+            if (data && data.address) return Object.values(data.address).filter(Boolean).join(', ');
+            return null;
+        } catch (e) {
+            return null;
+        }
+        }
+
+        return (await tryFetch(url1)) || (await tryFetch(url2)) || null;
+    }
+
+    function resetSelect(el, placeholder, disabled) {
+        if (!el) return;
+        el.innerHTML = '<option value="">' + placeholder + '</option>';
+        el.disabled = typeof disabled === 'boolean' ? disabled : true;
+    }
+
+    async function fillLocation() {
+        const btn = getEl('btnGetLoc');
+        const latInput = getEl('lokasi_lat');
+        const lngInput = getEl('lokasi_lng');
+        const alamatInput = getEl('alamat_input');
+
+        if (!btn) return;
+
+        if (!navigator.geolocation) {
+        setHint('Browser tidak mendukung GPS.', true);
+        return;
+        }
+
+        if (!isSecurePage()) {
+        setHint('Lokasi hanya bisa dipakai di HTTPS / localhost.', true);
+        return;
+        }
+
+        btn.disabled = true;
+        setHint('Mengambil lokasi dari device...', false);
+
+        navigator.geolocation.getCurrentPosition(
+        async function (pos) {
+            try {
+            const lat = String(pos.coords.latitude || '');
+            const lng = String(pos.coords.longitude || '');
+
+            setInputValue(latInput, lat);
+            setInputValue(lngInput, lng);
+
+            if (window.Livewire) {
+                if (typeof window.Livewire.dispatch === 'function') {
+                window.Livewire.dispatch('setLatLngProspek', { lat: lat, lng: lng });
+                }
+            }
+
+            const addr = await reverseGeocode(lat, lng);
+
+            if (addr) {
+                setInputValue(alamatInput, addr);
+
+                if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
+                window.Livewire.dispatch('setAlamatProspek', { alamat: addr });
+                }
+
+                setHint('Lokasi berhasil diambil ✅', false);
+            } else {
+                setHint('Lat/Lng berhasil, tapi alamat belum didapat.', true);
+            }
+            } catch (e) {
+            console.error('Gagal proses lokasi:', e);
+            setHint('Gagal memproses lokasi.', true);
+            } finally {
+            btn.disabled = false;
+            }
+        },
+        function (err) {
+            btn.disabled = false;
+
+            if (err && err.code === 1) {
+            setHint('Izin lokasi ditolak. Aktifkan permission lokasi di browser.', true);
+            } else if (err && err.code === 2) {
+            setHint('Lokasi tidak tersedia. Nyalakan GPS dan coba lagi.', true);
+            } else if (err && err.code === 3) {
+            setHint('Request lokasi timeout. Coba lagi.', true);
+            } else {
+            setHint('Gagal mengambil lokasi.', true);
+            }
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0
+        }
+        );
+    }
+
+    async function initWilayahProspek() {
+        const PROV_ID = '33';
+
+        const kabSelect = getEl('kabKotaSelect');
+        const kecSelect = getEl('kecamatanSelect');
+        const desaSelect = getEl('desaSelect');
+
+        const kabHidden = getEl('kab_kota_hidden');
+        const kecHidden = getEl('kecamatan_hidden');
+        const desaHidden = getEl('desa_hidden');
+
+        const kodeProvHidden = getEl('kode_provinsi_hidden');
+        const kodeKabHidden = getEl('kode_kab_kota_hidden');
+        const kodeKecHidden = getEl('kode_kecamatan_hidden');
+        const kodeDesaHidden = getEl('kode_desa_hidden');
+
+        if (!kabSelect || !kecSelect || !desaSelect || !kabHidden || !kecHidden || !desaHidden) {
+        return;
+        }
+
+        setInputValue(kodeProvHidden, PROV_ID);
+
+        async function loadKabupaten(initialName) {
+        resetSelect(kabSelect, '-- Loading Kab/Kota --', true);
+
+        const json = await fetchJson('/api-wilayah/regencies/' + PROV_ID);
+        const list = Array.isArray(json.data) ? json.data : [];
+
+        kabSelect.innerHTML = '<option value="">-- Pilih Kab/Kota --</option>';
+
+        list.forEach(function(item) {
+            const opt = document.createElement('option');
+            opt.value = item.code;
+            opt.textContent = item.name;
+            kabSelect.appendChild(opt);
+        });
+
+        kabSelect.disabled = false;
+
+        if (initialName) {
+            const found = findByNameLoose(list, initialName);
+            if (found) {
+            kabSelect.value = found.code;
+            setInputValue(kabHidden, found.name);
+            setInputValue(kodeKabHidden, found.code);
+            }
+        }
+
+        return list;
+        }
+
+        async function loadKecamatan(regencyCode, initialName) {
+        if (!regencyCode) {
+            resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
+            resetSelect(desaSelect, '-- Pilih Desa --', true);
+            return [];
+        }
+
+        resetSelect(kecSelect, '-- Loading Kecamatan --', true);
+
+        const json = await fetchJson('/api-wilayah/districts/' + regencyCode);
+        const list = Array.isArray(json.data) ? json.data : [];
+
+        kecSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+
+        list.forEach(function(item) {
+            const opt = document.createElement('option');
+            opt.value = item.code;
+            opt.textContent = item.name;
+            kecSelect.appendChild(opt);
+        });
+
+        kecSelect.disabled = false;
+
+        if (initialName) {
+            const found = findByNameLoose(list, initialName);
+            if (found) {
+            kecSelect.value = found.code;
+            setInputValue(kecHidden, found.name);
+            setInputValue(kodeKecHidden, found.code);
+            }
+        }
+
+        return list;
+        }
+
+        async function loadDesa(districtCode, initialName) {
+        if (!districtCode) {
+            resetSelect(desaSelect, '-- Pilih Desa --', true);
+            return [];
+        }
+
+        resetSelect(desaSelect, '-- Loading Desa --', true);
+
+        const json = await fetchJson('/api-wilayah/villages/' + districtCode);
+        const list = Array.isArray(json.data) ? json.data : [];
+
+        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+
+        list.forEach(function(item) {
+            const opt = document.createElement('option');
+            opt.value = item.code;
+            opt.textContent = item.name;
+            desaSelect.appendChild(opt);
+        });
+
+        desaSelect.disabled = false;
+
+        if (initialName) {
+            const found = findByNameLoose(list, initialName);
+            if (found) {
+            desaSelect.value = found.code;
+            setInputValue(desaHidden, found.name);
+            setInputValue(kodeDesaHidden, found.code);
+            }
+        }
+
+        return list;
+        }
+
+        if (kabSelect.dataset.bound !== '1') {
+        kabSelect.dataset.bound = '1';
+        kabSelect.addEventListener('change', async function () {
+            const selectedText = this.value ? this.options[this.selectedIndex].text : '';
+
+            setInputValue(kabHidden, selectedText);
+            setInputValue(kodeKabHidden, this.value || '');
+            setInputValue(kecHidden, '');
+            setInputValue(desaHidden, '');
+            setInputValue(kodeKecHidden, '');
+            setInputValue(kodeDesaHidden, '');
+
+            resetSelect(desaSelect, '-- Pilih Desa --', true);
+            await loadKecamatan(this.value || '', '');
+        });
+        }
+
+        if (kecSelect.dataset.bound !== '1') {
+        kecSelect.dataset.bound = '1';
+        kecSelect.addEventListener('change', async function () {
+            const selectedText = this.value ? this.options[this.selectedIndex].text : '';
+
+            setInputValue(kecHidden, selectedText);
+            setInputValue(kodeKecHidden, this.value || '');
+            setInputValue(desaHidden, '');
+            setInputValue(kodeDesaHidden, '');
+
+            await loadDesa(this.value || '', '');
+        });
+        }
+
+        if (desaSelect.dataset.bound !== '1') {
+        desaSelect.dataset.bound = '1';
+        desaSelect.addEventListener('change', function () {
+            const selectedText = this.value ? this.options[this.selectedIndex].text : '';
+            setInputValue(desaHidden, selectedText);
+            setInputValue(kodeDesaHidden, this.value || '');
+        });
+        }
+
+        try {
+        const initialKab = kabHidden.value || '';
+        const initialKec = kecHidden.value || '';
+        const initialDesa = desaHidden.value || '';
+
+        const kabList = await loadKabupaten(initialKab);
+
+        if (initialKab) {
+            const selectedKab = findByNameLoose(kabList, initialKab);
+            if (selectedKab) {
+            const kecList = await loadKecamatan(selectedKab.code, initialKec);
+
+            if (initialKec) {
+                const selectedKec = findByNameLoose(kecList, initialKec);
+                if (selectedKec) {
+                await loadDesa(selectedKec.code, initialDesa);
+                }
+            }
+            }
+        }
+        } catch (e) {
+        console.error('Wilayah gagal dimuat:', e);
+        resetSelect(kabSelect, '-- Gagal memuat Kab/Kota --', true);
+        resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
+        resetSelect(desaSelect, '-- Pilih Desa --', true);
+        }
+    }
+
+    let mediaStream = null;
+    let modalInstance = null;
+
+    function isMobileDevice() {
+        return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+    }
+
+    function clearPhotoPreview() {
+        const wrap = getEl('photoPreviewWrap');
+        if (wrap) wrap.innerHTML = '';
+    }
+
+    function fileToDataUrl(file) {
+        return new Promise(function(resolve, reject) {
+        const reader = new FileReader();
+        reader.onload = function(e) { resolve(e.target.result); };
+        reader.onerror = function() { reject(new Error('Gagal baca file')); };
+        reader.readAsDataURL(file);
+        });
+    }
+
+    async function renderPhotoPreview(files) {
+        const wrap = getEl('photoPreviewWrap');
+        const lwPhotos = getEl('lwPhotos');
+
+        if (!wrap) return;
+
+        clearPhotoPreview();
+
+        if (!files || !files.length) return;
+
+        const arr = Array.from(files);
+
+        for (let i = 0; i < arr.length; i++) {
+        const file = arr[i];
+        if (!file.type || !file.type.startsWith('image/')) continue;
+
+        try {
+            const src = await fileToDataUrl(file);
+
+            const col = document.createElement('div');
+            col.className = 'col-6 col-md-3';
+            col.innerHTML = `
+            <div class="card-soft p-2 position-relative">
+                <img src="${src}" class="w-100" style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;" loading="lazy">
+                <button type="button" class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2 btn-remove-preview" data-idx="${i}">
+                <i class="bi bi-x"></i>
+                </button>
+            </div>
+            `;
+            wrap.appendChild(col);
+        } catch (e) {
+            console.error('Preview gagal:', e);
+        }
+        }
+
+        wrap.querySelectorAll('.btn-remove-preview').forEach(function(btn) {
+        btn.onclick = function() {
+            const idx = parseInt(this.getAttribute('data-idx'), 10);
+            if (!lwPhotos || !lwPhotos.files) return;
+
+            const dt = new DataTransfer();
+            Array.from(lwPhotos.files).forEach(function(file, i) {
+            if (i !== idx) dt.items.add(file);
+            });
+
+            lwPhotos.files = dt.files;
+            renderPhotoPreview(lwPhotos.files);
+            lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        });
+    }
+
+    function validateFiles(files) {
+        const maxSize = 5 * 1024 * 1024;
+        const valid = [];
+        const errors = [];
+
+        Array.from(files || []).forEach(function(file) {
+        if (!file.type || !file.type.startsWith('image/')) {
+            errors.push(file.name + ' bukan file gambar.');
+            return;
+        }
+        if (file.size > maxSize) {
+            errors.push(file.name + ' melebihi 5MB.');
+            return;
+        }
+        valid.push(file);
+        });
+
+        if (errors.length) {
+        alert(errors.join('\n'));
+        }
+
+        return valid;
+    }
+
+    async function mergeFilesToLivewire(sourceFiles) {
+        const lwPhotos = getEl('lwPhotos');
+        if (!lwPhotos || !sourceFiles || !sourceFiles.length) return;
+
+        const validFiles = validateFiles(sourceFiles);
+        if (!validFiles.length) return;
 
         const dt = new DataTransfer();
-        Array.from(lwPhotos.files).forEach(function(file, i) {
-          if (i !== removeIdx) dt.items.add(file);
+
+        if (lwPhotos.files && lwPhotos.files.length) {
+        Array.from(lwPhotos.files).forEach(function(file) {
+            dt.items.add(file);
+        });
+        }
+
+        validFiles.forEach(function(file) {
+        dt.items.add(file);
         });
 
         lwPhotos.files = dt.files;
-        renderClientPreview(lwPhotos.files);
+        await renderPhotoPreview(lwPhotos.files);
         lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
-      };
-    });
-  }
-
-  function validateFiles(files) {
-    const maxSize = 5 * 1024 * 1024;
-    const valid = [];
-    const errors = [];
-
-    Array.from(files || []).forEach(function(file) {
-      if (!file.type || !file.type.startsWith('image/')) {
-        errors.push(file.name + ' bukan file gambar.');
-        return;
-      }
-
-      if (file.size > maxSize) {
-        errors.push(file.name + ' melebihi 5MB.');
-        return;
-      }
-
-      valid.push(file);
-    });
-
-    if (errors.length) {
-      alert(errors.join('\n'));
     }
 
-    return valid;
-  }
-
-  async function mergeFilesToLivewire(sourceFiles) {
-    const lwPhotos = getEl('lwPhotos');
-    if (!lwPhotos || !sourceFiles || !sourceFiles.length) return;
-
-    const validFiles = validateFiles(sourceFiles);
-    if (!validFiles.length) return;
-
-    const dt = new DataTransfer();
-
-    if (lwPhotos.files && lwPhotos.files.length) {
-      Array.from(lwPhotos.files).forEach(function(file) {
-        dt.items.add(file);
-      });
-    }
-
-    validFiles.forEach(function(file) {
-      dt.items.add(file);
-    });
-
-    lwPhotos.files = dt.files;
-
-    await renderClientPreview(lwPhotos.files);
-
-    if (window.Livewire) {
-      lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  }
-
-  function stopCamera() {
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(function(track) {
-        track.stop();
-      });
-      mediaStream = null;
-    }
-  }
-
-  function showCamWarn(msg) {
-    const el = getEl('camWarn');
-    if (!el) return;
-    el.classList.remove('d-none');
-    el.innerText = msg;
-  }
-
-  function hideCamWarn() {
-    const el = getEl('camWarn');
-    if (!el) return;
-    el.classList.add('d-none');
-    el.innerText = '';
-  }
-
-  async function openDesktopCamera() {
-    const modalEl = getEl('modalCamera');
-    const video = getEl('camVideo');
-    if (!modalEl || !video) return;
-
-    hideCamWarn();
-
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        showCamWarn('Browser desktop ini tidak mendukung webcam.');
-        return;
-      }
-
-      mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      });
-
-      video.srcObject = mediaStream;
-
-      if (!modalInstance) {
-        modalInstance = new bootstrap.Modal(modalEl);
-      }
-
-      modalInstance.show();
-    } catch (e) {
-      console.error(e);
-      showCamWarn('Kamera tidak bisa dibuka. Pastikan izin kamera diberikan.');
-    }
-  }
-
-  function snapDesktopPhoto() {
-    const video = getEl('camVideo');
-    const canvas = getEl('camCanvas');
-    if (!video || !canvas) return;
-
-    const width = video.videoWidth || 1280;
-    const height = video.videoHeight || 720;
-
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, width, height);
-
-    canvas.toBlob(async function(blob) {
-      if (!blob) return;
-
-      const file = new File(
-        [blob],
-        'camera-' + Date.now() + '.jpg',
-        { type: 'image/jpeg' }
-      );
-
-      await mergeFilesToLivewire([file]);
-
-      if (modalInstance) modalInstance.hide();
-      stopCamera();
-    }, 'image/jpeg', 0.92);
-  }
-
-  function bindPhoto() {
-    const btnCamera = getEl('btnOpenCamera');
-    const btnGallery = getEl('btnOpenGallery');
-    const cameraInput = getEl('cameraCaptureInput');
-    const galleryInput = getEl('galleryInput');
-    const snapBtn = getEl('btnSnap');
-    const modalEl = getEl('modalCamera');
-    const lwPhotos = getEl('lwPhotos');
-
-    if (!btnCamera || !btnGallery || !cameraInput || !galleryInput || !lwPhotos) return;
-
-    if (btnCamera.dataset.bound !== '1') {
-      btnCamera.dataset.bound = '1';
-      btnCamera.onclick = function() {
-        if (isMobileDevice()) {
-          cameraInput.click();
-        } else {
-          openDesktopCamera();
+    function stopCamera() {
+        if (mediaStream) {
+        mediaStream.getTracks().forEach(function(track) {
+            track.stop();
+        });
+        mediaStream = null;
         }
-      };
     }
 
-    if (btnGallery.dataset.bound !== '1') {
-      btnGallery.dataset.bound = '1';
-      btnGallery.onclick = function() {
-        galleryInput.click();
-      };
+    function showCamWarn(msg) {
+        const el = getEl('camWarn');
+        if (!el) return;
+        el.classList.remove('d-none');
+        el.innerText = msg;
     }
 
-    cameraInput.onchange = async function() {
-      if (cameraInput.files && cameraInput.files.length) {
-        await mergeFilesToLivewire(cameraInput.files);
-      }
-      cameraInput.value = '';
-    };
-
-    galleryInput.onchange = async function() {
-      if (galleryInput.files && galleryInput.files.length) {
-        await mergeFilesToLivewire(galleryInput.files);
-      }
-      galleryInput.value = '';
-    };
-
-    lwPhotos.onchange = async function() {
-      if (lwPhotos.files && lwPhotos.files.length) {
-        await renderClientPreview(lwPhotos.files);
-      } else {
-        clearClientPreview();
-      }
-    };
-
-    if (snapBtn && snapBtn.dataset.bound !== '1') {
-      snapBtn.dataset.bound = '1';
-      snapBtn.onclick = function() {
-        snapDesktopPhoto();
-      };
+    function hideCamWarn() {
+        const el = getEl('camWarn');
+        if (!el) return;
+        el.classList.add('d-none');
+        el.innerText = '';
     }
 
-    if (modalEl && !modalEl.dataset.bound) {
-      modalEl.dataset.bound = '1';
-      modalEl.addEventListener('hidden.bs.modal', function() {
+    async function openDesktopCamera() {
+        const modalEl = getEl('modalCamera');
+        const video = getEl('camVideo');
+        if (!modalEl || !video) return;
+
+        hideCamWarn();
+
+        try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showCamWarn('Browser desktop ini tidak mendukung webcam.');
+            return;
+        }
+
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+            },
+            audio: false
+        });
+
+        video.srcObject = mediaStream;
+
+        if (!modalInstance) {
+            modalInstance = new bootstrap.Modal(modalEl);
+        }
+
+        modalInstance.show();
+        } catch (e) {
+        console.error(e);
+        showCamWarn('Kamera tidak bisa dibuka. Pastikan izin kamera diberikan.');
+        }
+    }
+
+    function snapDesktopPhoto() {
+        const video = getEl('camVideo');
+        const canvas = getEl('camCanvas');
+        if (!video || !canvas) return;
+
+        const width = video.videoWidth || 1280;
+        const height = video.videoHeight || 720;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, width, height);
+
+        canvas.toBlob(async function(blob) {
+        if (!blob) return;
+
+        const file = new File([blob], 'camera-' + Date.now() + '.jpg', {
+            type: 'image/jpeg'
+        });
+
+        await mergeFilesToLivewire([file]);
+
+        if (modalInstance) modalInstance.hide();
         stopCamera();
-      });
+        }, 'image/jpeg', 0.92);
     }
-  }
 
-  document.addEventListener('livewire-upload-start', function() {
-    // biarkan preview client tetap tampil
-  });
+    function bindLocationButton() {
+        const btn = getEl('btnGetLoc');
+        if (!btn) return;
 
-  document.addEventListener('livewire-upload-finish', function() {
-    setTimeout(function() {
-      bindPhoto();
-    }, 200);
-  });
+        if (btn.dataset.bound !== '1') {
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', fillLocation);
+        }
+    }
 
-  document.addEventListener('livewire-upload-error', function() {
-    setTimeout(function() {
-      bindPhoto();
-    }, 200);
-  });
+    function bindPhoto() {
+        const btnCamera = getEl('btnOpenCamera');
+        const btnGallery = getEl('btnOpenGallery');
+        const cameraInput = getEl('cameraCaptureInput');
+        const galleryInput = getEl('galleryInput');
+        const lwPhotos = getEl('lwPhotos');
+        const snapBtn = getEl('btnSnap');
+        const modalEl = getEl('modalCamera');
 
-  document.addEventListener('DOMContentLoaded', bindPhoto);
-  document.addEventListener('livewire:navigated', function() {
-    setTimeout(bindPhoto, 100);
-  });
+        if (!btnCamera || !btnGallery || !cameraInput || !galleryInput || !lwPhotos) return;
 
-  document.addEventListener('livewire:init', function() {
-    if (!window.Livewire) return;
+        if (btnCamera.dataset.bound !== '1') {
+        btnCamera.dataset.bound = '1';
+        btnCamera.onclick = function() {
+            if (isMobileDevice()) {
+            cameraInput.click();
+            } else {
+            openDesktopCamera();
+            }
+        };
+        }
 
-    Livewire.hook('morphed', function() {
-      setTimeout(bindPhoto, 100);
+        if (btnGallery.dataset.bound !== '1') {
+        btnGallery.dataset.bound = '1';
+        btnGallery.onclick = function() {
+            galleryInput.click();
+        };
+        }
+
+        cameraInput.onchange = async function() {
+        if (cameraInput.files && cameraInput.files.length) {
+            await mergeFilesToLivewire(cameraInput.files);
+        }
+        cameraInput.value = '';
+        };
+
+        galleryInput.onchange = async function() {
+        if (galleryInput.files && galleryInput.files.length) {
+            await mergeFilesToLivewire(galleryInput.files);
+        }
+        galleryInput.value = '';
+        };
+
+        lwPhotos.onchange = async function() {
+        if (lwPhotos.files && lwPhotos.files.length) {
+            await renderPhotoPreview(lwPhotos.files);
+        } else {
+            clearPhotoPreview();
+        }
+        };
+
+        if (snapBtn && snapBtn.dataset.bound !== '1') {
+        snapBtn.dataset.bound = '1';
+        snapBtn.onclick = function() {
+            snapDesktopPhoto();
+        };
+        }
+
+        if (modalEl && !modalEl.dataset.bound) {
+        modalEl.dataset.bound = '1';
+        modalEl.addEventListener('hidden.bs.modal', function() {
+            stopCamera();
+        });
+        }
+    }
+
+    function initTanggalDefault() {
+        var el = getEl('tanggal_prospek');
+        if (!el) return;
+        if (!el.value) {
+        var d = new Date();
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        el.value = d.getFullYear() + '-' + mm + '-' + dd;
+        }
+    }
+
+    function bootAll() {
+        initTanggalDefault();
+        bindLocationButton();
+        initWilayahProspek();
+        bindPhoto();
+    }
+
+    document.addEventListener('DOMContentLoaded', bootAll);
+    document.addEventListener('livewire:navigated', function() {
+        setTimeout(bootAll, 100);
     });
-  });
-})();
-</script>
+
+    document.addEventListener('livewire:init', function() {
+        if (!window.Livewire) return;
+        Livewire.hook('morphed', function() {
+        setTimeout(bootAll, 100);
+        });
+    });
+    })();
+    </script>
+
 </div>
