@@ -20,19 +20,52 @@ use App\Livewire\Cabangs\Index as CabangsIndex;
 use App\Livewire\Cabangs\Form as CabangsForm;
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AuditLogExportController;
 
 // Homepage
 Route::get('/', function () {
-    return Auth::check()
-        ? redirect('/dashboard')
-        : redirect('/login');
+    if (!Auth::check()) {
+        return redirect('/login');
+    }
+
+    $role = strtoupper(trim((string) Auth::user()->role));
+
+    if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'])) {
+        return redirect('/dashboard');
+    }
+
+    if (in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'])) {
+        return redirect('/prospects-diajukan');
+    }
+
+    if ($role === 'PEGAWAI') {
+        return redirect('/prospects');
+    }
+
+    return redirect('/prospects');
 });
 
 // Untuk template auth yang pakai route('home')
 Route::get('/home', function () {
-    return Auth::check()
-        ? redirect('/dashboard')
-        : redirect('/login');
+    if (!Auth::check()) {
+        return redirect('/login');
+    }
+
+    $role = strtoupper(trim((string) Auth::user()->role));
+
+    if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'])) {
+        return redirect('/dashboard');
+    }
+
+    if (in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'])) {
+        return redirect('/prospects-diajukan');
+    }
+
+    if ($role === 'PEGAWAI') {
+        return redirect('/prospects');
+    }
+
+    return redirect('/prospects');
 })->name('home');
 
 // =====================
@@ -66,33 +99,48 @@ Route::get('/api-wilayah/villages/{districtId}', function ($districtId) {
 Route::middleware(['auth'])->group(function () {
 
     // ===== DASHBOARD =====
-    Route::get('/dashboard', DashboardIndex::class)->name('dashboard');
+    Route::get('/dashboard', DashboardIndex::class)
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR')
+        ->name('dashboard');
 
     // ===== PROFILE =====
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::get('/profile', [ProfileController::class, 'index'])
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->name('profile.index');
+
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->name('profile.password.update');
 
     // ===== PIPELINE PROSPEK =====
-    Route::get('/prospects', ProspectsIndex::class)->name('prospects.index');
-    Route::get('/prospects/create', ProspectsForm::class)->name('prospects.create');
-    Route::get('/prospects/{id}/edit', ProspectsForm::class)->name('prospects.edit');
+    Route::get('/prospects', ProspectsIndex::class)
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->name('prospects.index');
 
-    // ===== PROSPEK DIAJUKAN (ADMIN) =====
+    Route::get('/prospects/create', ProspectsForm::class)
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->name('prospects.create');
+
+    Route::get('/prospects/{id}/edit', ProspectsForm::class)
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->name('prospects.edit');
+
+    // ===== PROSPEK DIAJUKAN =====
     Route::get('/prospects-diajukan', ProspectsSubmissions::class)
-        ->middleware('role:ADMIN')
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL')
         ->name('prospects.submissions');
 
-    // ===== RECYCLE BIN (ADMIN) =====
+    // ===== RECYCLE BIN =====
     Route::get('/recycle-bin/prospects', ProspectsRecycle::class)
-        ->middleware('role:ADMIN')
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
         ->name('prospects.recycle');
 
-    // ===== AUDIT LOG (ADMIN) =====
+    // ===== AUDIT LOG =====
     Route::get('/audit-logs', AuditIndex::class)
         ->middleware('role:ADMIN')
         ->name('audit.index');
 
-    // ===== MANAJEMEN USER (ADMIN) =====
+    // ===== MANAJEMEN USER =====
     Route::get('/users', UsersIndex::class)
         ->middleware('role:ADMIN')
         ->name('users.index');
@@ -105,7 +153,7 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:ADMIN')
         ->name('users.edit');
 
-    // ===== TEMPLATE CSV USER (ADMIN) =====
+    // ===== TEMPLATE CSV USER =====
     Route::get('/users/template', function () {
         $filename = 'template_users.csv';
 
@@ -124,7 +172,7 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->middleware('role:ADMIN')->name('users.template');
 
-    // ===== MASTER CABANG (ADMIN) =====
+    // ===== MASTER CABANG =====
     Route::get('/cabangs', CabangsIndex::class)
         ->middleware('role:ADMIN')
         ->name('cabangs.index');
@@ -136,4 +184,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cabangs/{id}/edit', CabangsForm::class)
         ->middleware('role:ADMIN')
         ->name('cabangs.edit');
+
+    Route::get('/audit-logs/export', [AuditLogExportController::class, 'export'])
+    ->middleware('role:ADMIN')
+    ->name('audit.export');
 });

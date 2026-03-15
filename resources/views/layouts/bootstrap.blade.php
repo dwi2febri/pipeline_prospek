@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{{ config('app.name','Pipeline Prospek') }}</title>
 
   @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -345,11 +346,42 @@
     .modal.show{
       z-index:2001 !important;
     }
+
+    .leaflet-control-attribution {
+      display: none !important;
+    }
+
+    .leaflet-control-zoom {
+      margin-top: 12px !important;
+      margin-right: 12px !important;
+    }
+
+    .notif-wrap{
+      position: relative;
+      z-index: 7000;
+    }
   </style>
 </head>
 
 <body>
-  @php($isAdmin = auth()->check() && strtoupper(trim((string)auth()->user()->role)) === 'ADMIN')
+  @php
+    $role = strtoupper(trim((string) (auth()->user()->role ?? '')));
+
+    $isAdmin      = $role === 'ADMIN';
+    $isManajemen  = $role === 'MANAJEMEN';
+    $isSupervisor = $role === 'SUPERVISOR';
+    $isAo         = in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL']);
+    $isPegawai    = $role === 'PEGAWAI';
+
+    $canDashboard         = $isAdmin || $isManajemen || $isSupervisor;
+    $canProspects         = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
+    $canProspectsDiajukan = $isAdmin || $isManajemen || $isSupervisor || $isAo;
+    $canRecycleBin        = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
+    $canProfile           = auth()->check();
+    $canAuditLog          = $isAdmin;
+    $canMasterCabang      = $isAdmin;
+    $canUsers             = $isAdmin;
+  @endphp
 
   <div class="app-shell" id="appShell">
 
@@ -366,40 +398,57 @@
         <div class="section-title">Menu</div>
         <div class="navwrap">
 
-        <a href="/dashboard" class="navlink {{ request()->is('dashboard') ? 'active' : '' }}">
-        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
-        </a>
-
-          <a href="/prospects" class="navlink {{ request()->is('prospects') || request()->is('prospects/create') || request()->is('prospects/*/edit') ? 'active' : '' }}">
-            <i class="bi bi-grid"></i><span>Prospek</span>
-          </a>
-
-          <a href="/prospects-diajukan" class="navlink {{ request()->is('prospects-diajukan') ? 'active' : '' }}">
-            <i class="bi bi-send-check"></i><span>Prospek Diajukan</span>
-          </a>
-
-          <a href="/audit-logs" class="navlink {{ request()->is('audit-logs') ? 'active' : '' }}">
-            <i class="bi bi-file-earmark-text"></i><span>Audit Log</span>
+          @if($canDashboard)
+            <a href="/dashboard" class="navlink {{ request()->is('dashboard') ? 'active' : '' }}">
+              <i class="bi bi-speedometer2"></i><span>Dashboard</span>
             </a>
+          @endif
 
-          <a href="/recycle-bin/prospects" class="navlink {{ request()->is('recycle-bin/prospects') ? 'active' : '' }}">
-            <i class="bi bi-trash3"></i><span>Recycle Bin</span>
-          </a>
+          @if($canProspects)
+            <a href="/prospects" class="navlink {{ request()->is('prospects') || request()->is('prospects/create') || request()->is('prospects/*/edit') ? 'active' : '' }}">
+              <i class="bi bi-grid"></i><span>Prospek</span>
+            </a>
+          @endif
 
-          <a href="{{ route('profile.index') }}" class="navlink {{ request()->is('profile') ? 'active' : '' }}">
-            <i class="bi bi-person-circle"></i><span>Profil Saya</span>
-          </a>
+          @if($canProspectsDiajukan)
+            <a href="/prospects-diajukan" class="navlink {{ request()->is('prospects-diajukan') ? 'active' : '' }}">
+              <i class="bi bi-send-check"></i><span>Prospek Diajukan</span>
+            </a>
+          @endif
+
+          @if($canAuditLog)
+            <a href="/audit-logs" class="navlink {{ request()->is('audit-logs') ? 'active' : '' }}">
+              <i class="bi bi-file-earmark-text"></i><span>Audit Log</span>
+            </a>
+          @endif
+
+          @if($canRecycleBin)
+            <a href="/recycle-bin/prospects" class="navlink {{ request()->is('recycle-bin/prospects') ? 'active' : '' }}">
+              <i class="bi bi-trash3"></i><span>Recycle Bin</span>
+            </a>
+          @endif
+
+          @if($canProfile)
+            <a href="{{ route('profile.index') }}" class="navlink {{ request()->is('profile') ? 'active' : '' }}">
+              <i class="bi bi-person-circle"></i><span>Profil Saya</span>
+            </a>
+          @endif
         </div>
 
-        @if($isAdmin)
+        @if($canMasterCabang || $canUsers)
           <div class="section-title">Admin</div>
           <div class="navwrap">
-            <a href="/cabangs" class="navlink {{ request()->is('cabangs*') ? 'active' : '' }}">
-              <i class="bi bi-building"></i><span>Master Cabang</span>
-            </a>
-            <a href="/users" class="navlink {{ request()->is('users*') ? 'active' : '' }}">
-              <i class="bi bi-person-gear"></i><span>Manajemen User</span>
-            </a>
+            @if($canMasterCabang)
+              <a href="/cabangs" class="navlink {{ request()->is('cabangs*') ? 'active' : '' }}">
+                <i class="bi bi-building"></i><span>Master Cabang</span>
+              </a>
+            @endif
+
+            @if($canUsers)
+              <a href="/users" class="navlink {{ request()->is('users*') ? 'active' : '' }}">
+                <i class="bi bi-person-gear"></i><span>Manajemen User</span>
+              </a>
+            @endif
           </div>
         @endif
       </div>
@@ -435,10 +484,9 @@
           </div>
 
           <div class="d-flex align-items-center gap-2">
-            <button class="iconbtn position-relative" type="button" title="Notifikasi">
-              <i class="bi bi-bell"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
-            </button>
+            <div class="notif-wrap">
+              @livewire('notifications.bell', [], key('desktop-bell-' . auth()->id()))
+            </div>
 
             <div class="profile-dropdown-wrap" id="desktopProfileWrap">
               <button class="profilebtn" type="button" id="desktopProfileBtn">
@@ -455,12 +503,19 @@
                   <div class="fw-bold">{{ auth()->user()->name ?? 'User' }}</div>
                   <div class="text-muted small">{{ auth()->user()->email ?? '' }}</div>
                 </div>
-                <a class="item" href="{{ route('profile.index') }}">
-                  <i class="bi bi-person-circle me-2"></i> Profil Saya
-                </a>
-                <a class="item" href="/prospects">
-                  <i class="bi bi-grid me-2"></i> Prospek
-                </a>
+
+                @if($canProfile)
+                  <a class="item" href="{{ route('profile.index') }}">
+                    <i class="bi bi-person-circle me-2"></i> Profil Saya
+                  </a>
+                @endif
+
+                @if($canProspects)
+                  <a class="item" href="/prospects">
+                    <i class="bi bi-grid me-2"></i> Prospek
+                  </a>
+                @endif
+
                 <div class="px-3 py-2 border-top">
                   <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -488,10 +543,9 @@
           </div>
 
           <div class="d-flex align-items-center gap-2">
-            <button class="iconbtn position-relative" type="button">
-              <i class="bi bi-bell"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
-            </button>
+            <div class="notif-wrap">
+              @livewire('notifications.bell', [], key('mobile-bell-' . auth()->id()))
+            </div>
 
             <div class="profile-dropdown-wrap" id="mobileProfileWrap">
               <button class="profilebtn mobile-profile-btn" type="button" id="mobileProfileBtn">
@@ -506,12 +560,19 @@
                   <div class="text-muted small">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
                   <div class="text-muted small">{{ auth()->user()->email ?? '' }}</div>
                 </div>
-                <a class="item" href="{{ route('profile.index') }}">
-                  <i class="bi bi-person-circle me-2"></i> Profil Saya
-                </a>
-                <a class="item" href="/prospects">
-                  <i class="bi bi-grid me-2"></i> Prospek
-                </a>
+
+                @if($canProfile)
+                  <a class="item" href="{{ route('profile.index') }}">
+                    <i class="bi bi-person-circle me-2"></i> Profil Saya
+                  </a>
+                @endif
+
+                @if($canProspects)
+                  <a class="item" href="/prospects">
+                    <i class="bi bi-grid me-2"></i> Prospek
+                  </a>
+                @endif
+
                 <div class="px-3 py-2 border-top">
                   <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -536,24 +597,48 @@
 
   <nav class="bottom-nav d-md-none">
     <div class="container d-flex text-center">
-      <a href="/prospects" class="{{ request()->is('prospects*') ? 'active' : '' }}">
-        <div><i class="bi bi-grid fs-5"></i></div>
-        Prospek
-      </a>
-      <a href="/audit-logs" class="{{ request()->is('audit-logs') ? 'active' : '' }}">
-        <div><i class="bi bi-file-earmark-text fs-5"></i></div>
-        Audit
-      </a>
-      @if($isAdmin)
+      @if($canDashboard)
+        <a href="/dashboard" class="{{ request()->is('dashboard') ? 'active' : '' }}">
+          <div><i class="bi bi-speedometer2 fs-5"></i></div>
+          Dashboard
+        </a>
+      @endif
+
+      @if($canProspects)
+        <a href="/prospects" class="{{ request()->is('prospects*') ? 'active' : '' }}">
+          <div><i class="bi bi-grid fs-5"></i></div>
+          Prospek
+        </a>
+      @endif
+
+      @if($canProspectsDiajukan)
+        <a href="/prospects-diajukan" class="{{ request()->is('prospects-diajukan') ? 'active' : '' }}">
+          <div><i class="bi bi-send-check fs-5"></i></div>
+          Diajukan
+        </a>
+      @endif
+
+      @if($canAuditLog)
+        <a href="/audit-logs" class="{{ request()->is('audit-logs') ? 'active' : '' }}">
+          <div><i class="bi bi-file-earmark-text fs-5"></i></div>
+          Audit
+        </a>
+      @endif
+
+      @if($canUsers)
         <a href="/users" class="{{ request()->is('users*') ? 'active' : '' }}">
           <div><i class="bi bi-person-gear fs-5"></i></div>
           User
         </a>
       @endif
-      <a href="{{ route('profile.index') }}" class="{{ request()->is('profile') ? 'active' : '' }}">
-        <div><i class="bi bi-person fs-5"></i></div>
-        Profil
-      </a>
+
+      @if($canProfile)
+        <a href="{{ route('profile.index') }}" class="{{ request()->is('profile') ? 'active' : '' }}">
+          <div><i class="bi bi-person fs-5"></i></div>
+          Profil
+        </a>
+      @endif
+
       <form method="POST" action="{{ route('logout') }}" style="flex:1;">
         @csrf
         <button type="submit" class="w-100">
@@ -564,7 +649,13 @@
     </div>
   </nav>
 
-  @livewireScripts
+  <script
+    src="/vendor/livewire/livewire.js"
+    data-csrf="{{ csrf_token() }}"
+    data-update-uri="{{ route('default-livewire.update') }}"
+    data-upload-uri="{{ route('livewire.upload-file') }}">
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
@@ -614,5 +705,3 @@
   @stack('scripts')
 </body>
 </html>
-
-

@@ -2,18 +2,43 @@
 
 namespace App\Livewire\Dashboard;
 
-use Livewire\Component;
-use App\Models\Prospect;
 use App\Models\Cabang;
+use App\Models\Prospect;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
 
 class Index extends Component
 {
     public ?int $filterCabang = null;
+    public ?string $filterMapStatus = '';
+    public bool $lockCabangFilter = false;
+
+    public function mount(): void
+    {
+        $user = Auth::user();
+        $role = strtoupper(trim((string) ($user->role ?? '')));
+
+        if ($role === 'SUPERVISOR') {
+            $this->filterCabang = $user->cabang_id ? (int) $user->cabang_id : null;
+            $this->lockCabangFilter = true;
+        }
+    }
 
     public function updatedFilterCabang(): void
     {
-        // auto rerender
+        if ($this->lockCabangFilter) {
+            $user = Auth::user();
+            $this->filterCabang = $user->cabang_id ? (int) $user->cabang_id : null;
+        }
+
+        $this->dispatch('dashboard-refresh');
+    }
+
+    public function updatedFilterMapStatus(): void
+    {
+        $this->dispatch('dashboard-refresh');
     }
 
     protected function baseQuery()
@@ -37,17 +62,18 @@ class Index extends Component
         $base = $this->baseQuery();
 
         $summary = [
-            'total' => (clone $base)->count(),
+            'total'     => (clone $base)->count(),
             'follow_up' => (clone $base)->where('status', 'FOLLOW UP')->count(),
-            'rejected' => (clone $base)->where('status', 'REJECTED')->count(),
-            'closing' => (clone $base)->where('status', 'CLOSING')->count(),
+            'rejected'  => (clone $base)->where('status', 'REJECTED')->count(),
+            'closing'   => (clone $base)->where('status', 'CLOSING')->count(),
         ];
 
-        // closing per cabang 1-28
         $closingPerCabangRaw = Prospect::query()
             ->select('cabang_id', DB::raw('COUNT(*) as total'))
+            ->whereNull('deleted_at')
             ->where('status', 'CLOSING')
             ->whereBetween('cabang_id', [1, 28])
+            ->when($this->filterCabang, fn($q) => $q->where('cabang_id', $this->filterCabang))
             ->groupBy('cabang_id')
             ->pluck('total', 'cabang_id')
             ->toArray();
@@ -62,10 +88,9 @@ class Index extends Component
 
         foreach ($cabangs128 as $c) {
             $closingCabangLabels[] = $c->kode_cabang;
-            $closingCabangValues[] = (int)($closingPerCabangRaw[$c->id] ?? 0);
+            $closingCabangValues[] = (int) ($closingPerCabangRaw[$c->id] ?? 0);
         }
 
-        // rekomendasi produk by filter cabang
         $produkRows = $this->baseQuery()
             ->select('jenis_produk', DB::raw('COUNT(*) as total'))
             ->groupBy('jenis_produk')
@@ -73,9 +98,8 @@ class Index extends Component
             ->get();
 
         $produkLabels = $produkRows->pluck('jenis_produk')->map(fn($v) => $v ?: '-')->values();
-        $produkValues = $produkRows->pluck('total')->map(fn($v) => (int)$v)->values();
+        $produkValues = $produkRows->pluck('total')->map(fn($v) => (int) $v)->values();
 
-        // status distribution
         $statusRows = $this->baseQuery()
             ->select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')
@@ -83,9 +107,8 @@ class Index extends Component
             ->get();
 
         $statusLabels = $statusRows->pluck('status')->map(fn($v) => $v ?: '-')->values();
-        $statusValues = $statusRows->pluck('total')->map(fn($v) => (int)$v)->values();
+        $statusValues = $statusRows->pluck('total')->map(fn($v) => (int) $v)->values();
 
-        // jenis usaha
         $usahaRows = $this->baseQuery()
             ->select('jenis_usaha', DB::raw('COUNT(*) as total'))
             ->groupBy('jenis_usaha')
@@ -94,9 +117,8 @@ class Index extends Component
             ->get();
 
         $usahaLabels = $usahaRows->pluck('jenis_usaha')->map(fn($v) => $v ?: 'LAINNYA')->values();
-        $usahaValues = $usahaRows->pluck('total')->map(fn($v) => (int)$v)->values();
+        $usahaValues = $usahaRows->pluck('total')->map(fn($v) => (int) $v)->values();
 
-        // trend 12 bulan
         $trendRows = $this->baseQuery()
             ->selectRaw("DATE_FORMAT(tanggal_prospek, '%Y-%m') as ym, COUNT(*) as total")
             ->whereNotNull('tanggal_prospek')
@@ -105,9 +127,8 @@ class Index extends Component
             ->get();
 
         $trendLabels = $trendRows->pluck('ym')->values();
-        $trendValues = $trendRows->pluck('total')->map(fn($v) => (int)$v)->values();
+        $trendValues = $trendRows->pluck('total')->map(fn($v) => (int) $v)->values();
 
-        // top cabang
         $topCabang = Prospect::query()
             ->select('cabangs.kode_cabang', 'cabangs.nama_cabang', DB::raw('COUNT(prospects.id) as total'))
             ->join('cabangs', 'cabangs.id', '=', 'prospects.cabang_id')
@@ -115,54 +136,115 @@ class Index extends Component
             ->when($this->filterCabang, fn($q) => $q->where('prospects.cabang_id', $this->filterCabang))
             ->groupBy('cabangs.kode_cabang', 'cabangs.nama_cabang')
             ->orderByDesc('total')
-            ->limit(10)
+            ->limit(5)
             ->get();
 
-        // recent
+        $topClosingCabang = Prospect::query()
+            ->select('cabangs.kode_cabang', 'cabangs.nama_cabang', DB::raw('COUNT(prospects.id) as total'))
+            ->join('cabangs', 'cabangs.id', '=', 'prospects.cabang_id')
+            ->whereNull('prospects.deleted_at')
+            ->where('prospects.status', 'CLOSING')
+            ->when($this->filterCabang, fn($q) => $q->where('prospects.cabang_id', $this->filterCabang))
+            ->groupBy('cabangs.kode_cabang', 'cabangs.nama_cabang')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        $topPegawai = Prospect::query()
+            ->select('users.name', 'users.nama_lengkap', DB::raw('COUNT(prospects.id) as total'))
+            ->join('users', 'users.id', '=', 'prospects.input_by')
+            ->whereNull('prospects.deleted_at')
+            ->when($this->filterCabang, fn($q) => $q->where('prospects.cabang_id', $this->filterCabang))
+            ->groupBy('users.name', 'users.nama_lengkap')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
         $recent = $this->baseQuery()
             ->with('cabang')
+            ->latest('tanggal_prospek')
             ->latest('id')
             ->limit(10)
             ->get();
 
-        // map markers
-        $mapItems = $this->baseQuery()
-            ->select('nama', 'jenis_usaha', 'kab_kota', 'kecamatan', 'desa', 'lokasi_lat', 'lokasi_lng', 'jenis_produk', 'status')
-            ->whereNotNull('lokasi_lat')
-            ->whereNotNull('lokasi_lng')
+        $mapQuery = Prospect::query()
+            ->leftJoin('cabangs', 'cabangs.id', '=', 'prospects.cabang_id')
+            ->leftJoin(DB::raw('(
+                SELECT d1.prospect_id, d1.file_path
+                FROM prospect_documents d1
+                INNER JOIN (
+                    SELECT prospect_id, MIN(id) as min_id
+                    FROM prospect_documents
+                    GROUP BY prospect_id
+                ) d2 ON d1.id = d2.min_id
+            ) docs'), 'docs.prospect_id', '=', 'prospects.id')
+            ->whereNull('prospects.deleted_at')
+            ->whereNotNull('prospects.lokasi_lat')
+            ->whereNotNull('prospects.lokasi_lng')
+            ->when($this->filterCabang, fn($q) => $q->where('prospects.cabang_id', $this->filterCabang))
+            ->when($this->filterMapStatus !== null && $this->filterMapStatus !== '', fn($q) => $q->where('prospects.status', $this->filterMapStatus))
+            ->select(
+                'prospects.nama',
+                'prospects.alamat',
+                'prospects.jenis_usaha',
+                'prospects.keterangan_usaha',
+                'prospects.kab_kota',
+                'prospects.kecamatan',
+                'prospects.desa',
+                'prospects.lokasi_lat',
+                'prospects.lokasi_lng',
+                'prospects.jenis_produk',
+                'prospects.status',
+                'cabangs.kode_cabang',
+                'cabangs.nama_cabang',
+                'docs.file_path'
+            )
             ->limit(500)
-            ->get()
-            ->map(function ($p) {
-                return [
-                    'nama' => $p->nama,
-                    'jenis_usaha' => $p->jenis_usaha ?: 'LAINNYA',
-                    'kab_kota' => $p->kab_kota,
-                    'kecamatan' => $p->kecamatan,
-                    'desa' => $p->desa,
-                    'lat' => (float)$p->lokasi_lat,
-                    'lng' => (float)$p->lokasi_lng,
-                    'jenis_produk' => $p->jenis_produk,
-                    'status' => $p->status,
-                ];
-            })
-            ->values();
+            ->get();
+
+        $mapItems = $mapQuery->map(function ($p) {
+            $photoUrl = null;
+
+            if (!empty($p->file_path)) {
+                $photoUrl = Storage::url($p->file_path);
+            }
+
+            return [
+                'nama'             => $p->nama,
+                'alamat'           => $p->alamat,
+                'jenis_usaha'      => $p->jenis_usaha ?: 'LAINNYA',
+                'keterangan_usaha' => $p->keterangan_usaha,
+                'kab_kota'         => $p->kab_kota,
+                'kecamatan'        => $p->kecamatan,
+                'desa'             => $p->desa,
+                'lat'              => (float) $p->lokasi_lat,
+                'lng'              => (float) $p->lokasi_lng,
+                'jenis_produk'     => $p->jenis_produk,
+                'status'           => $p->status,
+                'cabang'           => trim(($p->kode_cabang ?: '-') . ' - ' . ($p->nama_cabang ?: '-')),
+                'photo_url'        => $photoUrl,
+            ];
+        })->values();
 
         return view('livewire.dashboard.index', [
-            'cabangs' => $cabangs,
-            'summary' => $summary,
+            'cabangs'             => $cabangs,
+            'summary'             => $summary,
             'closingCabangLabels' => $closingCabangLabels,
             'closingCabangValues' => $closingCabangValues,
-            'produkLabels' => $produkLabels,
-            'produkValues' => $produkValues,
-            'statusLabels' => $statusLabels,
-            'statusValues' => $statusValues,
-            'usahaLabels' => $usahaLabels,
-            'usahaValues' => $usahaValues,
-            'trendLabels' => $trendLabels,
-            'trendValues' => $trendValues,
-            'topCabang' => $topCabang,
-            'recent' => $recent,
-            'mapItems' => $mapItems,
+            'produkLabels'        => $produkLabels,
+            'produkValues'        => $produkValues,
+            'statusLabels'        => $statusLabels,
+            'statusValues'        => $statusValues,
+            'usahaLabels'         => $usahaLabels,
+            'usahaValues'         => $usahaValues,
+            'trendLabels'         => $trendLabels,
+            'trendValues'         => $trendValues,
+            'topCabang'           => $topCabang,
+            'topClosingCabang'    => $topClosingCabang,
+            'topPegawai'          => $topPegawai,
+            'recent'              => $recent,
+            'mapItems'            => $mapItems,
+            'lockCabangFilter'    => $this->lockCabangFilter,
         ])->layout('layouts.bootstrap');
     }
 }

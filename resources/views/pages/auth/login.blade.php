@@ -19,7 +19,7 @@
                  style="width:54px;height:54px;border-radius:16px;background:#4b7bec;color:#fff;box-shadow:0 14px 40px rgba(75,123,236,.35);">
                 <i class="bi bi-people-fill fs-3"></i>
             </div>
-            <div class="text-white fw-bold fs-4">Pipeline Prospek</div>
+            <div class="text-white fw-bold fs-4">e-Prospek</div>
             <div class="text-white-50 small">Login untuk melanjutkan</div>
         </div>
 

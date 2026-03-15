@@ -3,7 +3,7 @@
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <div>
       <div class="fw-bold fs-3">Recycle Bin - Prospek</div>
-      <div class="text-muted">Data prospek yang sudah dihapus (soft delete)</div>
+      <div class="text-muted">Data prospek yang sudah dihapus oleh akun Anda</div>
     </div>
 
     <a href="{{ route('prospects.index') }}" class="btn btn-light rounded-pill px-4">
@@ -28,7 +28,7 @@
         </div>
       </div>
       <div class="col-12 col-md-5 text-md-end text-muted small">
-        Total: <span class="fw-bold">{{ $items->total() }}</span> prospek (terhapus)
+        Total: <span class="fw-bold">{{ $items->total() }}</span> prospek (terhapus oleh Anda)
       </div>
     </div>
   </div>

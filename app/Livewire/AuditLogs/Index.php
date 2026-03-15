@@ -10,6 +10,8 @@ class Index extends Component
 {
     use WithPagination;
 
+    protected $paginationTheme = 'bootstrap';
+
     public string $search = '';
     protected $queryString = ['search'];
 
@@ -22,14 +24,18 @@ class Index extends Component
     {
         $q = AuditLog::query()->with('user')->latest('id');
 
-        if ($this->search !== '') {
-            $s = '%' . $this->search . '%';
-            $q->where(function($w) use ($s){
-                $w->where('action','like',$s)
-                  ->orWhere('type','like',$s)
-                  ->orWhere('model_id','like',$s)
-                  ->orWhere('ip','like',$s)
-                  ->orWhere('actor_name','like',$s);
+        if (trim($this->search) !== '') {
+            $s = '%' . trim($this->search) . '%';
+            $q->where(function ($w) use ($s) {
+                $w->where('action', 'like', $s)
+                  ->orWhere('type', 'like', $s)
+                  ->orWhere('model_id', 'like', $s)
+                  ->orWhere('ip', 'like', $s)
+                  ->orWhere('ip_address', 'like', $s)
+                  ->orWhere('actor_name', 'like', $s)
+                  ->orWhere('auditable_type', 'like', $s)
+                  ->orWhere('auditable_id', 'like', $s)
+                  ->orWhere('meta', 'like', $s);
             });
         }
 
