@@ -198,79 +198,58 @@
           @error('desa')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
-<div class="col-12">
-  <label class="form-label fw-semibold">Dokumentasi (Foto)</label>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Dokumentasi (Foto)</label>
 
-  <input id="lwPhotos" type="file" class="d-none" accept="image/*" multiple wire:model="photos">
-  <input id="cameraCaptureInput" type="file" class="d-none" accept="image/*" capture="environment">
-  <input id="galleryInput" type="file" class="d-none" accept="image/*" multiple>
+          <input id="lwPhotos" type="file" class="d-none" accept="image/*" multiple wire:model="photos">
+          <input id="cameraCaptureInput" type="file" class="d-none" accept="image/*" capture="environment">
+          <input id="galleryInput" type="file" class="d-none" accept="image/*" multiple>
 
-  <div class="d-flex flex-wrap gap-2 align-items-center">
-    <button type="button" class="btn btn-primary rounded-pill px-4" id="btnOpenCamera">
-      <i class="bi bi-camera me-1"></i> Ambil Foto
-    </button>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button type="button" class="btn btn-primary rounded-pill px-4" id="btnOpenCamera">
+              <i class="bi bi-camera me-1"></i> Ambil Foto
+            </button>
 
-    <button type="button" class="btn btn-outline-primary rounded-pill px-4" id="btnOpenGallery">
-      <i class="bi bi-images me-1"></i> Pilih dari Galeri
-    </button>
+            <button type="button" class="btn btn-outline-primary rounded-pill px-4" id="btnOpenGallery">
+              <i class="bi bi-images me-1"></i> Pilih dari Galeri
+            </button>
 
-    <div class="text-muted small">
-      Maksimal 5MB per foto.
-    </div>
-  </div>
-
-  <div class="small text-muted mt-2" wire:loading wire:target="photos">Mengunggah foto...</div>
-  @error('photos') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-  @error('photos.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-
-  <div class="mt-3">
-    <div class="fw-semibold mb-2">Preview foto dipilih</div>
-
-    {{-- preview client-side saat file baru dipilih --}}
-    <div id="photoPreviewWrap" class="row g-2"></div>
-
-    {{-- preview livewire setelah upload selesai --}}
-    @if(!empty($photos))
-      <div id="serverPreviewWrap" class="row g-2 mt-1">
-        @foreach($photos as $idx => $p)
-          <div class="col-6 col-md-3">
-            <div class="card-soft p-2 position-relative">
-              <img src="{{ $p->temporaryUrl() }}" class="w-100"
-                   style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;">
-              <button type="button"
-                      class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2"
-                      wire:click="removeTempPhoto({{ $idx }})">
-                <i class="bi bi-x"></i>
-              </button>
+            <div class="text-muted small">
+              Maksimal 5MB per foto.
             </div>
           </div>
-        @endforeach
-      </div>
-    @endif
-  </div>
 
-  @if($id && isset($docs) && $docs->count())
-    <div class="mt-3">
-      <div class="fw-semibold mb-2">Foto tersimpan</div>
-      <div class="row g-2">
-        @foreach($docs as $doc)
-          <div class="col-6 col-md-3">
-            <div class="card-soft p-2 position-relative">
-              <img src="{{ $doc->url }}" class="w-100"
-                   style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;">
-              <button type="button"
-                      class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2"
-                      wire:click="deleteDoc({{ $doc->id }})"
-                      onclick="return confirm('Hapus foto ini?')">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
+          <div class="small text-muted mt-2" wire:loading wire:target="photos">Mengunggah foto...</div>
+          @error('photos') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+          @error('photos.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+
+          <div class="mt-3">
+            <div class="fw-semibold mb-2">Preview foto dipilih</div>
+            <div id="photoPreviewWrap" class="row g-2"></div>
           </div>
-        @endforeach
-      </div>
-    </div>
-  @endif
-</div>
+
+          @if($id && isset($docs) && $docs->count())
+            <div class="mt-3">
+              <div class="fw-semibold mb-2">Foto tersimpan</div>
+              <div class="row g-2">
+                @foreach($docs as $doc)
+                  <div class="col-6 col-md-3">
+                    <div class="card-soft p-2 position-relative">
+                      <img src="{{ $doc->url }}" class="w-100"
+                           style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;">
+                      <button type="button"
+                              class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2"
+                              wire:click="deleteDoc({{ $doc->id }})"
+                              onclick="return confirm('Hapus foto ini?')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+            </div>
+          @endif
+        </div>
 
         <div class="col-12">
           <label class="form-label fw-semibold">Catatan</label>
@@ -520,7 +499,7 @@
       }
 
       function resetSelect(el, placeholder, disabled = true) {
-        el.innerHTML = `<option value="">${placeholder}</option>`;
+        el.innerHTML = <option value="">${placeholder}</option>;
         el.disabled = disabled;
       }
 
@@ -568,7 +547,7 @@
       async function loadKabupaten(initialName = '') {
         resetSelect(kabSelect, '-- Loading Kab/Kota --', true);
 
-        const json = await fetchJson(`/api-wilayah/regencies/${PROV_ID}`);
+        const json = await fetchJson(/api-wilayah/regencies/${PROV_ID});
         const list = Array.isArray(json.data) ? json.data : [];
 
         kabSelect.innerHTML = '<option value="">-- Pilih Kab/Kota --</option>';
@@ -600,7 +579,7 @@
 
         resetSelect(kecSelect, '-- Loading Kecamatan --', true);
 
-        const json = await fetchJson(`/api-wilayah/districts/${regencyCode}`);
+        const json = await fetchJson(/api-wilayah/districts/${regencyCode});
         const list = Array.isArray(json.data) ? json.data : [];
 
         kecSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
@@ -631,7 +610,7 @@
 
         resetSelect(desaSelect, '-- Loading Desa --', true);
 
-        const json = await fetchJson(`/api-wilayah/villages/${districtCode}`);
+        const json = await fetchJson(/api-wilayah/villages/${districtCode});
         const list = Array.isArray(json.data) ? json.data : [];
 
         desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
@@ -743,28 +722,28 @@
     document.addEventListener('livewire:navigated', initWilayahProspek);
   </script>
 
-    <script>
+  <script>
     (function () {
-    let mediaStream = null;
-    let modalInstance = null;
-    let previewUrls = [];
+      let mediaStream = null;
+      let modalInstance = null;
+      let previewUrls = [];
 
-    function isMobileDevice() {
+      function isMobileDevice() {
         return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
-    }
+      }
 
-    function getEl(id) {
+      function getEl(id) {
         return document.getElementById(id);
-    }
+      }
 
-    function clearPreviewUrls() {
+      function clearPreviewUrls() {
         previewUrls.forEach(function (url) {
-        try { URL.revokeObjectURL(url); } catch (e) {}
+          try { URL.revokeObjectURL(url); } catch (e) {}
         });
         previewUrls = [];
-    }
+      }
 
-    function renderClientPreview(files) {
+      function renderClientPreview(files) {
         const wrap = getEl('photoPreviewWrap');
         if (!wrap) return;
 
@@ -774,90 +753,90 @@
         if (!files || !files.length) return;
 
         Array.from(files).forEach(function (file, idx) {
-        if (!file.type || !file.type.startsWith('image/')) return;
+          if (!file.type || !file.type.startsWith('image/')) return;
 
-        const url = URL.createObjectURL(file);
-        previewUrls.push(url);
+          const url = URL.createObjectURL(file);
+          previewUrls.push(url);
 
-        const col = document.createElement('div');
-        col.className = 'col-6 col-md-3';
-        col.innerHTML = `
+          const col = document.createElement('div');
+          col.className = 'col-6 col-md-3';
+          col.innerHTML = `
             <div class="card-soft p-2 position-relative">
-            <img src="${url}" class="w-100"
-                style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;">
-            <button type="button"
-                    class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2 btn-remove-preview"
-                    data-idx="${idx}">
+              <img src="${url}" class="w-100"
+                  style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;">
+              <button type="button"
+                      class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2 btn-remove-preview"
+                      data-idx="${idx}">
                 <i class="bi bi-x"></i>
-            </button>
+              </button>
             </div>
-        `;
-        wrap.appendChild(col);
+          `;
+          wrap.appendChild(col);
         });
 
         wrap.querySelectorAll('.btn-remove-preview').forEach(function (btn) {
-        btn.onclick = function () {
+          btn.onclick = function () {
             const removeIdx = parseInt(this.getAttribute('data-idx'), 10);
             const lwPhotos = getEl('lwPhotos');
             if (!lwPhotos || !lwPhotos.files) return;
 
             const dt = new DataTransfer();
             Array.from(lwPhotos.files).forEach(function (file, i) {
-            if (i !== removeIdx) dt.items.add(file);
+              if (i !== removeIdx) dt.items.add(file);
             });
 
             lwPhotos.files = dt.files;
             lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
             renderClientPreview(lwPhotos.files);
-        };
+          };
         });
-    }
+      }
 
-    function mergeFilesToLivewire(sourceFiles) {
+      function mergeFilesToLivewire(sourceFiles) {
         const lwPhotos = getEl('lwPhotos');
         if (!lwPhotos || !sourceFiles || !sourceFiles.length) return;
 
         const dt = new DataTransfer();
 
         if (lwPhotos.files && lwPhotos.files.length) {
-        Array.from(lwPhotos.files).forEach(function (file) {
+          Array.from(lwPhotos.files).forEach(function (file) {
             dt.items.add(file);
-        });
+          });
         }
 
         Array.from(sourceFiles).forEach(function (file) {
-        dt.items.add(file);
+          dt.items.add(file);
         });
 
         lwPhotos.files = dt.files;
         renderClientPreview(lwPhotos.files);
         lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
-    }
+      }
 
-    function stopCamera() {
+      function stopCamera() {
         if (mediaStream) {
-        mediaStream.getTracks().forEach(function (track) {
+          mediaStream.getTracks().forEach(function (track) {
             track.stop();
-        });
-        mediaStream = null;
+          });
+          mediaStream = null;
         }
-    }
+      }
 
-    function showCamWarn(msg) {
+      function showCamWarn(msg) {
         const el = getEl('camWarn');
         if (!el) return;
         el.classList.remove('d-none');
         el.innerText = msg;
-    }
+      }
 
-    function hideCamWarn() {
+      function hideCamWarn() {
         const el = getEl('camWarn');
         if (!el) return;
         el.classList.add('d-none');
         el.innerText = '';
-    }
+      }
 
-    async function openDesktopCamera() {
+      async function openDesktopCamera() {
         const modalEl = getEl('modalCamera');
         const video = getEl('camVideo');
         if (!modalEl || !video) return;
@@ -865,34 +844,34 @@
         hideCamWarn();
 
         try {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             showCamWarn('Browser desktop ini tidak mendukung webcam.');
             return;
-        }
+          }
 
-        mediaStream = await navigator.mediaDevices.getUserMedia({
+          mediaStream = await navigator.mediaDevices.getUserMedia({
             video: {
-            facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
+              facingMode: 'environment',
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
             },
             audio: false
-        });
+          });
 
-        video.srcObject = mediaStream;
+          video.srcObject = mediaStream;
 
-        if (!modalInstance) {
+          if (!modalInstance) {
             modalInstance = new bootstrap.Modal(modalEl);
-        }
+          }
 
-        modalInstance.show();
+          modalInstance.show();
         } catch (e) {
-        console.error(e);
-        showCamWarn('Kamera tidak bisa dibuka. Pastikan izin kamera diberikan.');
+          console.error(e);
+          showCamWarn('Kamera tidak bisa dibuka. Pastikan izin kamera diberikan.');
         }
-    }
+      }
 
-    function snapDesktopPhoto() {
+      function snapDesktopPhoto() {
         const video = getEl('camVideo');
         const canvas = getEl('camCanvas');
         if (!video || !canvas) return;
@@ -907,22 +886,22 @@
         ctx.drawImage(video, 0, 0, width, height);
 
         canvas.toBlob(function (blob) {
-        if (!blob) return;
+          if (!blob) return;
 
-        const file = new File(
+          const file = new File(
             [blob],
             'camera-' + Date.now() + '.jpg',
             { type: 'image/jpeg' }
-        );
+          );
 
-        mergeFilesToLivewire([file]);
+          mergeFilesToLivewire([file]);
 
-        if (modalInstance) modalInstance.hide();
-        stopCamera();
+          if (modalInstance) modalInstance.hide();
+          stopCamera();
         }, 'image/jpeg', 0.92);
-    }
+      }
 
-    function bindPhoto() {
+      function bindPhoto() {
         const btnCamera = getEl('btnOpenCamera');
         const btnGallery = getEl('btnOpenGallery');
         const cameraInput = getEl('cameraCaptureInput');
@@ -934,84 +913,61 @@
         if (!btnCamera || !btnGallery || !cameraInput || !galleryInput || !lwPhotos) return;
 
         btnCamera.onclick = function () {
-        if (isMobileDevice()) {
+          if (isMobileDevice()) {
             cameraInput.click();
-        } else {
+          } else {
             openDesktopCamera();
-        }
+          }
         };
 
         btnGallery.onclick = function () {
-        galleryInput.click();
+          galleryInput.click();
         };
 
         cameraInput.onchange = function () {
-        if (cameraInput.files && cameraInput.files.length) {
+          if (cameraInput.files && cameraInput.files.length) {
             mergeFilesToLivewire(cameraInput.files);
-        }
-        cameraInput.value = '';
+          }
+          cameraInput.value = '';
         };
 
         galleryInput.onchange = function () {
-        if (galleryInput.files && galleryInput.files.length) {
+          if (galleryInput.files && galleryInput.files.length) {
             mergeFilesToLivewire(galleryInput.files);
-        }
-        galleryInput.value = '';
+          }
+          galleryInput.value = '';
         };
 
         lwPhotos.onchange = function () {
-        renderClientPreview(lwPhotos.files);
+          renderClientPreview(lwPhotos.files);
         };
 
         if (snapBtn) {
-        snapBtn.onclick = function () {
+          snapBtn.onclick = function () {
             snapDesktopPhoto();
-        };
+          };
         }
 
         if (modalEl && !modalEl.dataset.bound) {
-        modalEl.dataset.bound = '1';
-        modalEl.addEventListener('hidden.bs.modal', function () {
+          modalEl.dataset.bound = '1';
+          modalEl.addEventListener('hidden.bs.modal', function () {
             stopCamera();
-        });
+          });
         }
-    }
+      }
 
-    function resetClientPreviewWhenUploadDone() {
-        const wrap = getEl('photoPreviewWrap');
-        if (!wrap) return;
-        wrap.innerHTML = '';
-        clearPreviewUrls();
-    }
+      document.addEventListener('DOMContentLoaded', bindPhoto);
+      document.addEventListener('livewire:navigated', bindPhoto);
 
-    document.addEventListener('livewire-upload-start', function () {
-        // preview JS tetap tampil saat upload berjalan
-    });
-
-    document.addEventListener('livewire-upload-finish', function () {
-        // setelah upload selesai, biarkan preview server-side ($photos) yang tampil
-        setTimeout(function () {
-        resetClientPreviewWhenUploadDone();
-        bindPhoto();
-        }, 150);
-    });
-
-    document.addEventListener('livewire-upload-error', function () {
-        setTimeout(function () {
-        bindPhoto();
-        }, 150);
-    });
-
-    document.addEventListener('DOMContentLoaded', bindPhoto);
-    document.addEventListener('livewire:navigated', bindPhoto);
-
-    document.addEventListener('livewire:init', function () {
+      document.addEventListener('livewire:init', function () {
         if (!window.Livewire) return;
         Livewire.hook('morphed', function () {
-        setTimeout(bindPhoto, 50);
+          setTimeout(bindPhoto, 50);
         });
-    });
+      });
     })();
-    </script>
+  </script>
 
 </div>
+
+
