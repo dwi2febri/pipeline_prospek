@@ -14,8 +14,9 @@
   </div>
 
   <div class="card-soft p-3 mb-3">
-    <div class="row g-2 align-items-center">
-      <div class="col-12 col-md-5">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-4">
+        <label class="form-label small text-muted">Cari</label>
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
           <input class="form-control"
@@ -25,7 +26,8 @@
         </div>
       </div>
 
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-2">
+        <label class="form-label small text-muted">Status</label>
         <select class="form-select" wire:model.live="filterStatus">
           <option value="">-- Semua Status --</option>
           <option value="FOLLOW UP">FOLLOW UP</option>
@@ -34,7 +36,41 @@
         </select>
       </div>
 
-      <div class="col-12 col-md-4 text-md-end text-muted small">
+      @if(in_array(strtoupper(trim((string)(auth()->user()->role ?? ''))), ['MANAJEMEN','SUPERVISOR']))
+        <div class="col-12 col-md-2">
+          <label class="form-label small text-muted">Cabang</label>
+          <select class="form-select"
+                  wire:model.live="filterCabang"
+                  @if($lockCabangFilter) disabled @endif>
+            <option value="">-- Semua Cabang --</option>
+            @foreach($cabangOptions as $c)
+              <option value="{{ $c->id }}">{{ $c->kode_cabang }} - {{ $c->nama_cabang }}</option>
+            @endforeach
+          </select>
+        </div>
+      @endif
+
+      @if(in_array(strtoupper(trim((string)(auth()->user()->role ?? ''))), ['MANAJEMEN','SUPERVISOR','AO','AO_KREDIT','AO_DANA','AO_REMEDIAL']))
+        <div class="col-6 col-md-2">
+          <label class="form-label small text-muted">Bulan</label>
+          <select class="form-select" wire:model.live="filterBulan">
+            @foreach($bulanOptions as $b)
+              <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
+            @endforeach
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label small text-muted">Tahun</label>
+          <select class="form-select" wire:model.live="filterTahun">
+            @foreach($tahunOptions as $t)
+              <option value="{{ $t }}">{{ $t }}</option>
+            @endforeach
+          </select>
+        </div>
+      @endif
+
+      <div class="col-12 col-md text-md-end text-muted small">
         Total: <span class="fw-bold">{{ $items->total() }}</span> pengajuan
       </div>
     </div>
@@ -155,6 +191,10 @@
             <span class="badge bg-dark rounded-pill px-3 py-2 fw-bold">
               Diambil: {{ $p->diambil_oleh ?: '-' }}
             </span>
+          @else
+            <span class="badge bg-light text-dark rounded-pill px-3 py-2 fw-bold">
+              Belum Diambil
+            </span>
           @endif
         </div>
 
@@ -229,15 +269,15 @@
                   @endphp
 
                   <div class="d-flex flex-wrap align-items-center gap-2">
-                      <div class="fw-semibold">{{ $detail->no_hp ?: '-' }}</div>
+                    <div class="fw-semibold">{{ $detail->no_hp ?: '-' }}</div>
 
-                      @if(!empty($detail->no_hp) && !empty($waNumber))
-                        <a href="https://wa.me/{{ $waNumber }}"
-                           target="_blank"
-                           class="btn btn-success btn-sm rounded-pill px-3">
-                          <i class="bi bi-whatsapp me-1"></i> WA
-                        </a>
-                      @endif
+                    @if(!empty($detail->no_hp) && !empty($waNumber))
+                      <a href="https://wa.me/{{ $waNumber }}"
+                         target="_blank"
+                         class="btn btn-success btn-sm rounded-pill px-3">
+                        <i class="bi bi-whatsapp me-1"></i> WA
+                      </a>
+                    @endif
                   </div>
                 </div>
 
@@ -377,62 +417,64 @@
                   @endif
                 </div>
 
-                <div class="col-12">
-                  <hr>
-                  <div class="fw-semibold mb-2">Status Pengambilan</div>
+                @if(!$hideActionForm)
+                  <div class="col-12">
+                    <hr>
+                    <div class="fw-semibold mb-2">Status Pengambilan</div>
 
-                  <div class="row g-2 align-items-end">
-                    <div class="col-12 col-md-7">
-                      <label class="form-label small text-muted">Diambil / Tidak Diambil</label>
-                      <select class="form-select" wire:model.live="ambilStatus">
-                        <option value="0">TIDAK DIAMBIL</option>
-                        <option value="1">DIAMBIL</option>
-                      </select>
-                    </div>
+                    <div class="row g-2 align-items-end">
+                      <div class="col-12 col-md-7">
+                        <label class="form-label small text-muted">Diambil / Tidak Diambil</label>
+                        <select class="form-select" wire:model.live="ambilStatus">
+                          <option value="0">TIDAK DIAMBIL</option>
+                          <option value="1">DIAMBIL</option>
+                        </select>
+                      </div>
 
-                    <div class="col-12 col-md-5">
-                      <button type="button"
-                              class="btn btn-dark w-100 rounded-pill"
-                              wire:click="updateAmbilStatus"
-                              wire:loading.attr="disabled"
-                              wire:target="updateAmbilStatus">
-                        <span wire:loading.remove wire:target="updateAmbilStatus">Simpan Pengambilan</span>
-                        <span wire:loading wire:target="updateAmbilStatus">Menyimpan...</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-12">
-                  <hr>
-                  <div class="fw-semibold mb-2">Update Status (opsional)</div>
-
-                  <div class="row g-2 align-items-end">
-                    <div class="col-12 col-md-7">
-                      <label class="form-label small text-muted">Pilih Status</label>
-                      <select class="form-select" wire:model.live="statusUpdate">
-                        <option value="">-- Pilih Status --</option>
-                        <option value="FOLLOW UP">FOLLOW UP</option>
-                        <option value="CLOSING">CLOSING</option>
-                        <option value="REJECTED">REJECTED</option>
-                      </select>
-                      @error('statusUpdate')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
-                      @enderror
-                    </div>
-
-                    <div class="col-12 col-md-5">
-                      <button type="button"
-                              class="btn btn-primary w-100 rounded-pill"
-                              wire:click="updateStatus"
-                              wire:loading.attr="disabled"
-                              wire:target="updateStatus">
-                        <span wire:loading.remove wire:target="updateStatus">Simpan Status</span>
-                        <span wire:loading wire:target="updateStatus">Menyimpan...</span>
-                      </button>
+                      <div class="col-12 col-md-5">
+                        <button type="button"
+                                class="btn btn-dark w-100 rounded-pill"
+                                wire:click="updateAmbilStatus"
+                                wire:loading.attr="disabled"
+                                wire:target="updateAmbilStatus">
+                          <span wire:loading.remove wire:target="updateAmbilStatus">Simpan Pengambilan</span>
+                          <span wire:loading wire:target="updateAmbilStatus">Menyimpan...</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+
+                  <div class="col-12">
+                    <hr>
+                    <div class="fw-semibold mb-2">Update Status (opsional)</div>
+
+                    <div class="row g-2 align-items-end">
+                      <div class="col-12 col-md-7">
+                        <label class="form-label small text-muted">Pilih Status</label>
+                        <select class="form-select" wire:model.live="statusUpdate">
+                          <option value="">-- Pilih Status --</option>
+                          <option value="FOLLOW UP">FOLLOW UP</option>
+                          <option value="CLOSING">CLOSING</option>
+                          <option value="REJECTED">REJECTED</option>
+                        </select>
+                        @error('statusUpdate')
+                          <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                      </div>
+
+                      <div class="col-12 col-md-5">
+                        <button type="button"
+                                class="btn btn-primary w-100 rounded-pill"
+                                wire:click="updateStatus"
+                                wire:loading.attr="disabled"
+                                wire:target="updateStatus">
+                          <span wire:loading.remove wire:target="updateStatus">Simpan Status</span>
+                          <span wire:loading wire:target="updateStatus">Menyimpan...</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                @endif
               </div>
             @endif
           @else
@@ -550,7 +592,3 @@ document.addEventListener('livewire:init', function () {
 });
 </script>
 @endpush
-
-
-
-implementasikan disini tinggal copas

@@ -16,10 +16,12 @@
 
         <div class="text-center mb-3">
             <div class="d-inline-flex align-items-center justify-content-center mb-2"
-                 style="width:54px;height:54px;border-radius:16px;background:#4b7bec;color:#fff;box-shadow:0 14px 40px rgba(75,123,236,.35);">
-                <i class="bi bi-people-fill fs-3"></i>
+                style="width:110px;height:110px;border-radius:24px;background:#ffffff;box-shadow:0 14px 40px rgba(75,123,236,.25);overflow:hidden;padding:8px;">
+                <img src="{{ asset('images/logo_eprospek.png') }}"
+                    alt="Logo E-Prospek"
+                    style="width:96px;height:96px;object-fit:contain;display:block;">
             </div>
-            <div class="text-white fw-bold fs-4">Pipeline Prospek</div>
+            <div class="text-white fw-bold fs-4">E-Prospek</div>
             <div class="text-white-50 small">Login untuk melanjutkan</div>
         </div>
 

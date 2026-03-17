@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Prospects;
 
+use App\Models\Cabang;
 use App\Models\Prospect;
 use App\Models\ProspectNotification;
 use Livewire\Component;
@@ -15,6 +16,9 @@ class Submissions extends Component
 
     public string $search = '';
     public ?string $filterStatus = '';
+    public ?int $filterCabang = null;
+    public string $filterBulan = '';
+    public string $filterTahun = '';
 
     public ?int $detailId = null;
     public ?string $statusUpdate = null;
@@ -24,11 +28,32 @@ class Submissions extends Component
     public bool $showTakenMessage = false;
     public ?string $takenByUsername = null;
     public bool $isAdminOrManagement = false;
+    public bool $hideActionForm = false;
+    public bool $lockCabangFilter = false;
 
     protected $queryString = [
         'search' => ['except' => ''],
         'filterStatus' => ['except' => ''],
+        'filterCabang' => ['except' => ''],
+        'filterBulan' => ['except' => ''],
+        'filterTahun' => ['except' => ''],
     ];
+
+    public function mount(): void
+    {
+        $role = $this->currentUserRole();
+        $now = now();
+
+        if (in_array($role, ['MANAJEMEN', 'SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
+            $this->filterBulan = (string) $now->month;
+            $this->filterTahun = (string) $now->year;
+        }
+
+        if (in_array($role, ['SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
+            $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
+            $this->lockCabangFilter = true;
+        }
+    }
 
     public function updatingSearch(): void
     {
@@ -36,6 +61,25 @@ class Submissions extends Component
     }
 
     public function updatingFilterStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterCabang(): void
+    {
+        if ($this->lockCabangFilter) {
+            $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
+        }
+
+        $this->resetPage();
+    }
+
+    public function updatingFilterBulan(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterTahun(): void
     {
         $this->resetPage();
     }
@@ -64,6 +108,12 @@ class Submissions extends Component
         ], true);
     }
 
+    protected function canBypassTakenLock(?string $role = null): bool
+    {
+        $role = $role ?: $this->currentUserRole();
+        return in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'], true);
+    }
+
     public function openDetail(int $id): void
     {
         $u = auth()->user();
@@ -79,12 +129,17 @@ class Submissions extends Component
         $this->takenByUsername = $p->diambil_oleh;
         $this->isAdminOrManagement = $this->isAdminOrManagementRole($role);
 
+        // hide form aksi untuk MANAJEMEN + SUPERVISOR
+        $this->hideActionForm = in_array($role, ['MANAJEMEN', 'SUPERVISOR'], true);
+
+        // ADMIN / MANAJEMEN bisa lihat semua
         if ($this->isAdminOrManagementRole($role)) {
             $this->canViewDetail = true;
             $this->dispatch('open-prospect-detail-modal');
             return;
         }
 
+        // SUPERVISOR / AO hanya cabang sendiri
         if ($this->isCabangRestrictedRole($role)) {
             if ((int) $p->cabang_id !== (int) $u->cabang_id) {
                 session()->flash('ok', 'Prospek tidak bisa dibuka karena bukan cabang Anda.');
@@ -92,11 +147,14 @@ class Submissions extends Component
             }
         }
 
-        if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
-            $this->showTakenMessage = true;
-            $this->canViewDetail = false;
-            $this->dispatch('open-prospect-detail-modal');
-            return;
+        // SUPERVISOR boleh tetap lihat meskipun diambil user lain
+        if (!$this->canBypassTakenLock($role)) {
+            if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
+                $this->showTakenMessage = true;
+                $this->canViewDetail = false;
+                $this->dispatch('open-prospect-detail-modal');
+                return;
+            }
         }
 
         $this->canViewDetail = true;
@@ -112,6 +170,7 @@ class Submissions extends Component
         $this->showTakenMessage = false;
         $this->takenByUsername = null;
         $this->isAdminOrManagement = false;
+        $this->hideActionForm = false;
         $this->resetValidation();
     }
 
@@ -130,7 +189,7 @@ class Submissions extends Component
             'statusUpdate.in' => 'Status hanya boleh FOLLOW UP, REJECTED, atau CLOSING.',
         ]);
 
-        if (!$this->detailId || !$this->canViewDetail) {
+        if (!$this->detailId || !$this->canViewDetail || $this->hideActionForm) {
             return;
         }
 
@@ -147,9 +206,11 @@ class Submissions extends Component
                 return;
             }
 
-            if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
-                session()->flash('ok', 'Prospek ini sudah diambil user lain.');
-                return;
+            if (!$this->canBypassTakenLock($role)) {
+                if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
+                    session()->flash('ok', 'Prospek ini sudah diambil user lain.');
+                    return;
+                }
             }
         }
 
@@ -186,7 +247,7 @@ class Submissions extends Component
             'ambilStatus.in' => 'Status pengambilan tidak valid.',
         ]);
 
-        if (!$this->detailId) {
+        if (!$this->detailId || $this->hideActionForm) {
             return;
         }
 
@@ -201,9 +262,11 @@ class Submissions extends Component
                 return;
             }
 
-            if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
-                session()->flash('ok', 'Prospek ini sudah diambil oleh ' . $p->diambil_oleh . '.');
-                return;
+            if (!$this->canBypassTakenLock($role)) {
+                if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
+                    session()->flash('ok', 'Prospek ini sudah diambil oleh ' . $p->diambil_oleh . '.');
+                    return;
+                }
             }
         }
 
@@ -234,6 +297,10 @@ class Submissions extends Component
         $u = auth()->user();
         $role = $this->currentUserRole();
 
+        if ($this->lockCabangFilter) {
+            $this->filterCabang = (int) ($u->cabang_id ?? 0);
+        }
+
         $items = Prospect::query()
             ->with(['cabang', 'creator'])
             ->when(trim($this->search) !== '', function ($q) {
@@ -249,9 +316,21 @@ class Submissions extends Component
             ->when($this->filterStatus !== null && $this->filterStatus !== '', function ($q) {
                 $q->where('status', $this->filterStatus);
             })
-            ->when($this->isCabangRestrictedRole($role), function ($q) use ($u) {
-                $q->where('cabang_id', $u->cabang_id);
+            ->when($this->filterCabang, function ($q) {
+                $q->where('cabang_id', $this->filterCabang);
             })
+            ->when($this->filterBulan !== '', function ($q) {
+                $q->whereMonth('tanggal_prospek', (int) $this->filterBulan);
+            })
+            ->when($this->filterTahun !== '', function ($q) {
+                $q->whereYear('tanggal_prospek', (int) $this->filterTahun);
+            })
+            ->when(
+                $this->isCabangRestrictedRole($role) && !$this->filterCabang,
+                function ($q) use ($u) {
+                    $q->where('cabang_id', $u->cabang_id);
+                }
+            )
             ->latest('tanggal_prospek')
             ->latest('id')
             ->paginate(10);
@@ -261,7 +340,27 @@ class Submissions extends Component
             $detail = Prospect::with(['cabang', 'creator', 'documents'])->find($this->detailId);
         }
 
-        return view('livewire.prospects.submissions', compact('items', 'detail'))
-            ->layout('layouts.bootstrap');
+        $cabangOptions = Cabang::query()
+            ->whereBetween('id', [1, 28])
+            ->orderBy('id')
+            ->get(['id', 'kode_cabang', 'nama_cabang']);
+
+        $bulanOptions = collect(range(1, 12))->map(function ($b) {
+            return [
+                'id' => $b,
+                'label' => now()->copy()->month($b)->translatedFormat('F'),
+            ];
+        });
+
+        $tahunNow = (int) now()->year;
+        $tahunOptions = collect(range($tahunNow - 3, $tahunNow + 1));
+
+        return view('livewire.prospects.submissions', compact(
+            'items',
+            'detail',
+            'cabangOptions',
+            'bulanOptions',
+            'tahunOptions'
+        ))->layout('layouts.bootstrap');
     }
 }
