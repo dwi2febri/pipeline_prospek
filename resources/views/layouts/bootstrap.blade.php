@@ -376,6 +376,7 @@
     $canDashboard         = $isAdmin || $isManajemen || $isSupervisor;
     $canProspects         = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
     $canProspectsDiajukan = $isAdmin || $isManajemen || $isSupervisor || $isAo;
+    $canRekapProspek = $isAdmin || $isManajemen || $isSupervisor;
     $canRecycleBin        = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
     $canProfile           = auth()->check();
     $canAuditLog          = $isAdmin;
@@ -409,6 +410,12 @@
               <i class="bi bi-grid"></i><span>Prospek</span>
             </a>
           @endif
+
+            @if($canRekapProspek)
+            <a href="/rekap-prospek" class="navlink {{ request()->is('rekap-prospek') ? 'active' : '' }}">
+                <i class="bi bi-table"></i><span>Rekap Prospek</span>
+            </a>
+            @endif
 
           @if($canProspectsDiajukan)
             <a href="/prospects-diajukan" class="navlink {{ request()->is('prospects-diajukan') ? 'active' : '' }}">
@@ -610,6 +617,13 @@
           Prospek
         </a>
       @endif
+
+        @if($canRekapProspek)
+        <a href="/rekap-prospek" class="{{ request()->is('rekap-prospek') ? 'active' : '' }}">
+            <div><i class="bi bi-table fs-5"></i></div>
+            Rekap
+        </a>
+        @endif
 
       @if($canProspectsDiajukan)
         <a href="/prospects-diajukan" class="{{ request()->is('prospects-diajukan') ? 'active' : '' }}">

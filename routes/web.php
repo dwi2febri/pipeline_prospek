@@ -21,6 +21,7 @@ use App\Livewire\Cabangs\Form as CabangsForm;
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuditLogExportController;
+use App\Livewire\Reports\ProspectRecap as ProspectRecapReport;
 
 // Homepage
 Route::get('/', function () {
@@ -188,4 +189,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/audit-logs/export', [AuditLogExportController::class, 'export'])
     ->middleware('role:ADMIN')
     ->name('audit.export');
+
+    // ===== REKAP PROSPEK =====
+    Route::get('/rekap-prospek', ProspectRecapReport::class)
+    ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR')
+    ->name('reports.prospect-recap');
 });
