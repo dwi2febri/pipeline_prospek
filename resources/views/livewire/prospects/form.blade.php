@@ -75,17 +75,23 @@
         </div>
 
         <div class="col-12">
-          <label class="form-label fw-semibold">Cabang</label>
-          <select class="form-select" wire:model="cabang_id">
+        <label class="form-label fw-semibold">Cabang</label>
+        <select class="form-select" wire:model="cabang_id">
             <option value="">-- Pilih Cabang --</option>
             @if(!empty($cabangOptions))
-              @foreach($cabangOptions as $c)
+            @foreach($cabangOptions as $c)
+                @php
+                $kodeCabang = trim((string)($c['kode_cabang'] ?? ''));
+                @endphp
+
+                @if($kodeCabang >= '001' && $kodeCabang <= '028')
                 <option value="{{ $c['id'] }}">{{ $c['text'] }}</option>
-              @endforeach
+                @endif
+            @endforeach
             @endif
-          </select>
-          @error('cabang_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-          <div class="text-muted small mt-1">Pegawai bebas memilih cabang.</div>
+        </select>
+        @error('cabang_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+        <div class="text-muted small mt-1">Pegawai bebas memilih cabang.</div>
         </div>
 
         <div class="col-12 col-md-6">

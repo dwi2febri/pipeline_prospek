@@ -53,15 +53,18 @@ class Form extends Component
     public function mount($id = null)
     {
         $this->id = $id ? (int)$id : null;
-
-        $this->cabangOptions = Cabang::query()
+        $this->cabangOptions = \App\Models\Cabang::query()
             ->where('aktif', 1)
-            ->orderByRaw("LPAD(kode_cabang, 10, '0') ASC")
-            ->get(['id', 'kode_cabang', 'nama_cabang'])
-            ->map(fn($c) => [
-                'id' => (int)$c->id,
-                'text' => $c->kode_cabang . ' - ' . $c->nama_cabang
-            ])
+            ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28")
+            ->orderByRaw("CAST(kode_cabang AS UNSIGNED) ASC")
+            ->get()
+            ->map(function ($c) {
+                return [
+                    'id' => $c->id,
+                    'kode_cabang' => $c->kode_cabang,
+                    'text' => $c->kode_cabang . ' - ' . $c->nama_cabang,
+                ];
+            })
             ->toArray();
 
         if ($this->id) {
