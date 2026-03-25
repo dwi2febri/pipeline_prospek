@@ -15,12 +15,44 @@ class Index extends Component
     use WithPagination, WithFileUploads;
 
     public string $search = '';
+    public string $filterCabang = '';
+    public string $filterRole = '';
+    public string $filterAktif = '';
     public $file;
 
-    protected $queryString = ['search'];
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'filterCabang' => ['except' => ''],
+        'filterRole' => ['except' => ''],
+        'filterAktif' => ['except' => ''],
+    ];
 
     public function updatingSearch()
     {
+        $this->resetPage();
+    }
+
+    public function updatingFilterCabang()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterRole()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterAktif()
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilter(): void
+    {
+        $this->search = '';
+        $this->filterCabang = '';
+        $this->filterRole = '';
+        $this->filterAktif = '';
         $this->resetPage();
     }
 
@@ -111,7 +143,6 @@ class Index extends Component
 
                 $baseEmail = strtolower(trim($username)) . '@import.local';
 
-                // cari existing: username dulu, kalau tidak ada cek nama_lengkap
                 $u = User::whereRaw('TRIM(name) = ?', [$username])->first();
 
                 if (!$u && $namaLengkap) {
@@ -119,7 +150,6 @@ class Index extends Component
                 }
 
                 if ($u) {
-                    // UPDATE
                     $u->name = $username;
                     $u->nama_lengkap = $namaLengkap ?: null;
                     $u->role = $role;
@@ -150,7 +180,6 @@ class Index extends Component
                     $u->save();
                     $updated++;
                 } else {
-                    // INSERT
                     $email = $baseEmail;
                     $counter = 1;
                     while (User::where('email', $email)->exists()) {
@@ -197,6 +226,10 @@ class Index extends Component
 
     public function render()
     {
+        $cabangs = Cabang::query()
+            ->orderBy('kode_cabang')
+            ->get(['id', 'kode_cabang', 'nama_cabang']);
+
         $items = User::query()
             ->with('cabang')
             ->when($this->search !== '', function ($q) {
@@ -208,10 +241,19 @@ class Index extends Component
                       ->orWhere('nama_lengkap', 'like', $s);
                 });
             })
+            ->when($this->filterCabang !== '', function ($q) {
+                $q->where('cabang_id', (int) $this->filterCabang);
+            })
+            ->when($this->filterRole !== '', function ($q) {
+                $q->where('role', $this->filterRole);
+            })
+            ->when($this->filterAktif !== '', function ($q) {
+                $q->where('aktif', (int) $this->filterAktif);
+            })
             ->latest('id')
             ->paginate(10);
 
-        return view('livewire.users.index', compact('items'))
+        return view('livewire.users.index', compact('items', 'cabangs'))
             ->layout('layouts.bootstrap');
     }
 }

@@ -16,6 +16,7 @@ class Submissions extends Component
 
     public string $search = '';
     public ?string $filterStatus = '';
+    public ?string $filterPengambilan = '';
     public ?int $filterCabang = null;
     public string $filterBulan = '';
     public string $filterTahun = '';
@@ -34,6 +35,7 @@ class Submissions extends Component
     protected $queryString = [
         'search' => ['except' => ''],
         'filterStatus' => ['except' => ''],
+        'filterPengambilan' => ['except' => ''],
         'filterCabang' => ['except' => ''],
         'filterBulan' => ['except' => ''],
         'filterTahun' => ['except' => ''],
@@ -65,6 +67,11 @@ class Submissions extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterPengambilan(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatingFilterCabang(): void
     {
         if ($this->lockCabangFilter) {
@@ -81,6 +88,32 @@ class Submissions extends Component
 
     public function updatingFilterTahun(): void
     {
+        $this->resetPage();
+    }
+
+    public function resetFilter(): void
+    {
+        $this->search = '';
+        $this->filterStatus = '';
+        $this->filterPengambilan = '';
+
+        if ($this->lockCabangFilter) {
+            $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
+        } else {
+            $this->filterCabang = null;
+        }
+
+        $role = $this->currentUserRole();
+        $now = now();
+
+        if (in_array($role, ['MANAJEMEN', 'SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
+            $this->filterBulan = (string) $now->month;
+            $this->filterTahun = (string) $now->year;
+        } else {
+            $this->filterBulan = '';
+            $this->filterTahun = '';
+        }
+
         $this->resetPage();
     }
 
@@ -114,6 +147,133 @@ class Submissions extends Component
         return in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'], true);
     }
 
+    protected function baseQuery()
+    {
+        $u = auth()->user();
+        $role = $this->currentUserRole();
+
+        if ($this->lockCabangFilter) {
+            $this->filterCabang = (int) ($u->cabang_id ?? 0);
+        }
+
+        return Prospect::query()
+            ->with(['cabang', 'creator'])
+            ->when(trim($this->search) !== '', function ($q) {
+                $s = '%' . trim($this->search) . '%';
+                $q->where(function ($w) use ($s) {
+                    $w->where('nama', 'like', $s)
+                      ->orWhere('no_hp', 'like', $s)
+                      ->orWhere('nik', 'like', $s)
+                      ->orWhere('status', 'like', $s)
+                      ->orWhere('diambil_oleh', 'like', $s);
+                });
+            })
+            ->when($this->filterStatus !== null && $this->filterStatus !== '', function ($q) {
+                $q->where('status', $this->filterStatus);
+            })
+            ->when($this->filterPengambilan !== null && $this->filterPengambilan !== '', function ($q) {
+                $q->where('is_diambil', (int) $this->filterPengambilan);
+            })
+            ->when($this->filterCabang, function ($q) {
+                $q->where('cabang_id', $this->filterCabang);
+            })
+            ->when($this->filterBulan !== '', function ($q) {
+                $q->whereMonth('tanggal_prospek', (int) $this->filterBulan);
+            })
+            ->when($this->filterTahun !== '', function ($q) {
+                $q->whereYear('tanggal_prospek', (int) $this->filterTahun);
+            })
+            ->when(
+                $this->isCabangRestrictedRole($role) && !$this->filterCabang,
+                function ($q) use ($u) {
+                    $q->where('cabang_id', $u->cabang_id);
+                }
+            );
+    }
+
+    protected function esc($value): string
+    {
+        return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
+    }
+
+    public function exportExcel()
+    {
+        $rows = $this->baseQuery()
+            ->with(['cabang', 'creator'])
+            ->latest('tanggal_prospek')
+            ->latest('id')
+            ->get();
+
+        $namaFile = 'prospek_diajukan_' . now()->format('Ymd_His') . '.xls';
+
+        $html = '';
+        $html .= '<html>';
+        $html .= '<head><meta charset="UTF-8"></head>';
+        $html .= '<body>';
+        $html .= '<table border="1">';
+        $html .= '<tr>';
+        $html .= '<th colspan="19" style="font-weight:bold; font-size:16px;">DATA PROSPEK DIAJUKAN</th>';
+        $html .= '</tr>';
+
+        $html .= '<tr>';
+        $html .= '<th>Tanggal Prospek</th>';
+        $html .= '<th>Nama Prospek</th>';
+        $html .= '<th>No HP</th>';
+        $html .= '<th>NIK</th>';
+        $html .= '<th>Username Pengaju</th>';
+        $html .= '<th>Nama Lengkap Pengaju</th>';
+        $html .= '<th>Kode Cabang</th>';
+        $html .= '<th>Nama Cabang</th>';
+        $html .= '<th>Jenis Produk</th>';
+        $html .= '<th>Status</th>';
+        $html .= '<th>Status Pengambilan</th>';
+        $html .= '<th>Diambil Oleh</th>';
+        $html .= '<th>Alamat</th>';
+        $html .= '<th>Kab/Kota</th>';
+        $html .= '<th>Kecamatan</th>';
+        $html .= '<th>Desa</th>';
+        $html .= '<th>Keterangan Usaha</th>';
+        $html .= '<th>Catatan</th>';
+        $html .= '<th>Latitude</th>';
+        $html .= '<th>Longitude</th>';
+        $html .= '</tr>';
+
+        foreach ($rows as $p) {
+            $html .= '<tr>';
+            $html .= '<td>' . $this->esc(optional($p->tanggal_prospek ? \Illuminate\Support\Carbon::parse($p->tanggal_prospek) : null)->format('d/m/Y')) . '</td>';
+            $html .= '<td>' . $this->esc($p->nama) . '</td>';
+            $html .= '<td style="mso-number-format:\'@\';">' . $this->esc($p->no_hp) . '</td>';
+            $html .= '<td style="mso-number-format:\'@\';">' . $this->esc($p->nik) . '</td>';
+            $html .= '<td>' . $this->esc(optional($p->creator)->name) . '</td>';
+            $html .= '<td>' . $this->esc(optional($p->creator)->nama_lengkap) . '</td>';
+            $html .= '<td style="mso-number-format:\'@\';">' . $this->esc(optional($p->cabang)->kode_cabang) . '</td>';
+            $html .= '<td>' . $this->esc(optional($p->cabang)->nama_cabang) . '</td>';
+            $html .= '<td>' . $this->esc($p->jenis_produk) . '</td>';
+            $html .= '<td>' . $this->esc($p->status) . '</td>';
+            $html .= '<td>' . ((int)($p->is_diambil ?? 0) === 1 ? 'DIAMBIL' : 'BELUM') . '</td>';
+            $html .= '<td>' . $this->esc($p->diambil_oleh) . '</td>';
+            $html .= '<td>' . $this->esc($p->alamat) . '</td>';
+            $html .= '<td>' . $this->esc($p->kab_kota) . '</td>';
+            $html .= '<td>' . $this->esc($p->kecamatan) . '</td>';
+            $html .= '<td>' . $this->esc($p->desa) . '</td>';
+            $html .= '<td>' . $this->esc($p->keterangan_usaha) . '</td>';
+            $html .= '<td>' . $this->esc($p->catatan) . '</td>';
+            $html .= '<td style="mso-number-format:\'@\';">' . $this->esc($p->lokasi_lat) . '</td>';
+            $html .= '<td style="mso-number-format:\'@\';">' . $this->esc($p->lokasi_lng) . '</td>';
+            $html .= '</tr>';
+        }
+
+        $html .= '</table>';
+        $html .= '</body>';
+        $html .= '</html>';
+
+        return response()->streamDownload(function () use ($html) {
+            echo $html;
+        }, $namaFile, [
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+        ]);
+    }
+
     public function openDetail(int $id): void
     {
         $u = auth()->user();
@@ -129,17 +289,14 @@ class Submissions extends Component
         $this->takenByUsername = $p->diambil_oleh;
         $this->isAdminOrManagement = $this->isAdminOrManagementRole($role);
 
-        // hide form aksi untuk MANAJEMEN + SUPERVISOR
         $this->hideActionForm = in_array($role, ['MANAJEMEN', 'SUPERVISOR'], true);
 
-        // ADMIN / MANAJEMEN bisa lihat semua
         if ($this->isAdminOrManagementRole($role)) {
             $this->canViewDetail = true;
             $this->dispatch('open-prospect-detail-modal');
             return;
         }
 
-        // SUPERVISOR / AO hanya cabang sendiri
         if ($this->isCabangRestrictedRole($role)) {
             if ((int) $p->cabang_id !== (int) $u->cabang_id) {
                 session()->flash('ok', 'Prospek tidak bisa dibuka karena bukan cabang Anda.');
@@ -147,7 +304,6 @@ class Submissions extends Component
             }
         }
 
-        // SUPERVISOR boleh tetap lihat meskipun diambil user lain
         if (!$this->canBypassTakenLock($role)) {
             if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
                 $this->showTakenMessage = true;
@@ -294,43 +450,7 @@ class Submissions extends Component
 
     public function render()
     {
-        $u = auth()->user();
-        $role = $this->currentUserRole();
-
-        if ($this->lockCabangFilter) {
-            $this->filterCabang = (int) ($u->cabang_id ?? 0);
-        }
-
-        $items = Prospect::query()
-            ->with(['cabang', 'creator'])
-            ->when(trim($this->search) !== '', function ($q) {
-                $s = '%' . trim($this->search) . '%';
-                $q->where(function ($w) use ($s) {
-                    $w->where('nama', 'like', $s)
-                      ->orWhere('no_hp', 'like', $s)
-                      ->orWhere('nik', 'like', $s)
-                      ->orWhere('status', 'like', $s)
-                      ->orWhere('diambil_oleh', 'like', $s);
-                });
-            })
-            ->when($this->filterStatus !== null && $this->filterStatus !== '', function ($q) {
-                $q->where('status', $this->filterStatus);
-            })
-            ->when($this->filterCabang, function ($q) {
-                $q->where('cabang_id', $this->filterCabang);
-            })
-            ->when($this->filterBulan !== '', function ($q) {
-                $q->whereMonth('tanggal_prospek', (int) $this->filterBulan);
-            })
-            ->when($this->filterTahun !== '', function ($q) {
-                $q->whereYear('tanggal_prospek', (int) $this->filterTahun);
-            })
-            ->when(
-                $this->isCabangRestrictedRole($role) && !$this->filterCabang,
-                function ($q) use ($u) {
-                    $q->where('cabang_id', $u->cabang_id);
-                }
-            )
+        $items = $this->baseQuery()
             ->latest('tanggal_prospek')
             ->latest('id')
             ->paginate(10);
@@ -341,8 +461,8 @@ class Submissions extends Component
         }
 
         $cabangOptions = Cabang::query()
-            ->whereBetween('id', [1, 28])
-            ->orderBy('id')
+            ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28")
+            ->orderByRaw("CAST(kode_cabang AS UNSIGNED) ASC")
             ->get(['id', 'kode_cabang', 'nama_cabang']);
 
         $bulanOptions = collect(range(1, 12))->map(function ($b) {

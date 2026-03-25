@@ -6,12 +6,29 @@
     </div>
   @endif
 
-  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-    <div>
-      <div class="fw-bold fs-3">Prospek Diajukan</div>
-      <div class="text-muted">Daftar prospek yang diajukan oleh pegawai / AO</div>
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+        <div>
+            <div class="fw-bold fs-3">Prospek Diajukan</div>
+            <div class="text-muted">Daftar prospek yang diajukan oleh pegawai / AO</div>
+        </div>
+
+        <div class="ms-auto">
+            <button type="button"
+                    class="btn btn-success rounded-pill px-4 py-2"
+                    wire:click="exportExcel"
+                    wire:loading.attr="disabled"
+                    wire:target="exportExcel"
+                    style="min-width:180px;">
+            <span wire:loading.remove wire:target="exportExcel">
+                <i class="bi bi-file-earmark-excel me-2"></i> Cetak Excel
+            </span>
+            <span wire:loading wire:target="exportExcel">
+                Menyiapkan...
+            </span>
+            </button>
+        </div>
     </div>
-  </div>
+
 
   <div class="card-soft p-3 mb-3">
     <div class="row g-2 align-items-end">
@@ -36,22 +53,29 @@
         </select>
       </div>
 
-      @if(in_array(strtoupper(trim((string)(auth()->user()->role ?? ''))), ['MANAJEMEN','SUPERVISOR']))
-        <div class="col-12 col-md-2">
-          <label class="form-label small text-muted">Cabang</label>
-          <select class="form-select"
-                  wire:model.live="filterCabang"
-                  @if($lockCabangFilter) disabled @endif>
-            <option value="">-- Semua Cabang --</option>
-            @foreach($cabangOptions as $c)
-              <option value="{{ $c->id }}">{{ $c->kode_cabang }} - {{ $c->nama_cabang }}</option>
-            @endforeach
-          </select>
-        </div>
-      @endif
+      <div class="col-12 col-md-2">
+        <label class="form-label small text-muted">Cabang</label>
+        <select class="form-select"
+                wire:model.live="filterCabang"
+                @if($lockCabangFilter) disabled @endif>
+          <option value="">-- Semua Cabang --</option>
+          @foreach($cabangOptions as $c)
+            <option value="{{ $c->id }}">{{ $c->kode_cabang }} - {{ $c->nama_cabang }}</option>
+          @endforeach
+        </select>
+      </div>
+
+      <div class="col-12 col-md-2">
+        <label class="form-label small text-muted">Pengambilan</label>
+        <select class="form-select" wire:model.live="filterPengambilan">
+          <option value="">-- Semua --</option>
+          <option value="1">Diambil</option>
+          <option value="0">Belum</option>
+        </select>
+      </div>
 
       @if(in_array(strtoupper(trim((string)(auth()->user()->role ?? ''))), ['MANAJEMEN','SUPERVISOR','AO','AO_KREDIT','AO_DANA','AO_REMEDIAL']))
-        <div class="col-6 col-md-2">
+        <div class="col-6 col-md-1">
           <label class="form-label small text-muted">Bulan</label>
           <select class="form-select" wire:model.live="filterBulan">
             @foreach($bulanOptions as $b)
@@ -60,7 +84,7 @@
           </select>
         </div>
 
-        <div class="col-6 col-md-2">
+        <div class="col-6 col-md-1">
           <label class="form-label small text-muted">Tahun</label>
           <select class="form-select" wire:model.live="filterTahun">
             @foreach($tahunOptions as $t)
@@ -69,6 +93,13 @@
           </select>
         </div>
       @endif
+
+      <div class="col-12 col-md-2">
+        <label class="form-label small text-muted d-block">&nbsp;</label>
+        <button type="button" class="btn btn-light w-100 rounded-pill" wire:click="resetFilter">
+          <i class="bi bi-arrow-clockwise me-1"></i> Reset
+        </button>
+      </div>
 
       <div class="col-12 col-md text-md-end text-muted small">
         Total: <span class="fw-bold">{{ $items->total() }}</span> pengajuan

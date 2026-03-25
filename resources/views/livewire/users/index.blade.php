@@ -30,16 +30,53 @@
 
   <div class="card-soft p-3 mb-3">
     <div class="row g-2 align-items-center">
-      <div class="col-12 col-md-7">
+      <div class="col-12 col-lg-4">
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
           <input class="form-control"
                  style="border-left:0"
                  placeholder="Cari nama / email / role..."
-                 wire:model.live.debounce.200ms="search">
+                 wire:model.live.debounce.300ms="search">
         </div>
       </div>
-      <div class="col-12 col-md-5 text-md-end text-muted small">
+
+      <div class="col-12 col-sm-6 col-lg-2">
+        <select class="form-select" wire:model.live="filterCabang">
+          <option value="">Semua Cabang</option>
+          @foreach($cabangs as $c)
+            <option value="{{ $c->id }}">
+              {{ $c->kode_cabang }} - {{ $c->nama_cabang }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-2">
+        <select class="form-select" wire:model.live="filterRole">
+          <option value="">Semua Role</option>
+          <option value="ADMIN">ADMIN</option>
+          <option value="MANAJEMEN">MANAJEMEN</option>
+          <option value="SUPERVISOR">SUPERVISOR</option>
+          <option value="AO">AO</option>
+          <option value="PEGAWAI">PEGAWAI</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-2">
+        <select class="form-select" wire:model.live="filterAktif">
+          <option value="">Semua Status</option>
+          <option value="1">Aktif</option>
+          <option value="0">Nonaktif</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-2 d-grid">
+        <button type="button" class="btn btn-light rounded-pill" wire:click="resetFilter">
+          <i class="bi bi-arrow-clockwise me-1"></i> Reset Filter
+        </button>
+      </div>
+
+      <div class="col-12 text-md-end text-muted small pt-1">
         Total: <span class="fw-bold">{{ $items->total() }}</span> user
       </div>
     </div>
