@@ -1,4 +1,4 @@
-<div class="container-fluid px-4 py-3">
+<div class="container-fluid px-0">
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <div>
       <div class="fw-bold fs-3">Dashboard CRM Prospek</div>

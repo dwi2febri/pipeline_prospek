@@ -1,4 +1,4 @@
-<div class="container-fluid px-4 py-3">
+<div class="container-fluid px-0">
 
   @if(session('ok'))
     <div class="alert alert-success rounded-4 shadow-sm">{{ session('ok') }}</div>
