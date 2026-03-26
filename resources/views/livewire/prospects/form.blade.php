@@ -95,20 +95,14 @@
         </div>
 
         <div class="col-12 col-md-6">
-          <label class="form-label fw-semibold">Jenis Usaha</label>
-          <select class="form-select" wire:model="jenis_usaha">
-            <option value="">-- Pilih Jenis Usaha --</option>
-            <option value="PERTANIAN">Pertanian</option>
-            <option value="PERIKANAN">Perikanan</option>
-            <option value="PETERNAKAN">Peternakan</option>
-            <option value="PERDAGANGAN">Perdagangan</option>
-            <option value="JASA">Jasa</option>
-            <option value="INDUSTRI_RUMAHAN">Industri Rumahan</option>
-            <option value="KARYAWAN">Karyawan</option>
-            <option value="WIRASWASTA">Wiraswasta</option>
-            <option value="LAINNYA">Lainnya</option>
-          </select>
-          @error('jenis_usaha')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+            <label class="form-label fw-semibold">Jenis Usaha</label>
+            <select class="form-select" wire:model="jenis_usaha">
+                <option value="">-- Pilih Jenis Usaha --</option>
+                @foreach($jenisUsahaOptions as $opt)
+                <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
+                @endforeach
+            </select>
+            @error('jenis_usaha')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
         <div class="col-12">
@@ -119,14 +113,13 @@
         </div>
 
         <div class="col-12 col-md-6">
-          <label class="form-label fw-semibold">Rekomendasi Produk</label>
-          <select class="form-select" wire:model="jenis_produk">
-            <option value="TABUNGAN">Tabungan</option>
-            <option value="DEPOSITO">Deposito</option>
-            <option value="KREDIT">Kredit</option>
-            <option value="ASET">Aset</option>
-          </select>
-          @error('jenis_produk')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+            <label class="form-label fw-semibold">Rekomendasi Produk</label>
+            <select class="form-select" wire:model="jenis_produk">
+                @foreach($produkOptions as $opt)
+                <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
+                @endforeach
+            </select>
+            @error('jenis_produk')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
         <div class="col-12 col-md-6">

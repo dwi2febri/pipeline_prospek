@@ -8,6 +8,7 @@ use App\Models\Prospect;
 use App\Models\Cabang;
 use App\Models\ProspectDocument;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class Form extends Component
 {
@@ -33,6 +34,8 @@ class Form extends Component
     public ?int $cabang_id = null;
 
     public array $cabangOptions = [];
+    public array $jenisUsahaOptions = [];
+    public array $produkOptions = [];
 
     public ?string $kab_kota = null;
     public ?string $kecamatan = null;
@@ -53,7 +56,8 @@ class Form extends Component
     public function mount($id = null)
     {
         $this->id = $id ? (int)$id : null;
-        $this->cabangOptions = \App\Models\Cabang::query()
+
+        $this->cabangOptions = Cabang::query()
             ->where('aktif', 1)
             ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28")
             ->orderByRaw("CAST(kode_cabang AS UNSIGNED) ASC")
@@ -63,6 +67,32 @@ class Form extends Component
                     'id' => $c->id,
                     'kode_cabang' => $c->kode_cabang,
                     'text' => $c->kode_cabang . ' - ' . $c->nama_cabang,
+                ];
+            })
+            ->toArray();
+
+        $this->jenisUsahaOptions = DB::table('ref_jenis_usaha')
+            ->where('aktif', 1)
+            ->orderBy('urutan')
+            ->orderBy('nama')
+            ->get(['kode', 'nama'])
+            ->map(function ($r) {
+                return [
+                    'kode' => (string) $r->kode,
+                    'nama' => (string) $r->nama,
+                ];
+            })
+            ->toArray();
+
+        $this->produkOptions = DB::table('ref_rekomendasi_produk')
+            ->where('aktif', 1)
+            ->orderBy('urutan')
+            ->orderBy('nama')
+            ->get(['kode', 'nama'])
+            ->map(function ($r) {
+                return [
+                    'kode' => (string) $r->kode,
+                    'nama' => (string) $r->nama,
                 ];
             })
             ->toArray();
@@ -99,7 +129,7 @@ class Form extends Component
             $this->jenis_usaha      = (string)($p->jenis_usaha ?? '');
             $this->keterangan_usaha = $p->keterangan_usaha;
 
-            $this->jenis_produk     = (string)$p->jenis_produk;
+            $this->jenis_produk     = (string)($p->jenis_produk ?? 'KREDIT');
             $this->catatan          = $p->catatan;
 
             $this->cabang_id        = $p->cabang_id ? (int)$p->cabang_id : null;
@@ -112,6 +142,7 @@ class Form extends Component
 
             $this->kode_provinsi = '33';
             $this->status = 'FOLLOW UP';
+            $this->jenis_produk = 'KREDIT';
         }
     }
 
@@ -139,7 +170,7 @@ class Form extends Component
             'jenis_usaha'       => ['nullable', 'string', 'max:60'],
             'keterangan_usaha'  => ['nullable', 'string'],
 
-            'jenis_produk'      => ['required', 'in:TABUNGAN,DEPOSITO,KREDIT,ASET'],
+            'jenis_produk'      => ['required', 'string', 'max:60'],
             'status'            => ['required', 'in:FOLLOW UP,REJECTED,CLOSING'],
             'catatan'           => ['nullable', 'string'],
 
@@ -243,7 +274,7 @@ class Form extends Component
         $p->lokasi_lat        = $this->lokasi_lat;
         $p->lokasi_lng        = $this->lokasi_lng;
 
-        $p->jenis_usaha       = $this->jenis_usaha;
+        $p->jenis_usaha       = $this->jenis_usaha ?: null;
         $p->keterangan_usaha  = $this->keterangan_usaha;
 
         $p->jenis_produk      = $this->jenis_produk;
