@@ -52,12 +52,76 @@ class Index extends Component
         return $q;
     }
 
+    protected function getUsahaReference()
+    {
+        $palette = [
+            '#22c55e', // hijau
+            '#3b82f6', // biru
+            '#f59e0b', // amber
+            '#ef4444', // merah
+            '#8b5cf6', // ungu
+            '#14b8a6', // teal
+            '#f97316', // orange
+            '#06b6d4', // cyan
+            '#84cc16', // lime
+            '#ec4899', // pink
+            '#64748b', // slate
+            '#a855f7', // violet
+        ];
+
+        $refs = DB::table('ref_jenis_usaha')
+            ->where('aktif', 1)
+            ->orderBy('urutan')
+            ->orderBy('id')
+            ->get(['kode', 'nama', 'urutan']);
+
+        $legendUsaha = [];
+        $usahaColorMap = [];
+        $usahaNameMap = [];
+
+        foreach ($refs as $i => $r) {
+            $kode = strtoupper(trim((string) $r->kode));
+            $nama = trim((string) $r->nama);
+            $color = $palette[$i % count($palette)];
+
+            $legendUsaha[] = [
+                'kode' => $kode,
+                'nama' => $nama,
+                'color' => $color,
+            ];
+
+            $usahaColorMap[$kode] = $color;
+            $usahaNameMap[$kode] = $nama;
+        }
+
+        if (!isset($usahaColorMap['LAINNYA'])) {
+            $usahaColorMap['LAINNYA'] = '#8b5cf6';
+            $usahaNameMap['LAINNYA'] = 'Lainnya';
+            $legendUsaha[] = [
+                'kode' => 'LAINNYA',
+                'nama' => 'Lainnya',
+                'color' => '#8b5cf6',
+            ];
+        }
+
+        return [
+            'legendUsaha' => $legendUsaha,
+            'usahaColorMap' => $usahaColorMap,
+            'usahaNameMap' => $usahaNameMap,
+        ];
+    }
+
     public function render()
     {
         $cabangs = Cabang::query()
             ->where('aktif', 1)
             ->orderByRaw("LPAD(kode_cabang, 10, '0') ASC")
             ->get(['id', 'kode_cabang', 'nama_cabang']);
+
+        $usahaRef = $this->getUsahaReference();
+        $legendUsaha = $usahaRef['legendUsaha'];
+        $usahaColorMap = $usahaRef['usahaColorMap'];
+        $usahaNameMap = $usahaRef['usahaNameMap'];
 
         $base = $this->baseQuery();
 
@@ -116,7 +180,11 @@ class Index extends Component
             ->limit(10)
             ->get();
 
-        $usahaLabels = $usahaRows->pluck('jenis_usaha')->map(fn($v) => $v ?: 'LAINNYA')->values();
+        $usahaLabels = $usahaRows->pluck('jenis_usaha')->map(function ($v) use ($usahaNameMap) {
+            $kode = strtoupper(trim((string) ($v ?: 'LAINNYA')));
+            return $usahaNameMap[$kode] ?? ucwords(strtolower(str_replace('_', ' ', $kode)));
+        })->values();
+
         $usahaValues = $usahaRows->pluck('total')->map(fn($v) => (int) $v)->values();
 
         $trendRows = $this->baseQuery()
@@ -202,27 +270,30 @@ class Index extends Component
             ->limit(500)
             ->get();
 
-        $mapItems = $mapQuery->map(function ($p) {
+        $mapItems = $mapQuery->map(function ($p) use ($usahaNameMap) {
             $photoUrl = null;
 
             if (!empty($p->file_path)) {
                 $photoUrl = Storage::url($p->file_path);
             }
 
+            $usahaKode = strtoupper(trim((string) ($p->jenis_usaha ?: 'LAINNYA')));
+
             return [
-                'nama'             => $p->nama,
-                'alamat'           => $p->alamat,
-                'jenis_usaha'      => $p->jenis_usaha ?: 'LAINNYA',
-                'keterangan_usaha' => $p->keterangan_usaha,
-                'kab_kota'         => $p->kab_kota,
-                'kecamatan'        => $p->kecamatan,
-                'desa'             => $p->desa,
-                'lat'              => (float) $p->lokasi_lat,
-                'lng'              => (float) $p->lokasi_lng,
-                'jenis_produk'     => $p->jenis_produk,
-                'status'           => $p->status,
-                'cabang'           => trim(($p->kode_cabang ?: '-') . ' - ' . ($p->nama_cabang ?: '-')),
-                'photo_url'        => $photoUrl,
+                'nama'              => $p->nama,
+                'alamat'            => $p->alamat,
+                'jenis_usaha_kode'  => $usahaKode,
+                'jenis_usaha_label' => $usahaNameMap[$usahaKode] ?? ucwords(strtolower(str_replace('_', ' ', $usahaKode))),
+                'keterangan_usaha'  => $p->keterangan_usaha,
+                'kab_kota'          => $p->kab_kota,
+                'kecamatan'         => $p->kecamatan,
+                'desa'              => $p->desa,
+                'lat'               => (float) $p->lokasi_lat,
+                'lng'               => (float) $p->lokasi_lng,
+                'jenis_produk'      => $p->jenis_produk,
+                'status'            => $p->status,
+                'cabang'            => trim(($p->kode_cabang ?: '-') . ' - ' . ($p->nama_cabang ?: '-')),
+                'photo_url'         => $photoUrl,
             ];
         })->values();
 
@@ -244,6 +315,8 @@ class Index extends Component
             'topPegawai'          => $topPegawai,
             'recent'              => $recent,
             'mapItems'            => $mapItems,
+            'legendUsaha'         => $legendUsaha,
+            'usahaColorMap'       => $usahaColorMap,
             'lockCabangFilter'    => $this->lockCabangFilter,
         ])->layout('layouts.bootstrap');
     }
