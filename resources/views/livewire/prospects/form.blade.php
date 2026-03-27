@@ -123,41 +123,47 @@
         </div>
 
         <div class="col-12 col-md-6">
-          <label class="form-label fw-semibold">Lokasi (Device)</label>
+            <label class="form-label fw-semibold">Lokasi</label>
 
-          <div class="row g-2">
-            <div class="col-12">
-              <div class="input-group">
-                <span class="input-group-text bg-white"><i class="bi bi-geo-alt"></i></span>
-                <input id="alamat_input"
-                       class="form-control"
-                       wire:model="alamat"
-                       placeholder="Alamat otomatis dari lokasi perangkat..."
-                       readonly>
-              </div>
+            <div class="row g-2">
+                <div class="col-12">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-geo-alt"></i></span>
+                    <input id="alamat_input"
+                        class="form-control"
+                        wire:model="alamat"
+                        placeholder="Alamat akan terisi dari lokasi saat ini atau titik peta..."
+                        readonly>
+                </div>
+                </div>
+
+                <div class="col-6 col-md-4">
+                <input id="lokasi_lat" class="form-control" wire:model="lokasi_lat" placeholder="Lat" readonly>
+                </div>
+
+                <div class="col-6 col-md-4">
+                <input id="lokasi_lng" class="form-control" wire:model="lokasi_lng" placeholder="Lng" readonly>
+                </div>
+
+                <div class="col-12 col-md-4 d-grid">
+                <button type="button" class="btn btn-primary" id="btnGetLoc">
+                    <i class="bi bi-crosshair2 me-1"></i> Lokasi Saat Ini
+                </button>
+                </div>
+
+                <div class="col-12 d-grid">
+                <button type="button" class="btn btn-outline-primary" id="btnOpenMapPicker">
+                    <i class="bi bi-map me-1"></i> Pilih Titik di Peta
+                </button>
+                </div>
             </div>
 
-            <div class="col-6 col-md-4">
-              <input id="lokasi_lat" class="form-control" wire:model="lokasi_lat" placeholder="Lat" readonly>
+            <div class="text-muted small mt-2" id="locHint">
+                Pilih <b>Lokasi Saat Ini</b> atau gunakan <b>Pilih Titik di Peta</b>.
             </div>
 
-            <div class="col-6 col-md-4">
-              <input id="lokasi_lng" class="form-control" wire:model="lokasi_lng" placeholder="Lng" readonly>
-            </div>
-
-            <div class="col-12 col-md-4 d-grid">
-              <button type="button" class="btn btn-primary" id="btnGetLoc">
-                <i class="bi bi-crosshair2 me-1"></i> Ambil Lokasi
-              </button>
-            </div>
-          </div>
-
-          <div class="text-muted small mt-2" id="locHint">
-            Klik tombol <b>Ambil Lokasi</b> untuk mengisi lokasi dari device.
-          </div>
-
-          @error('lokasi_lat')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-          @error('lokasi_lng')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+            @error('lokasi_lat')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+            @error('lokasi_lng')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
         <div class="col-12 col-md-4">
@@ -301,6 +307,70 @@
       </div>
     </div>
   </div>
+<div class="modal fade" id="modalMapPicker" tabindex="-1" aria-hidden="true" wire:ignore.self>
+  <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
+    <div class="modal-content border-0" style="border-radius:18px;overflow:hidden;">
+      <div class="modal-header">
+        <div>
+          <div class="fw-bold">Pilih Titik Lokasi</div>
+          <div class="text-muted small">Cari lokasi, lalu klik titik pada peta untuk memilih.</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+              <input type="text" id="mapSearchInput" class="form-control" placeholder="Cari lokasi / alamat / desa / kecamatan...">
+              <button type="button" class="btn btn-primary" id="btnMapSearch">
+                Cari
+              </button>
+            </div>
+            <div class="small text-muted mt-1" id="mapSearchHint">
+              Ketik lokasi lalu klik <b>Cari</b>, atau langsung klik titik di peta.
+            </div>
+          </div>
+
+          <div class="col-12" wire:ignore>
+            <div id="mapPickerWrap" style="border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;background:#f8fafc;">
+              <div id="mapPicker" style="height:420px;width:100%;display:block;"></div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="card-soft p-3">
+              <div class="row g-2">
+                <div class="col-12">
+                  <div class="small text-muted">Alamat Dipilih</div>
+                  <div class="fw-semibold" id="pickedAddressPreview">Belum ada titik dipilih.</div>
+                </div>
+                <div class="col-6">
+                  <div class="small text-muted">Latitude</div>
+                  <div class="fw-semibold" id="pickedLatPreview">-</div>
+                </div>
+                <div class="col-6">
+                  <div class="small text-muted">Longitude</div>
+                  <div class="fw-semibold" id="pickedLngPreview">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light rounded-pill px-4" id="btnResetPickedPoint">
+          Reset Titik
+        </button>
+        <button type="button" class="btn btn-primary rounded-pill px-4" id="btnUsePickedPoint">
+          Gunakan Titik Ini
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
   @if($showDuplicateHpModal)
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(15,23,42,.55);">
@@ -330,8 +400,21 @@
     </div>
   @endif
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+    #mapPicker .leaflet-container,
+    #mapPicker {
+        background: #f8fafc !important;
+    }
+    </style>
+
     <script>
     (function () {
+    if (window.__prospectFormLocationBound) return;
+    window.__prospectFormLocationBound = true;
+
     function getEl(id) {
         return document.getElementById(id);
     }
@@ -423,6 +506,26 @@
         return (await tryFetch(url1)) || (await tryFetch(url2)) || null;
     }
 
+    async function searchLocation(keyword) {
+        const q = String(keyword || '').trim();
+        if (!q) return [];
+
+        const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=' + encodeURIComponent(q);
+
+        try {
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+        } catch (e) {
+        return [];
+        }
+    }
+
     function resetSelect(el, placeholder, disabled) {
         if (!el) return;
         el.innerHTML = '<option value="">' + placeholder + '</option>';
@@ -448,7 +551,7 @@
         }
 
         btn.disabled = true;
-        setHint('Mengambil lokasi dari device...', false);
+        setHint('Mengambil lokasi saat ini dari device...', false);
 
         navigator.geolocation.getCurrentPosition(
         async function (pos) {
@@ -459,10 +562,8 @@
             setInputValue(latInput, lat);
             setInputValue(lngInput, lng);
 
-            if (window.Livewire) {
-                if (typeof window.Livewire.dispatch === 'function') {
+            if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
                 window.Livewire.dispatch('setLatLngProspek', { lat: lat, lng: lng });
-                }
             }
 
             const addr = await reverseGeocode(lat, lng);
@@ -474,9 +575,9 @@
                 window.Livewire.dispatch('setAlamatProspek', { alamat: addr });
                 }
 
-                setHint('Lokasi berhasil diambil ✅', false);
+                setHint('Lokasi saat ini berhasil diambil ✅', false);
             } else {
-                setHint('Lat/Lng berhasil, tapi alamat belum didapat.', true);
+                setHint('Lat/Lng berhasil diambil, tapi alamat belum didapat.', true);
             }
             } catch (e) {
             console.error('Gagal proses lokasi:', e);
@@ -697,6 +798,13 @@
     let mediaStream = null;
     let modalInstance = null;
 
+    let mapPickerInstance = null;
+    let mapPickerMarker = null;
+    let mapPickerModalInstance = null;
+    let pickedLat = '';
+    let pickedLng = '';
+    let pickedAddress = '';
+
     function isMobileDevice() {
         return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
     }
@@ -901,6 +1009,178 @@
         }, 'image/jpeg', 0.92);
     }
 
+    function updatePickedPreview() {
+        const addrEl = getEl('pickedAddressPreview');
+        const latEl = getEl('pickedLatPreview');
+        const lngEl = getEl('pickedLngPreview');
+
+        if (addrEl) addrEl.textContent = pickedAddress || 'Belum ada titik dipilih.';
+        if (latEl) latEl.textContent = pickedLat || '-';
+        if (lngEl) lngEl.textContent = pickedLng || '-';
+    }
+
+    async function setPickedPoint(lat, lng, addressText) {
+        pickedLat = String(lat || '');
+        pickedLng = String(lng || '');
+
+        if (mapPickerMarker && mapPickerInstance) {
+        mapPickerMarker.setLatLng([lat, lng]);
+        } else if (mapPickerInstance) {
+        mapPickerMarker = L.marker([lat, lng], { draggable: true }).addTo(mapPickerInstance);
+
+        mapPickerMarker.on('dragend', async function(e) {
+            const pos = e.target.getLatLng();
+            pickedLat = String(pos.lat);
+            pickedLng = String(pos.lng);
+            const addr = await reverseGeocode(pos.lat, pos.lng);
+            pickedAddress = addr || '';
+            updatePickedPreview();
+        });
+        }
+
+        if (addressText) {
+        pickedAddress = addressText;
+        } else {
+        const addr = await reverseGeocode(lat, lng);
+        pickedAddress = addr || '';
+        }
+
+        updatePickedPreview();
+    }
+
+    function initMapPicker() {
+        const mapEl = getEl('mapPicker');
+        if (!mapEl || typeof L === 'undefined') return;
+
+        if (!mapPickerInstance) {
+        mapPickerInstance = L.map(mapEl, {
+            zoomControl: true
+        }).setView([-7.150975, 110.140259], 8);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(mapPickerInstance);
+
+        mapPickerInstance.on('click', async function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            await setPickedPoint(lat, lng, '');
+        });
+        }
+
+        const currentLat = parseFloat(getEl('lokasi_lat')?.value || '');
+        const currentLng = parseFloat(getEl('lokasi_lng')?.value || '');
+
+        if (!isNaN(currentLat) && !isNaN(currentLng)) {
+        mapPickerInstance.setView([currentLat, currentLng], 16);
+        setPickedPoint(currentLat, currentLng, getEl('alamat_input')?.value || '');
+        } else {
+        mapPickerInstance.setView([-7.150975, 110.140259], 8);
+        pickedLat = '';
+        pickedLng = '';
+        pickedAddress = '';
+        if (mapPickerMarker) {
+            mapPickerInstance.removeLayer(mapPickerMarker);
+            mapPickerMarker = null;
+        }
+        updatePickedPreview();
+        }
+
+        setTimeout(function() {
+        mapPickerInstance.invalidateSize();
+        }, 250);
+    }
+
+    function openMapPicker() {
+        const modalEl = getEl('modalMapPicker');
+        if (!modalEl) return;
+
+        if (!mapPickerModalInstance) {
+        mapPickerModalInstance = new bootstrap.Modal(modalEl);
+        }
+
+        mapPickerModalInstance.show();
+
+        setTimeout(function() {
+        initMapPicker();
+        }, 250);
+    }
+
+    async function doMapSearch() {
+        const input = getEl('mapSearchInput');
+        const hint = getEl('mapSearchHint');
+
+        if (!input || !mapPickerInstance) return;
+
+        const keyword = String(input.value || '').trim();
+        if (!keyword) {
+        if (hint) hint.innerHTML = 'Masukkan kata kunci lokasi terlebih dahulu.';
+        return;
+        }
+
+        if (hint) hint.innerHTML = 'Mencari lokasi...';
+
+        const results = await searchLocation(keyword);
+
+        if (!results.length) {
+        if (hint) hint.innerHTML = 'Lokasi tidak ditemukan. Coba kata kunci lain.';
+        return;
+        }
+
+        const first = results[0];
+        const lat = parseFloat(first.lat);
+        const lng = parseFloat(first.lon);
+
+        if (isNaN(lat) || isNaN(lng)) {
+        if (hint) hint.innerHTML = 'Hasil lokasi tidak valid.';
+        return;
+        }
+
+        mapPickerInstance.setView([lat, lng], 16);
+        await setPickedPoint(lat, lng, first.display_name || '');
+
+        if (hint) hint.innerHTML = 'Lokasi ditemukan. Anda bisa klik titik lain di peta jika perlu.';
+    }
+
+    function usePickedPoint() {
+        if (!pickedLat || !pickedLng) {
+        alert('Silakan pilih titik pada peta terlebih dahulu.');
+        return;
+        }
+
+        const latInput = getEl('lokasi_lat');
+        const lngInput = getEl('lokasi_lng');
+        const alamatInput = getEl('alamat_input');
+
+        setInputValue(latInput, pickedLat);
+        setInputValue(lngInput, pickedLng);
+        setInputValue(alamatInput, pickedAddress);
+
+        if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
+        window.Livewire.dispatch('setLatLngProspek', { lat: pickedLat, lng: pickedLng });
+        window.Livewire.dispatch('setAlamatProspek', { alamat: pickedAddress || '' });
+        }
+
+        setHint('Lokasi dari titik peta berhasil dipilih ✅', false);
+
+        if (mapPickerModalInstance) {
+        mapPickerModalInstance.hide();
+        }
+    }
+
+    function resetPickedPoint() {
+        pickedLat = '';
+        pickedLng = '';
+        pickedAddress = '';
+
+        if (mapPickerInstance && mapPickerMarker) {
+        mapPickerInstance.removeLayer(mapPickerMarker);
+        mapPickerMarker = null;
+        }
+
+        updatePickedPreview();
+    }
+
     function bindLocationButton() {
         const btn = getEl('btnGetLoc');
         if (!btn) return;
@@ -908,6 +1188,56 @@
         if (btn.dataset.bound !== '1') {
         btn.dataset.bound = '1';
         btn.addEventListener('click', fillLocation);
+        }
+
+        const btnOpenMap = getEl('btnOpenMapPicker');
+        if (btnOpenMap && btnOpenMap.dataset.bound !== '1') {
+        btnOpenMap.dataset.bound = '1';
+        btnOpenMap.addEventListener('click', openMapPicker);
+        }
+
+        const btnSearch = getEl('btnMapSearch');
+        if (btnSearch && btnSearch.dataset.bound !== '1') {
+        btnSearch.dataset.bound = '1';
+        btnSearch.addEventListener('click', doMapSearch);
+        }
+
+        const searchInput = getEl('mapSearchInput');
+        if (searchInput && searchInput.dataset.bound !== '1') {
+        searchInput.dataset.bound = '1';
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+            e.preventDefault();
+            doMapSearch();
+            }
+        });
+        }
+
+        const btnUsePoint = getEl('btnUsePickedPoint');
+        if (btnUsePoint && btnUsePoint.dataset.bound !== '1') {
+        btnUsePoint.dataset.bound = '1';
+        btnUsePoint.addEventListener('click', usePickedPoint);
+        }
+
+        const btnResetPoint = getEl('btnResetPickedPoint');
+        if (btnResetPoint && btnResetPoint.dataset.bound !== '1') {
+        btnResetPoint.dataset.bound = '1';
+        btnResetPoint.addEventListener('click', resetPickedPoint);
+        }
+
+        const modalMap = getEl('modalMapPicker');
+        if (modalMap && modalMap.dataset.bound !== '1') {
+        modalMap.dataset.bound = '1';
+
+        modalMap.addEventListener('shown.bs.modal', function() {
+            setTimeout(function() {
+            if (mapPickerInstance) {
+                mapPickerInstance.invalidateSize();
+            } else {
+                initMapPicker();
+            }
+            }, 250);
+        });
         }
     }
 
@@ -993,6 +1323,7 @@
         bindLocationButton();
         initWilayahProspek();
         bindPhoto();
+        updatePickedPreview();
     }
 
     document.addEventListener('DOMContentLoaded', bootAll);
@@ -1008,5 +1339,6 @@
     });
     })();
     </script>
+
 
 </div>
