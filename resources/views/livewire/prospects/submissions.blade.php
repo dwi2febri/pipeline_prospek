@@ -6,29 +6,28 @@
     </div>
   @endif
 
-    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
-        <div>
-            <div class="fw-bold fs-3">Prospek Diajukan</div>
-            <div class="text-muted">Daftar prospek yang diajukan oleh pegawai / AO</div>
-        </div>
-
-        <div class="ms-auto">
-            <button type="button"
-                    class="btn btn-success rounded-pill px-4 py-2"
-                    wire:click="exportExcel"
-                    wire:loading.attr="disabled"
-                    wire:target="exportExcel"
-                    style="min-width:180px;">
-            <span wire:loading.remove wire:target="exportExcel">
-                <i class="bi bi-file-earmark-excel me-2"></i> Cetak Excel
-            </span>
-            <span wire:loading wire:target="exportExcel">
-                Menyiapkan...
-            </span>
-            </button>
-        </div>
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+    <div>
+      <div class="fw-bold fs-3">Prospek Diajukan</div>
+      <div class="text-muted">Daftar prospek yang diajukan oleh pegawai / AO</div>
     </div>
 
+    <div class="ms-auto">
+      <button type="button"
+              class="btn btn-success rounded-pill px-4 py-2"
+              wire:click="exportExcel"
+              wire:loading.attr="disabled"
+              wire:target="exportExcel"
+              style="min-width:180px;">
+        <span wire:loading.remove wire:target="exportExcel">
+          <i class="bi bi-file-earmark-excel me-2"></i> Cetak Excel
+        </span>
+        <span wire:loading wire:target="exportExcel">
+          Menyiapkan...
+        </span>
+      </button>
+    </div>
+  </div>
 
   <div class="card-soft p-3 mb-3">
     <div class="row g-2 align-items-end">
@@ -116,6 +115,7 @@
             <th style="min-width:240px;">Prospek</th>
             <th style="min-width:180px;">Pengaju</th>
             <th style="min-width:220px;">Cabang</th>
+            <th style="min-width:170px;">Rekomendasi Produk</th>
             <th style="min-width:140px;">Status</th>
             <th style="min-width:140px;">Pengambilan</th>
             <th style="width:120px;" class="text-end">Aksi</th>
@@ -128,6 +128,12 @@
               if($p->status === 'FOLLOW UP') $badgeClass = 'bg-warning text-dark';
               elseif($p->status === 'CLOSING') $badgeClass = 'bg-success';
               elseif($p->status === 'REJECTED') $badgeClass = 'bg-danger';
+
+              $produkClass = 'bg-secondary';
+              if($p->jenis_produk === 'KREDIT') $produkClass = 'bg-primary';
+              elseif($p->jenis_produk === 'TABUNGAN') $produkClass = 'bg-success';
+              elseif($p->jenis_produk === 'DEPOSITO') $produkClass = 'bg-warning text-dark';
+              elseif($p->jenis_produk === 'ASET') $produkClass = 'bg-dark';
             @endphp
             <tr>
               <td class="small">
@@ -145,6 +151,11 @@
               </td>
               <td class="small">
                 {{ $p->cabang ? ($p->cabang->kode_cabang.' - '.$p->cabang->nama_cabang) : '-' }}
+              </td>
+              <td>
+                <span class="badge {{ $produkClass }} rounded-pill px-3 py-2">
+                  {{ $p->jenis_produk ?: '-' }}
+                </span>
               </td>
               <td>
                 <span class="badge {{ $badgeClass }} rounded-pill px-3 py-2">
@@ -169,7 +180,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="7" class="text-center text-muted p-5">
+              <td colspan="8" class="text-center text-muted p-5">
                 Belum ada pengajuan prospek dari pegawai / AO.
               </td>
             </tr>
@@ -186,6 +197,12 @@
         if($p->status === 'FOLLOW UP') $badgeClass = 'bg-warning text-dark';
         elseif($p->status === 'CLOSING') $badgeClass = 'bg-success';
         elseif($p->status === 'REJECTED') $badgeClass = 'bg-danger';
+
+        $produkClass = 'bg-secondary';
+        if($p->jenis_produk === 'KREDIT') $produkClass = 'bg-primary';
+        elseif($p->jenis_produk === 'TABUNGAN') $produkClass = 'bg-success';
+        elseif($p->jenis_produk === 'DEPOSITO') $produkClass = 'bg-warning text-dark';
+        elseif($p->jenis_produk === 'ASET') $produkClass = 'bg-dark';
       @endphp
 
       <div class="card-soft p-3 mb-2">
@@ -214,6 +231,10 @@
         </div>
 
         <div class="mt-2 d-flex flex-wrap gap-2">
+          <span class="badge {{ $produkClass }} rounded-pill px-3 py-2 fw-bold">
+            {{ $p->jenis_produk ?: '-' }}
+          </span>
+
           <span class="badge {{ $badgeClass }} rounded-pill px-3 py-2 fw-bold">
             {{ $p->status ?: '-' }}
           </span>
@@ -288,15 +309,15 @@
                   <div class="small text-muted">No HP</div>
 
                   @php
-                      $waNumber = preg_replace('/[^0-9]/', '', (string) ($detail->no_hp ?? ''));
+                    $waNumber = preg_replace('/[^0-9]/', '', (string) ($detail->no_hp ?? ''));
 
-                      if ($waNumber !== '') {
-                          if (substr($waNumber, 0, 1) === '0') {
-                              $waNumber = '62' . substr($waNumber, 1);
-                          } elseif (substr($waNumber, 0, 2) !== '62') {
-                              $waNumber = '62' . $waNumber;
-                          }
+                    if ($waNumber !== '') {
+                      if (substr($waNumber, 0, 1) === '0') {
+                        $waNumber = '62' . substr($waNumber, 1);
+                      } elseif (substr($waNumber, 0, 2) !== '62') {
+                        $waNumber = '62' . $waNumber;
                       }
+                    }
                   @endphp
 
                   <div class="d-flex flex-wrap align-items-center gap-2">
@@ -333,6 +354,13 @@
                 <div class="col-12 col-md-6">
                   <div class="small text-muted">Jenis Produk</div>
                   <div class="fw-semibold">{{ $detail->jenis_produk ?: '-' }}</div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="small text-muted">Jenis Usaha</div>
+                  <div class="fw-semibold">
+                    {{ $detail->jenis_usaha ?: '-' }}
+                  </div>
                 </div>
 
                 <div class="col-12 col-md-6">
