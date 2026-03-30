@@ -407,7 +407,7 @@
 
           @if($canProspects)
             <a href="/prospects" class="navlink {{ request()->is('prospects') || request()->is('prospects/create') || request()->is('prospects/*/edit') ? 'active' : '' }}">
-              <i class="bi bi-grid"></i><span>Prospek</span>
+              <i class="bi bi-grid"></i><span>Prospek Saya</span>
             </a>
           @endif
 
