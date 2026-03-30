@@ -48,14 +48,28 @@
           <label class="form-label fw-semibold">No HP</label>
           <div class="input-group">
             <span class="input-group-text bg-white"><i class="bi bi-telephone"></i></span>
-            <input class="form-control"
+
+            <input id="no_hp_input"
+                   class="form-control"
                    type="text"
                    inputmode="numeric"
                    pattern="[0-9]*"
                    wire:model.live="no_hp"
                    oninput="this.value=this.value.replace(/[^0-9]/g,'')"
                    placeholder="08xxxx">
+
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    id="btnPickContact"
+                    title="Ambil dari kontak HP">
+              <i class="bi bi-person-lines-fill"></i>
+            </button>
           </div>
+
+          <div class="text-muted small mt-1" id="contactHint">
+            Klik kolom No HP atau ikon kontak untuk ambil nomor dari kontak HP.
+          </div>
+
           @error('no_hp')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
@@ -75,34 +89,34 @@
         </div>
 
         <div class="col-12">
-        <label class="form-label fw-semibold">Cabang</label>
-        <select class="form-select" wire:model="cabang_id">
+          <label class="form-label fw-semibold">Cabang</label>
+          <select class="form-select" wire:model="cabang_id">
             <option value="">-- Pilih Cabang --</option>
             @if(!empty($cabangOptions))
-            @foreach($cabangOptions as $c)
+              @foreach($cabangOptions as $c)
                 @php
-                $kodeCabang = trim((string)($c['kode_cabang'] ?? ''));
+                  $kodeCabang = trim((string)($c['kode_cabang'] ?? ''));
                 @endphp
 
                 @if($kodeCabang >= '001' && $kodeCabang <= '028')
-                <option value="{{ $c['id'] }}">{{ $c['text'] }}</option>
+                  <option value="{{ $c['id'] }}">{{ $c['text'] }}</option>
                 @endif
-            @endforeach
+              @endforeach
             @endif
-        </select>
-        @error('cabang_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        <div class="text-muted small mt-1">Pegawai bebas memilih cabang.</div>
+          </select>
+          @error('cabang_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+          <div class="text-muted small mt-1">Pegawai bebas memilih cabang.</div>
         </div>
 
         <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold">Jenis Usaha</label>
-            <select class="form-select" wire:model="jenis_usaha">
-                <option value="">-- Pilih Jenis Usaha --</option>
-                @foreach($jenisUsahaOptions as $opt)
-                <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
-                @endforeach
-            </select>
-            @error('jenis_usaha')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+          <label class="form-label fw-semibold">Jenis Usaha</label>
+          <select class="form-select" wire:model="jenis_usaha">
+            <option value="">-- Pilih Jenis Usaha --</option>
+            @foreach($jenisUsahaOptions as $opt)
+              <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
+            @endforeach
+          </select>
+          @error('jenis_usaha')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
         <div class="col-12">
@@ -113,57 +127,57 @@
         </div>
 
         <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold">Rekomendasi Produk</label>
-            <select class="form-select" wire:model="jenis_produk">
-                @foreach($produkOptions as $opt)
-                <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
-                @endforeach
-            </select>
-            @error('jenis_produk')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+          <label class="form-label fw-semibold">Rekomendasi Produk</label>
+          <select class="form-select" wire:model="jenis_produk">
+            @foreach($produkOptions as $opt)
+              <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
+            @endforeach
+          </select>
+          @error('jenis_produk')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
         <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold">Lokasi</label>
+          <label class="form-label fw-semibold">Lokasi</label>
 
-            <div class="row g-2">
-                <div class="col-12">
-                <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="bi bi-geo-alt"></i></span>
-                    <input id="alamat_input"
-                        class="form-control"
-                        wire:model="alamat"
-                        placeholder="Alamat akan terisi dari lokasi saat ini atau titik peta..."
-                        readonly>
-                </div>
-                </div>
-
-                <div class="col-6 col-md-4">
-                <input id="lokasi_lat" class="form-control" wire:model="lokasi_lat" placeholder="Lat" readonly>
-                </div>
-
-                <div class="col-6 col-md-4">
-                <input id="lokasi_lng" class="form-control" wire:model="lokasi_lng" placeholder="Lng" readonly>
-                </div>
-
-                <div class="col-12 col-md-4 d-grid">
-                <button type="button" class="btn btn-primary" id="btnGetLoc">
-                    <i class="bi bi-crosshair2 me-1"></i> Lokasi Saat Ini
-                </button>
-                </div>
-
-                <div class="col-12 d-grid">
-                <button type="button" class="btn btn-outline-primary" id="btnOpenMapPicker">
-                    <i class="bi bi-map me-1"></i> Pilih Titik di Peta
-                </button>
-                </div>
+          <div class="row g-2">
+            <div class="col-12">
+              <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-geo-alt"></i></span>
+                <input id="alamat_input"
+                       class="form-control"
+                       wire:model="alamat"
+                       placeholder="Alamat akan terisi dari lokasi saat ini atau titik peta..."
+                       readonly>
+              </div>
             </div>
 
-            <div class="text-muted small mt-2" id="locHint">
-                Pilih <b>Lokasi Saat Ini</b> atau gunakan <b>Pilih Titik di Peta</b>.
+            <div class="col-6 col-md-4">
+              <input id="lokasi_lat" class="form-control" wire:model="lokasi_lat" placeholder="Lat" readonly>
             </div>
 
-            @error('lokasi_lat')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-            @error('lokasi_lng')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+            <div class="col-6 col-md-4">
+              <input id="lokasi_lng" class="form-control" wire:model="lokasi_lng" placeholder="Lng" readonly>
+            </div>
+
+            <div class="col-12 col-md-4 d-grid">
+              <button type="button" class="btn btn-primary" id="btnGetLoc">
+                <i class="bi bi-crosshair2 me-1"></i> Lokasi Saat Ini
+              </button>
+            </div>
+
+            <div class="col-12 d-grid">
+              <button type="button" class="btn btn-outline-primary" id="btnOpenMapPicker">
+                <i class="bi bi-map me-1"></i> Pilih Titik di Peta
+              </button>
+            </div>
+          </div>
+
+          <div class="text-muted small mt-2" id="locHint">
+            Pilih <b>Lokasi Saat Ini</b> atau gunakan <b>Pilih Titik di Peta</b>.
+          </div>
+
+          @error('lokasi_lat')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+          @error('lokasi_lng')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
         <div class="col-12 col-md-4">
@@ -203,59 +217,59 @@
           @error('desa')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
-<div class="col-12">
-  <label class="form-label fw-semibold">Dokumentasi (Foto)</label>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Dokumentasi (Foto)</label>
 
-  <input id="lwPhotos" type="file" class="d-none" accept="image/*" multiple wire:model="photos">
-  <input id="cameraCaptureInput" type="file" class="d-none" accept="image/*" capture="environment">
-  <input id="galleryInput" type="file" class="d-none" accept="image/*" multiple>
+          <input id="lwPhotos" type="file" class="d-none" accept="image/*" multiple wire:model="photos">
+          <input id="cameraCaptureInput" type="file" class="d-none" accept="image/*" capture="environment">
+          <input id="galleryInput" type="file" class="d-none" accept="image/*" multiple>
 
-  <div class="d-flex flex-wrap gap-2 align-items-center">
-    <button type="button" class="btn btn-primary rounded-pill px-4" id="btnOpenCamera">
-      <i class="bi bi-camera me-1"></i> Ambil Foto
-    </button>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button type="button" class="btn btn-primary rounded-pill px-4" id="btnOpenCamera">
+              <i class="bi bi-camera me-1"></i> Ambil Foto
+            </button>
 
-    <button type="button" class="btn btn-outline-primary rounded-pill px-4" id="btnOpenGallery">
-      <i class="bi bi-images me-1"></i> Pilih dari Galeri
-    </button>
+            <button type="button" class="btn btn-outline-primary rounded-pill px-4" id="btnOpenGallery">
+              <i class="bi bi-images me-1"></i> Pilih dari Galeri
+            </button>
 
-    <div class="text-muted small">
-      Maksimal 5MB per foto.
-    </div>
-  </div>
-
-  <div class="small text-muted mt-2" wire:loading wire:target="photos">Mengunggah foto...</div>
-  @error('photos') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-  @error('photos.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-
-  <div class="mt-3">
-    <div class="fw-semibold mb-2">Preview foto dipilih</div>
-    <div id="photoPreviewWrap" class="row g-2" wire:ignore></div>
-  </div>
-
-  @if($id && isset($docs) && $docs->count())
-    <div class="mt-3">
-      <div class="fw-semibold mb-2">Foto tersimpan</div>
-      <div class="row g-2">
-        @foreach($docs as $doc)
-          <div class="col-6 col-md-3">
-            <div class="card-soft p-2 position-relative">
-              <img src="{{ $doc->url }}" class="w-100"
-                   style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;"
-                   loading="lazy">
-              <button type="button"
-                      class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2"
-                      wire:click="deleteDoc({{ $doc->id }})"
-                      onclick="return confirm('Hapus foto ini?')">
-                <i class="bi bi-trash"></i>
-              </button>
+            <div class="text-muted small">
+              Maksimal 5MB per foto.
             </div>
           </div>
-        @endforeach
-      </div>
-    </div>
-  @endif
-</div>
+
+          <div class="small text-muted mt-2" wire:loading wire:target="photos">Mengunggah foto...</div>
+          @error('photos') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+          @error('photos.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+
+          <div class="mt-3">
+            <div class="fw-semibold mb-2">Preview foto dipilih</div>
+            <div id="photoPreviewWrap" class="row g-2" wire:ignore></div>
+          </div>
+
+          @if($id && isset($docs) && $docs->count())
+            <div class="mt-3">
+              <div class="fw-semibold mb-2">Foto tersimpan</div>
+              <div class="row g-2">
+                @foreach($docs as $doc)
+                  <div class="col-6 col-md-3">
+                    <div class="card-soft p-2 position-relative">
+                      <img src="{{ $doc->url }}" class="w-100"
+                           style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;"
+                           loading="lazy">
+                      <button type="button"
+                              class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2"
+                              wire:click="deleteDoc({{ $doc->id }})"
+                              onclick="return confirm('Hapus foto ini?')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+            </div>
+          @endif
+        </div>
 
         <div class="col-12">
           <label class="form-label fw-semibold">Catatan</label>
@@ -307,70 +321,71 @@
       </div>
     </div>
   </div>
-<div class="modal fade" id="modalMapPicker" tabindex="-1" aria-hidden="true" wire:ignore.self>
-  <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
-    <div class="modal-content border-0" style="border-radius:18px;overflow:hidden;">
-      <div class="modal-header">
-        <div>
-          <div class="fw-bold">Pilih Titik Lokasi</div>
-          <div class="text-muted small">Cari lokasi, lalu klik titik pada peta untuk memilih.</div>
+
+  <div class="modal fade" id="modalMapPicker" tabindex="-1" aria-hidden="true" wire:ignore.self>
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
+      <div class="modal-content border-0" style="border-radius:18px;overflow:hidden;">
+        <div class="modal-header">
+          <div>
+            <div class="fw-bold">Pilih Titik Lokasi</div>
+            <div class="text-muted small">Cari lokasi, lalu klik titik pada peta untuk memilih.</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
 
-      <div class="modal-body">
-        <div class="row g-3">
-          <div class="col-12">
-            <div class="input-group">
-              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-              <input type="text" id="mapSearchInput" class="form-control" placeholder="Cari lokasi / alamat / desa / kecamatan...">
-              <button type="button" class="btn btn-primary" id="btnMapSearch">
-                Cari
-              </button>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" id="mapSearchInput" class="form-control" placeholder="Cari lokasi / alamat / desa / kecamatan...">
+                <button type="button" class="btn btn-primary" id="btnMapSearch">
+                  Cari
+                </button>
+              </div>
+              <div class="small text-muted mt-1" id="mapSearchHint">
+                Ketik lokasi lalu klik <b>Cari</b>, atau langsung klik titik di peta.
+              </div>
             </div>
-            <div class="small text-muted mt-1" id="mapSearchHint">
-              Ketik lokasi lalu klik <b>Cari</b>, atau langsung klik titik di peta.
-            </div>
-          </div>
 
-          <div class="col-12" wire:ignore>
-            <div id="mapPickerWrap" style="border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;background:#f8fafc;">
-              <div id="mapPicker" style="height:420px;width:100%;display:block;"></div>
+            <div class="col-12" wire:ignore>
+              <div id="mapPickerWrap" style="border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;background:#f8fafc;">
+                <div id="mapPicker" style="height:420px;width:100%;display:block;"></div>
+              </div>
             </div>
-          </div>
 
-          <div class="col-12">
-            <div class="card-soft p-3">
-              <div class="row g-2">
-                <div class="col-12">
-                  <div class="small text-muted">Alamat Dipilih</div>
-                  <div class="fw-semibold" id="pickedAddressPreview">Belum ada titik dipilih.</div>
-                </div>
-                <div class="col-6">
-                  <div class="small text-muted">Latitude</div>
-                  <div class="fw-semibold" id="pickedLatPreview">-</div>
-                </div>
-                <div class="col-6">
-                  <div class="small text-muted">Longitude</div>
-                  <div class="fw-semibold" id="pickedLngPreview">-</div>
+            <div class="col-12">
+              <div class="card-soft p-3">
+                <div class="row g-2">
+                  <div class="col-12">
+                    <div class="small text-muted">Alamat Dipilih</div>
+                    <div class="fw-semibold" id="pickedAddressPreview">Belum ada titik dipilih.</div>
+                  </div>
+                  <div class="col-6">
+                    <div class="small text-muted">Latitude</div>
+                    <div class="fw-semibold" id="pickedLatPreview">-</div>
+                  </div>
+                  <div class="col-6">
+                    <div class="small text-muted">Longitude</div>
+                    <div class="fw-semibold" id="pickedLngPreview">-</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-light rounded-pill px-4" id="btnResetPickedPoint">
-          Reset Titik
-        </button>
-        <button type="button" class="btn btn-primary rounded-pill px-4" id="btnUsePickedPoint">
-          Gunakan Titik Ini
-        </button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light rounded-pill px-4" id="btnResetPickedPoint">
+            Reset Titik
+          </button>
+          <button type="button" class="btn btn-primary rounded-pill px-4" id="btnUsePickedPoint">
+            Gunakan Titik Ini
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
   @if($showDuplicateHpModal)
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(15,23,42,.55);">
@@ -400,61 +415,68 @@
     </div>
   @endif
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <style>
+  <style>
     #mapPicker .leaflet-container,
     #mapPicker {
-        background: #f8fafc !important;
+      background: #f8fafc !important;
     }
-    </style>
+  </style>
 
-    <script>
-    (function () {
+  <script>
+  (function () {
     if (window.__prospectFormLocationBound) return;
     window.__prospectFormLocationBound = true;
 
     function getEl(id) {
-        return document.getElementById(id);
+      return document.getElementById(id);
     }
 
     function setInputValue(el, value) {
-        if (!el) return;
-        el.value = value || '';
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
+      if (!el) return;
+      el.value = value || '';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function setHint(msg, isError) {
-        var hint = getEl('locHint');
-        if (!hint) return;
-        hint.innerHTML = msg;
-        hint.className = 'small mt-2 ' + (isError ? 'text-danger' : 'text-muted');
+      var hint = getEl('locHint');
+      if (!hint) return;
+      hint.innerHTML = msg;
+      hint.className = 'small mt-2 ' + (isError ? 'text-danger' : 'text-muted');
+    }
+
+    function setContactHint(msg, isError) {
+      var hint = getEl('contactHint');
+      if (!hint) return;
+      hint.innerHTML = msg;
+      hint.className = 'small mt-1 ' + (isError ? 'text-danger' : 'text-muted');
     }
 
     function isSecurePage() {
-        return window.isSecureContext === true
+      return window.isSecureContext === true
         || location.protocol === 'https:'
         || location.hostname === 'localhost'
         || location.hostname === '127.0.0.1';
     }
 
     async function fetchJson(url) {
-        const res = await fetch(url, {
+      const res = await fetch(url, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
-        });
+      });
 
-        if (!res.ok) {
+      if (!res.ok) {
         throw new Error('HTTP ' + res.status + ' - ' + url);
-        }
+      }
 
-        return await res.json();
+      return await res.json();
     }
 
     function normalizeText(str) {
-        return String(str || '')
+      return String(str || '')
         .toUpperCase()
         .replace(/\./g, '')
         .replace(/KABUPATEN/g, '')
@@ -467,95 +489,175 @@
     }
 
     function findByNameLoose(list, text) {
-        if (!text) return null;
-        const target = normalizeText(text);
+      if (!text) return null;
+      const target = normalizeText(text);
 
-        let found = list.find(function(item) {
+      let found = list.find(function(item) {
         return normalizeText(item.name) === target;
-        });
-        if (found) return found;
+      });
+      if (found) return found;
 
-        found = list.find(function(item) {
+      found = list.find(function(item) {
         const n = normalizeText(item.name);
         return n.includes(target) || target.includes(n);
-        });
+      });
 
-        return found || null;
+      return found || null;
+    }
+
+    function normalizePhoneNumber(phone) {
+      return String(phone || '').replace(/[^0-9]/g, '');
     }
 
     async function reverseGeocode(lat, lng) {
-        const url1 = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
-        const url2 = 'https://geocode.maps.co/reverse?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
+      const url1 = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
+      const url2 = 'https://geocode.maps.co/reverse?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
 
-        async function tryFetch(url) {
+      async function tryFetch(url) {
         try {
-            const res = await fetch(url, {
+          const res = await fetch(url, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
-            });
-            if (!res.ok) return null;
-            const data = await res.json();
-            if (data && data.display_name) return data.display_name;
-            if (data && data.address) return Object.values(data.address).filter(Boolean).join(', ');
-            return null;
+          });
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (data && data.display_name) return data.display_name;
+          if (data && data.address) return Object.values(data.address).filter(Boolean).join(', ');
+          return null;
         } catch (e) {
-            return null;
+          return null;
         }
-        }
+      }
 
-        return (await tryFetch(url1)) || (await tryFetch(url2)) || null;
+      return (await tryFetch(url1)) || (await tryFetch(url2)) || null;
     }
 
     async function searchLocation(keyword) {
-        const q = String(keyword || '').trim();
-        if (!q) return [];
+      const q = String(keyword || '').trim();
+      if (!q) return [];
 
-        const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=' + encodeURIComponent(q);
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=' + encodeURIComponent(q);
 
-        try {
+      try {
         const res = await fetch(url, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
         });
 
         if (!res.ok) return [];
         const data = await res.json();
         return Array.isArray(data) ? data : [];
-        } catch (e) {
+      } catch (e) {
         return [];
+      }
+    }
+
+    async function pickPhoneFromContacts() {
+      const input = getEl('no_hp_input');
+
+      if (!input) return;
+
+      if (!isSecurePage()) {
+        setContactHint('Fitur kontak hanya bisa dipakai di HTTPS / localhost.', true);
+        return;
+      }
+
+      if (!('contacts' in navigator) || !navigator.contacts || typeof navigator.contacts.select !== 'function') {
+        setContactHint('Browser ini belum mendukung akses kontak. Gunakan Chrome Android.', true);
+        return;
+      }
+
+      try {
+        setContactHint('Membuka daftar kontak...', false);
+
+        let props = ['tel', 'name'];
+
+        if (typeof navigator.contacts.getProperties === 'function') {
+          try {
+            const supported = await navigator.contacts.getProperties();
+            props = props.filter(function(p) {
+              return Array.isArray(supported) ? supported.includes(p) : true;
+            });
+          } catch (e) {}
         }
+
+        if (!props.includes('tel')) {
+          setContactHint('Browser mendukung kontak, tapi field nomor telepon tidak tersedia.', true);
+          return;
+        }
+
+        const contacts = await navigator.contacts.select(props, { multiple: false });
+
+        if (!contacts || !contacts.length) {
+          setContactHint('Tidak ada kontak yang dipilih.', true);
+          return;
+        }
+
+        const picked = contacts[0];
+        const telList = Array.isArray(picked.tel) ? picked.tel : [];
+        const firstPhone = telList.length ? normalizePhoneNumber(telList[0]) : '';
+
+        if (!firstPhone) {
+          setContactHint('Kontak terpilih tidak memiliki nomor telepon.', true);
+          return;
+        }
+
+        setInputValue(input, firstPhone);
+
+        const pickedName = Array.isArray(picked.name) && picked.name.length ? picked.name[0] : 'Kontak';
+        setContactHint('Nomor dari kontak "' + pickedName + '" berhasil diisi ✅', false);
+      } catch (err) {
+        console.error('Contact picker error:', err);
+
+        if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
+          setContactHint('Akses kontak ditolak atau butuh klik manual dari user.', true);
+          return;
+        }
+
+        if (err && err.name === 'InvalidStateError') {
+          setContactHint('Pemilih kontak sudah terbuka atau halaman bukan top-level.', true);
+          return;
+        }
+
+        if (err && err.name === 'TypeError') {
+          setContactHint('Fitur kontak tidak didukung browser ini.', true);
+          return;
+        }
+
+        setContactHint('Gagal mengambil nomor dari kontak.', true);
+      }
     }
 
     function resetSelect(el, placeholder, disabled) {
-        if (!el) return;
-        el.innerHTML = '<option value="">' + placeholder + '</option>';
-        el.disabled = typeof disabled === 'boolean' ? disabled : true;
+      if (!el) return;
+      el.innerHTML = '<option value="">' + placeholder + '</option>';
+      el.disabled = typeof disabled === 'boolean' ? disabled : true;
     }
 
     async function fillLocation() {
-        const btn = getEl('btnGetLoc');
-        const latInput = getEl('lokasi_lat');
-        const lngInput = getEl('lokasi_lng');
-        const alamatInput = getEl('alamat_input');
+      const btn = getEl('btnGetLoc');
+      const latInput = getEl('lokasi_lat');
+      const lngInput = getEl('lokasi_lng');
+      const alamatInput = getEl('alamat_input');
 
-        if (!btn) return;
+      if (!btn) return;
 
-        if (!navigator.geolocation) {
+      if (!navigator.geolocation) {
         setHint('Browser tidak mendukung GPS.', true);
         return;
-        }
+      }
 
-        if (!isSecurePage()) {
+      if (!isSecurePage()) {
         setHint('Lokasi hanya bisa dipakai di HTTPS / localhost.', true);
         return;
-        }
+      }
 
-        btn.disabled = true;
-        setHint('Mengambil lokasi saat ini dari device...', false);
+      btn.disabled = true;
+      setHint('Mengambil lokasi saat ini dari device...', false);
 
-        navigator.geolocation.getCurrentPosition(
+      navigator.geolocation.getCurrentPosition(
         async function (pos) {
-            try {
+          try {
             const lat = String(pos.coords.latitude || '');
             const lng = String(pos.coords.longitude || '');
 
@@ -563,73 +665,73 @@
             setInputValue(lngInput, lng);
 
             if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
-                window.Livewire.dispatch('setLatLngProspek', { lat: lat, lng: lng });
+              window.Livewire.dispatch('setLatLngProspek', { lat: lat, lng: lng });
             }
 
             const addr = await reverseGeocode(lat, lng);
 
             if (addr) {
-                setInputValue(alamatInput, addr);
+              setInputValue(alamatInput, addr);
 
-                if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
+              if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
                 window.Livewire.dispatch('setAlamatProspek', { alamat: addr });
-                }
+              }
 
-                setHint('Lokasi saat ini berhasil diambil ✅', false);
+              setHint('Lokasi saat ini berhasil diambil ✅', false);
             } else {
-                setHint('Lat/Lng berhasil diambil, tapi alamat belum didapat.', true);
+              setHint('Lat/Lng berhasil diambil, tapi alamat belum didapat.', true);
             }
-            } catch (e) {
+          } catch (e) {
             console.error('Gagal proses lokasi:', e);
             setHint('Gagal memproses lokasi.', true);
-            } finally {
+          } finally {
             btn.disabled = false;
-            }
+          }
         },
         function (err) {
-            btn.disabled = false;
+          btn.disabled = false;
 
-            if (err && err.code === 1) {
+          if (err && err.code === 1) {
             setHint('Izin lokasi ditolak. Aktifkan permission lokasi di browser.', true);
-            } else if (err && err.code === 2) {
+          } else if (err && err.code === 2) {
             setHint('Lokasi tidak tersedia. Nyalakan GPS dan coba lagi.', true);
-            } else if (err && err.code === 3) {
+          } else if (err && err.code === 3) {
             setHint('Request lokasi timeout. Coba lagi.', true);
-            } else {
+          } else {
             setHint('Gagal mengambil lokasi.', true);
-            }
+          }
         },
         {
-            enableHighAccuracy: true,
-            timeout: 20000,
-            maximumAge: 0
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0
         }
-        );
+      );
     }
 
     async function initWilayahProspek() {
-        const PROV_ID = '33';
+      const PROV_ID = '33';
 
-        const kabSelect = getEl('kabKotaSelect');
-        const kecSelect = getEl('kecamatanSelect');
-        const desaSelect = getEl('desaSelect');
+      const kabSelect = getEl('kabKotaSelect');
+      const kecSelect = getEl('kecamatanSelect');
+      const desaSelect = getEl('desaSelect');
 
-        const kabHidden = getEl('kab_kota_hidden');
-        const kecHidden = getEl('kecamatan_hidden');
-        const desaHidden = getEl('desa_hidden');
+      const kabHidden = getEl('kab_kota_hidden');
+      const kecHidden = getEl('kecamatan_hidden');
+      const desaHidden = getEl('desa_hidden');
 
-        const kodeProvHidden = getEl('kode_provinsi_hidden');
-        const kodeKabHidden = getEl('kode_kab_kota_hidden');
-        const kodeKecHidden = getEl('kode_kecamatan_hidden');
-        const kodeDesaHidden = getEl('kode_desa_hidden');
+      const kodeProvHidden = getEl('kode_provinsi_hidden');
+      const kodeKabHidden = getEl('kode_kab_kota_hidden');
+      const kodeKecHidden = getEl('kode_kecamatan_hidden');
+      const kodeDesaHidden = getEl('kode_desa_hidden');
 
-        if (!kabSelect || !kecSelect || !desaSelect || !kabHidden || !kecHidden || !desaHidden) {
+      if (!kabSelect || !kecSelect || !desaSelect || !kabHidden || !kecHidden || !desaHidden) {
         return;
-        }
+      }
 
-        setInputValue(kodeProvHidden, PROV_ID);
+      setInputValue(kodeProvHidden, PROV_ID);
 
-        async function loadKabupaten(initialName) {
+      async function loadKabupaten(initialName) {
         resetSelect(kabSelect, '-- Loading Kab/Kota --', true);
 
         const json = await fetchJson('/api-wilayah/regencies/' + PROV_ID);
@@ -638,31 +740,31 @@
         kabSelect.innerHTML = '<option value="">-- Pilih Kab/Kota --</option>';
 
         list.forEach(function(item) {
-            const opt = document.createElement('option');
-            opt.value = item.code;
-            opt.textContent = item.name;
-            kabSelect.appendChild(opt);
+          const opt = document.createElement('option');
+          opt.value = item.code;
+          opt.textContent = item.name;
+          kabSelect.appendChild(opt);
         });
 
         kabSelect.disabled = false;
 
         if (initialName) {
-            const found = findByNameLoose(list, initialName);
-            if (found) {
+          const found = findByNameLoose(list, initialName);
+          if (found) {
             kabSelect.value = found.code;
             setInputValue(kabHidden, found.name);
             setInputValue(kodeKabHidden, found.code);
-            }
+          }
         }
 
         return list;
-        }
+      }
 
-        async function loadKecamatan(regencyCode, initialName) {
+      async function loadKecamatan(regencyCode, initialName) {
         if (!regencyCode) {
-            resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
-            resetSelect(desaSelect, '-- Pilih Desa --', true);
-            return [];
+          resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
+          resetSelect(desaSelect, '-- Pilih Desa --', true);
+          return [];
         }
 
         resetSelect(kecSelect, '-- Loading Kecamatan --', true);
@@ -673,30 +775,30 @@
         kecSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
 
         list.forEach(function(item) {
-            const opt = document.createElement('option');
-            opt.value = item.code;
-            opt.textContent = item.name;
-            kecSelect.appendChild(opt);
+          const opt = document.createElement('option');
+          opt.value = item.code;
+          opt.textContent = item.name;
+          kecSelect.appendChild(opt);
         });
 
         kecSelect.disabled = false;
 
         if (initialName) {
-            const found = findByNameLoose(list, initialName);
-            if (found) {
+          const found = findByNameLoose(list, initialName);
+          if (found) {
             kecSelect.value = found.code;
             setInputValue(kecHidden, found.name);
             setInputValue(kodeKecHidden, found.code);
-            }
+          }
         }
 
         return list;
-        }
+      }
 
-        async function loadDesa(districtCode, initialName) {
+      async function loadDesa(districtCode, initialName) {
         if (!districtCode) {
-            resetSelect(desaSelect, '-- Pilih Desa --', true);
-            return [];
+          resetSelect(desaSelect, '-- Pilih Desa --', true);
+          return [];
         }
 
         resetSelect(desaSelect, '-- Loading Desa --', true);
@@ -707,67 +809,67 @@
         desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
 
         list.forEach(function(item) {
-            const opt = document.createElement('option');
-            opt.value = item.code;
-            opt.textContent = item.name;
-            desaSelect.appendChild(opt);
+          const opt = document.createElement('option');
+          opt.value = item.code;
+          opt.textContent = item.name;
+          desaSelect.appendChild(opt);
         });
 
         desaSelect.disabled = false;
 
         if (initialName) {
-            const found = findByNameLoose(list, initialName);
-            if (found) {
+          const found = findByNameLoose(list, initialName);
+          if (found) {
             desaSelect.value = found.code;
             setInputValue(desaHidden, found.name);
             setInputValue(kodeDesaHidden, found.code);
-            }
+          }
         }
 
         return list;
-        }
+      }
 
-        if (kabSelect.dataset.bound !== '1') {
+      if (kabSelect.dataset.bound !== '1') {
         kabSelect.dataset.bound = '1';
         kabSelect.addEventListener('change', async function () {
-            const selectedText = this.value ? this.options[this.selectedIndex].text : '';
+          const selectedText = this.value ? this.options[this.selectedIndex].text : '';
 
-            setInputValue(kabHidden, selectedText);
-            setInputValue(kodeKabHidden, this.value || '');
-            setInputValue(kecHidden, '');
-            setInputValue(desaHidden, '');
-            setInputValue(kodeKecHidden, '');
-            setInputValue(kodeDesaHidden, '');
+          setInputValue(kabHidden, selectedText);
+          setInputValue(kodeKabHidden, this.value || '');
+          setInputValue(kecHidden, '');
+          setInputValue(desaHidden, '');
+          setInputValue(kodeKecHidden, '');
+          setInputValue(kodeDesaHidden, '');
 
-            resetSelect(desaSelect, '-- Pilih Desa --', true);
-            await loadKecamatan(this.value || '', '');
+          resetSelect(desaSelect, '-- Pilih Desa --', true);
+          await loadKecamatan(this.value || '', '');
         });
-        }
+      }
 
-        if (kecSelect.dataset.bound !== '1') {
+      if (kecSelect.dataset.bound !== '1') {
         kecSelect.dataset.bound = '1';
         kecSelect.addEventListener('change', async function () {
-            const selectedText = this.value ? this.options[this.selectedIndex].text : '';
+          const selectedText = this.value ? this.options[this.selectedIndex].text : '';
 
-            setInputValue(kecHidden, selectedText);
-            setInputValue(kodeKecHidden, this.value || '');
-            setInputValue(desaHidden, '');
-            setInputValue(kodeDesaHidden, '');
+          setInputValue(kecHidden, selectedText);
+          setInputValue(kodeKecHidden, this.value || '');
+          setInputValue(desaHidden, '');
+          setInputValue(kodeDesaHidden, '');
 
-            await loadDesa(this.value || '', '');
+          await loadDesa(this.value || '', '');
         });
-        }
+      }
 
-        if (desaSelect.dataset.bound !== '1') {
+      if (desaSelect.dataset.bound !== '1') {
         desaSelect.dataset.bound = '1';
         desaSelect.addEventListener('change', function () {
-            const selectedText = this.value ? this.options[this.selectedIndex].text : '';
-            setInputValue(desaHidden, selectedText);
-            setInputValue(kodeDesaHidden, this.value || '');
+          const selectedText = this.value ? this.options[this.selectedIndex].text : '';
+          setInputValue(desaHidden, selectedText);
+          setInputValue(kodeDesaHidden, this.value || '');
         });
-        }
+      }
 
-        try {
+      try {
         const initialKab = kabHidden.value || '';
         const initialKec = kecHidden.value || '';
         const initialDesa = desaHidden.value || '';
@@ -775,24 +877,24 @@
         const kabList = await loadKabupaten(initialKab);
 
         if (initialKab) {
-            const selectedKab = findByNameLoose(kabList, initialKab);
-            if (selectedKab) {
+          const selectedKab = findByNameLoose(kabList, initialKab);
+          if (selectedKab) {
             const kecList = await loadKecamatan(selectedKab.code, initialKec);
 
             if (initialKec) {
-                const selectedKec = findByNameLoose(kecList, initialKec);
-                if (selectedKec) {
+              const selectedKec = findByNameLoose(kecList, initialKec);
+              if (selectedKec) {
                 await loadDesa(selectedKec.code, initialDesa);
-                }
+              }
             }
-            }
+          }
         }
-        } catch (e) {
+      } catch (e) {
         console.error('Wilayah gagal dimuat:', e);
         resetSelect(kabSelect, '-- Gagal memuat Kab/Kota --', true);
         resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
         resetSelect(desaSelect, '-- Pilih Desa --', true);
-        }
+      }
     }
 
     let mediaStream = null;
@@ -806,539 +908,559 @@
     let pickedAddress = '';
 
     function isMobileDevice() {
-        return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+      return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
     }
 
     function clearPhotoPreview() {
-        const wrap = getEl('photoPreviewWrap');
-        if (wrap) wrap.innerHTML = '';
+      const wrap = getEl('photoPreviewWrap');
+      if (wrap) wrap.innerHTML = '';
     }
 
     function fileToDataUrl(file) {
-        return new Promise(function(resolve, reject) {
+      return new Promise(function(resolve, reject) {
         const reader = new FileReader();
         reader.onload = function(e) { resolve(e.target.result); };
         reader.onerror = function() { reject(new Error('Gagal baca file')); };
         reader.readAsDataURL(file);
-        });
+      });
     }
 
     async function renderPhotoPreview(files) {
-        const wrap = getEl('photoPreviewWrap');
-        const lwPhotos = getEl('lwPhotos');
+      const wrap = getEl('photoPreviewWrap');
+      const lwPhotos = getEl('lwPhotos');
 
-        if (!wrap) return;
+      if (!wrap) return;
 
-        clearPhotoPreview();
+      clearPhotoPreview();
 
-        if (!files || !files.length) return;
+      if (!files || !files.length) return;
 
-        const arr = Array.from(files);
+      const arr = Array.from(files);
 
-        for (let i = 0; i < arr.length; i++) {
+      for (let i = 0; i < arr.length; i++) {
         const file = arr[i];
         if (!file.type || !file.type.startsWith('image/')) continue;
 
         try {
-            const src = await fileToDataUrl(file);
+          const src = await fileToDataUrl(file);
 
-            const col = document.createElement('div');
-            col.className = 'col-6 col-md-3';
-            col.innerHTML = `
+          const col = document.createElement('div');
+          col.className = 'col-6 col-md-3';
+          col.innerHTML = `
             <div class="card-soft p-2 position-relative">
-                <img src="${src}" class="w-100" style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;" loading="lazy">
-                <button type="button" class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2 btn-remove-preview" data-idx="${i}">
+              <img src="${src}" class="w-100" style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;" loading="lazy">
+              <button type="button" class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2 btn-remove-preview" data-idx="${i}">
                 <i class="bi bi-x"></i>
-                </button>
+              </button>
             </div>
-            `;
-            wrap.appendChild(col);
+          `;
+          wrap.appendChild(col);
         } catch (e) {
-            console.error('Preview gagal:', e);
+          console.error('Preview gagal:', e);
         }
-        }
+      }
 
-        wrap.querySelectorAll('.btn-remove-preview').forEach(function(btn) {
+      wrap.querySelectorAll('.btn-remove-preview').forEach(function(btn) {
         btn.onclick = function() {
-            const idx = parseInt(this.getAttribute('data-idx'), 10);
-            if (!lwPhotos || !lwPhotos.files) return;
+          const idx = parseInt(this.getAttribute('data-idx'), 10);
+          if (!lwPhotos || !lwPhotos.files) return;
 
-            const dt = new DataTransfer();
-            Array.from(lwPhotos.files).forEach(function(file, i) {
+          const dt = new DataTransfer();
+          Array.from(lwPhotos.files).forEach(function(file, i) {
             if (i !== idx) dt.items.add(file);
-            });
+          });
 
-            lwPhotos.files = dt.files;
-            renderPhotoPreview(lwPhotos.files);
-            lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
+          lwPhotos.files = dt.files;
+          renderPhotoPreview(lwPhotos.files);
+          lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
         };
-        });
+      });
     }
 
     function validateFiles(files) {
-        const maxSize = 5 * 1024 * 1024;
-        const valid = [];
-        const errors = [];
+      const maxSize = 5 * 1024 * 1024;
+      const valid = [];
+      const errors = [];
 
-        Array.from(files || []).forEach(function(file) {
+      Array.from(files || []).forEach(function(file) {
         if (!file.type || !file.type.startsWith('image/')) {
-            errors.push(file.name + ' bukan file gambar.');
-            return;
+          errors.push(file.name + ' bukan file gambar.');
+          return;
         }
         if (file.size > maxSize) {
-            errors.push(file.name + ' melebihi 5MB.');
-            return;
+          errors.push(file.name + ' melebihi 5MB.');
+          return;
         }
         valid.push(file);
-        });
+      });
 
-        if (errors.length) {
+      if (errors.length) {
         alert(errors.join('\n'));
-        }
+      }
 
-        return valid;
+      return valid;
     }
 
     async function mergeFilesToLivewire(sourceFiles) {
-        const lwPhotos = getEl('lwPhotos');
-        if (!lwPhotos || !sourceFiles || !sourceFiles.length) return;
+      const lwPhotos = getEl('lwPhotos');
+      if (!lwPhotos || !sourceFiles || !sourceFiles.length) return;
 
-        const validFiles = validateFiles(sourceFiles);
-        if (!validFiles.length) return;
+      const validFiles = validateFiles(sourceFiles);
+      if (!validFiles.length) return;
 
-        const dt = new DataTransfer();
+      const dt = new DataTransfer();
 
-        if (lwPhotos.files && lwPhotos.files.length) {
+      if (lwPhotos.files && lwPhotos.files.length) {
         Array.from(lwPhotos.files).forEach(function(file) {
-            dt.items.add(file);
+          dt.items.add(file);
         });
-        }
+      }
 
-        validFiles.forEach(function(file) {
+      validFiles.forEach(function(file) {
         dt.items.add(file);
-        });
+      });
 
-        lwPhotos.files = dt.files;
-        await renderPhotoPreview(lwPhotos.files);
-        lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
+      lwPhotos.files = dt.files;
+      await renderPhotoPreview(lwPhotos.files);
+      lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function stopCamera() {
-        if (mediaStream) {
+      if (mediaStream) {
         mediaStream.getTracks().forEach(function(track) {
-            track.stop();
+          track.stop();
         });
         mediaStream = null;
-        }
+      }
     }
 
     function showCamWarn(msg) {
-        const el = getEl('camWarn');
-        if (!el) return;
-        el.classList.remove('d-none');
-        el.innerText = msg;
+      const el = getEl('camWarn');
+      if (!el) return;
+      el.classList.remove('d-none');
+      el.innerText = msg;
     }
 
     function hideCamWarn() {
-        const el = getEl('camWarn');
-        if (!el) return;
-        el.classList.add('d-none');
-        el.innerText = '';
+      const el = getEl('camWarn');
+      if (!el) return;
+      el.classList.add('d-none');
+      el.innerText = '';
     }
 
     async function openDesktopCamera() {
-        const modalEl = getEl('modalCamera');
-        const video = getEl('camVideo');
-        if (!modalEl || !video) return;
+      const modalEl = getEl('modalCamera');
+      const video = getEl('camVideo');
+      if (!modalEl || !video) return;
 
-        hideCamWarn();
+      hideCamWarn();
 
-        try {
+      try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            showCamWarn('Browser desktop ini tidak mendukung webcam.');
-            return;
+          showCamWarn('Browser desktop ini tidak mendukung webcam.');
+          return;
         }
 
         mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: {
+          video: {
             facingMode: 'environment',
             width: { ideal: 1280 },
             height: { ideal: 720 }
-            },
-            audio: false
+          },
+          audio: false
         });
 
         video.srcObject = mediaStream;
 
         if (!modalInstance) {
-            modalInstance = new bootstrap.Modal(modalEl);
+          modalInstance = new bootstrap.Modal(modalEl);
         }
 
         modalInstance.show();
-        } catch (e) {
+      } catch (e) {
         console.error(e);
         showCamWarn('Kamera tidak bisa dibuka. Pastikan izin kamera diberikan.');
-        }
+      }
     }
 
     function snapDesktopPhoto() {
-        const video = getEl('camVideo');
-        const canvas = getEl('camCanvas');
-        if (!video || !canvas) return;
+      const video = getEl('camVideo');
+      const canvas = getEl('camCanvas');
+      if (!video || !canvas) return;
 
-        const width = video.videoWidth || 1280;
-        const height = video.videoHeight || 720;
+      const width = video.videoWidth || 1280;
+      const height = video.videoHeight || 720;
 
-        canvas.width = width;
-        canvas.height = height;
+      canvas.width = width;
+      canvas.height = height;
 
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, width, height);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
 
-        canvas.toBlob(async function(blob) {
+      canvas.toBlob(async function(blob) {
         if (!blob) return;
 
         const file = new File([blob], 'camera-' + Date.now() + '.jpg', {
-            type: 'image/jpeg'
+          type: 'image/jpeg'
         });
 
         await mergeFilesToLivewire([file]);
 
         if (modalInstance) modalInstance.hide();
         stopCamera();
-        }, 'image/jpeg', 0.92);
+      }, 'image/jpeg', 0.92);
     }
 
     function updatePickedPreview() {
-        const addrEl = getEl('pickedAddressPreview');
-        const latEl = getEl('pickedLatPreview');
-        const lngEl = getEl('pickedLngPreview');
+      const addrEl = getEl('pickedAddressPreview');
+      const latEl = getEl('pickedLatPreview');
+      const lngEl = getEl('pickedLngPreview');
 
-        if (addrEl) addrEl.textContent = pickedAddress || 'Belum ada titik dipilih.';
-        if (latEl) latEl.textContent = pickedLat || '-';
-        if (lngEl) lngEl.textContent = pickedLng || '-';
+      if (addrEl) addrEl.textContent = pickedAddress || 'Belum ada titik dipilih.';
+      if (latEl) latEl.textContent = pickedLat || '-';
+      if (lngEl) lngEl.textContent = pickedLng || '-';
     }
 
     async function setPickedPoint(lat, lng, addressText) {
-        pickedLat = String(lat || '');
-        pickedLng = String(lng || '');
+      pickedLat = String(lat || '');
+      pickedLng = String(lng || '');
 
-        if (mapPickerMarker && mapPickerInstance) {
+      if (mapPickerMarker && mapPickerInstance) {
         mapPickerMarker.setLatLng([lat, lng]);
-        } else if (mapPickerInstance) {
+      } else if (mapPickerInstance) {
         mapPickerMarker = L.marker([lat, lng], { draggable: true }).addTo(mapPickerInstance);
 
         mapPickerMarker.on('dragend', async function(e) {
-            const pos = e.target.getLatLng();
-            pickedLat = String(pos.lat);
-            pickedLng = String(pos.lng);
-            const addr = await reverseGeocode(pos.lat, pos.lng);
-            pickedAddress = addr || '';
-            updatePickedPreview();
+          const pos = e.target.getLatLng();
+          pickedLat = String(pos.lat);
+          pickedLng = String(pos.lng);
+          const addr = await reverseGeocode(pos.lat, pos.lng);
+          pickedAddress = addr || '';
+          updatePickedPreview();
         });
-        }
+      }
 
-        if (addressText) {
+      if (addressText) {
         pickedAddress = addressText;
-        } else {
+      } else {
         const addr = await reverseGeocode(lat, lng);
         pickedAddress = addr || '';
-        }
+      }
 
-        updatePickedPreview();
+      updatePickedPreview();
     }
 
     function initMapPicker() {
-        const mapEl = getEl('mapPicker');
-        if (!mapEl || typeof L === 'undefined') return;
+      const mapEl = getEl('mapPicker');
+      if (!mapEl || typeof L === 'undefined') return;
 
-        if (!mapPickerInstance) {
+      if (!mapPickerInstance) {
         mapPickerInstance = L.map(mapEl, {
-            zoomControl: true
+          zoomControl: true
         }).setView([-7.150975, 110.140259], 8);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
+          attribution: '&copy; OpenStreetMap'
         }).addTo(mapPickerInstance);
 
         mapPickerInstance.on('click', async function(e) {
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-            await setPickedPoint(lat, lng, '');
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+          await setPickedPoint(lat, lng, '');
         });
-        }
+      }
 
-        const currentLat = parseFloat(getEl('lokasi_lat')?.value || '');
-        const currentLng = parseFloat(getEl('lokasi_lng')?.value || '');
+      const currentLat = parseFloat(getEl('lokasi_lat')?.value || '');
+      const currentLng = parseFloat(getEl('lokasi_lng')?.value || '');
 
-        if (!isNaN(currentLat) && !isNaN(currentLng)) {
+      if (!isNaN(currentLat) && !isNaN(currentLng)) {
         mapPickerInstance.setView([currentLat, currentLng], 16);
         setPickedPoint(currentLat, currentLng, getEl('alamat_input')?.value || '');
-        } else {
+      } else {
         mapPickerInstance.setView([-7.150975, 110.140259], 8);
         pickedLat = '';
         pickedLng = '';
         pickedAddress = '';
         if (mapPickerMarker) {
-            mapPickerInstance.removeLayer(mapPickerMarker);
-            mapPickerMarker = null;
+          mapPickerInstance.removeLayer(mapPickerMarker);
+          mapPickerMarker = null;
         }
         updatePickedPreview();
-        }
+      }
 
-        setTimeout(function() {
+      setTimeout(function() {
         mapPickerInstance.invalidateSize();
-        }, 250);
+      }, 250);
     }
 
     function openMapPicker() {
-        const modalEl = getEl('modalMapPicker');
-        if (!modalEl) return;
+      const modalEl = getEl('modalMapPicker');
+      if (!modalEl) return;
 
-        if (!mapPickerModalInstance) {
+      if (!mapPickerModalInstance) {
         mapPickerModalInstance = new bootstrap.Modal(modalEl);
-        }
+      }
 
-        mapPickerModalInstance.show();
+      mapPickerModalInstance.show();
 
-        setTimeout(function() {
+      setTimeout(function() {
         initMapPicker();
-        }, 250);
+      }, 250);
     }
 
     async function doMapSearch() {
-        const input = getEl('mapSearchInput');
-        const hint = getEl('mapSearchHint');
+      const input = getEl('mapSearchInput');
+      const hint = getEl('mapSearchHint');
 
-        if (!input || !mapPickerInstance) return;
+      if (!input || !mapPickerInstance) return;
 
-        const keyword = String(input.value || '').trim();
-        if (!keyword) {
+      const keyword = String(input.value || '').trim();
+      if (!keyword) {
         if (hint) hint.innerHTML = 'Masukkan kata kunci lokasi terlebih dahulu.';
         return;
-        }
+      }
 
-        if (hint) hint.innerHTML = 'Mencari lokasi...';
+      if (hint) hint.innerHTML = 'Mencari lokasi...';
 
-        const results = await searchLocation(keyword);
+      const results = await searchLocation(keyword);
 
-        if (!results.length) {
+      if (!results.length) {
         if (hint) hint.innerHTML = 'Lokasi tidak ditemukan. Coba kata kunci lain.';
         return;
-        }
+      }
 
-        const first = results[0];
-        const lat = parseFloat(first.lat);
-        const lng = parseFloat(first.lon);
+      const first = results[0];
+      const lat = parseFloat(first.lat);
+      const lng = parseFloat(first.lon);
 
-        if (isNaN(lat) || isNaN(lng)) {
+      if (isNaN(lat) || isNaN(lng)) {
         if (hint) hint.innerHTML = 'Hasil lokasi tidak valid.';
         return;
-        }
+      }
 
-        mapPickerInstance.setView([lat, lng], 16);
-        await setPickedPoint(lat, lng, first.display_name || '');
+      mapPickerInstance.setView([lat, lng], 16);
+      await setPickedPoint(lat, lng, first.display_name || '');
 
-        if (hint) hint.innerHTML = 'Lokasi ditemukan. Anda bisa klik titik lain di peta jika perlu.';
+      if (hint) hint.innerHTML = 'Lokasi ditemukan. Anda bisa klik titik lain di peta jika perlu.';
     }
 
     function usePickedPoint() {
-        if (!pickedLat || !pickedLng) {
+      if (!pickedLat || !pickedLng) {
         alert('Silakan pilih titik pada peta terlebih dahulu.');
         return;
-        }
+      }
 
-        const latInput = getEl('lokasi_lat');
-        const lngInput = getEl('lokasi_lng');
-        const alamatInput = getEl('alamat_input');
+      const latInput = getEl('lokasi_lat');
+      const lngInput = getEl('lokasi_lng');
+      const alamatInput = getEl('alamat_input');
 
-        setInputValue(latInput, pickedLat);
-        setInputValue(lngInput, pickedLng);
-        setInputValue(alamatInput, pickedAddress);
+      setInputValue(latInput, pickedLat);
+      setInputValue(lngInput, pickedLng);
+      setInputValue(alamatInput, pickedAddress);
 
-        if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
+      if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
         window.Livewire.dispatch('setLatLngProspek', { lat: pickedLat, lng: pickedLng });
         window.Livewire.dispatch('setAlamatProspek', { alamat: pickedAddress || '' });
-        }
+      }
 
-        setHint('Lokasi dari titik peta berhasil dipilih ✅', false);
+      setHint('Lokasi dari titik peta berhasil dipilih ✅', false);
 
-        if (mapPickerModalInstance) {
+      if (mapPickerModalInstance) {
         mapPickerModalInstance.hide();
-        }
+      }
     }
 
     function resetPickedPoint() {
-        pickedLat = '';
-        pickedLng = '';
-        pickedAddress = '';
+      pickedLat = '';
+      pickedLng = '';
+      pickedAddress = '';
 
-        if (mapPickerInstance && mapPickerMarker) {
+      if (mapPickerInstance && mapPickerMarker) {
         mapPickerInstance.removeLayer(mapPickerMarker);
         mapPickerMarker = null;
-        }
+      }
 
-        updatePickedPreview();
+      updatePickedPreview();
     }
 
     function bindLocationButton() {
-        const btn = getEl('btnGetLoc');
-        if (!btn) return;
+      const btn = getEl('btnGetLoc');
+      if (!btn) return;
 
-        if (btn.dataset.bound !== '1') {
+      if (btn.dataset.bound !== '1') {
         btn.dataset.bound = '1';
         btn.addEventListener('click', fillLocation);
-        }
+      }
 
-        const btnOpenMap = getEl('btnOpenMapPicker');
-        if (btnOpenMap && btnOpenMap.dataset.bound !== '1') {
+      const btnOpenMap = getEl('btnOpenMapPicker');
+      if (btnOpenMap && btnOpenMap.dataset.bound !== '1') {
         btnOpenMap.dataset.bound = '1';
         btnOpenMap.addEventListener('click', openMapPicker);
-        }
+      }
 
-        const btnSearch = getEl('btnMapSearch');
-        if (btnSearch && btnSearch.dataset.bound !== '1') {
+      const btnSearch = getEl('btnMapSearch');
+      if (btnSearch && btnSearch.dataset.bound !== '1') {
         btnSearch.dataset.bound = '1';
         btnSearch.addEventListener('click', doMapSearch);
-        }
+      }
 
-        const searchInput = getEl('mapSearchInput');
-        if (searchInput && searchInput.dataset.bound !== '1') {
+      const searchInput = getEl('mapSearchInput');
+      if (searchInput && searchInput.dataset.bound !== '1') {
         searchInput.dataset.bound = '1';
         searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
+          if (e.key === 'Enter') {
             e.preventDefault();
             doMapSearch();
-            }
+          }
         });
-        }
+      }
 
-        const btnUsePoint = getEl('btnUsePickedPoint');
-        if (btnUsePoint && btnUsePoint.dataset.bound !== '1') {
+      const btnUsePoint = getEl('btnUsePickedPoint');
+      if (btnUsePoint && btnUsePoint.dataset.bound !== '1') {
         btnUsePoint.dataset.bound = '1';
         btnUsePoint.addEventListener('click', usePickedPoint);
-        }
+      }
 
-        const btnResetPoint = getEl('btnResetPickedPoint');
-        if (btnResetPoint && btnResetPoint.dataset.bound !== '1') {
+      const btnResetPoint = getEl('btnResetPickedPoint');
+      if (btnResetPoint && btnResetPoint.dataset.bound !== '1') {
         btnResetPoint.dataset.bound = '1';
         btnResetPoint.addEventListener('click', resetPickedPoint);
-        }
+      }
 
-        const modalMap = getEl('modalMapPicker');
-        if (modalMap && modalMap.dataset.bound !== '1') {
+      const modalMap = getEl('modalMapPicker');
+      if (modalMap && modalMap.dataset.bound !== '1') {
         modalMap.dataset.bound = '1';
 
         modalMap.addEventListener('shown.bs.modal', function() {
-            setTimeout(function() {
+          setTimeout(function() {
             if (mapPickerInstance) {
-                mapPickerInstance.invalidateSize();
+              mapPickerInstance.invalidateSize();
             } else {
-                initMapPicker();
+              initMapPicker();
             }
-            }, 250);
+          }, 250);
         });
-        }
+      }
+    }
+
+    function bindContactPicker() {
+      const btn = getEl('btnPickContact');
+      const input = getEl('no_hp_input');
+
+      if (btn && btn.dataset.bound !== '1') {
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          pickPhoneFromContacts();
+        });
+      }
+
+      if (input && input.dataset.contactBound !== '1') {
+        input.dataset.contactBound = '1';
+        input.addEventListener('click', function() {
+          pickPhoneFromContacts();
+        });
+      }
     }
 
     function bindPhoto() {
-        const btnCamera = getEl('btnOpenCamera');
-        const btnGallery = getEl('btnOpenGallery');
-        const cameraInput = getEl('cameraCaptureInput');
-        const galleryInput = getEl('galleryInput');
-        const lwPhotos = getEl('lwPhotos');
-        const snapBtn = getEl('btnSnap');
-        const modalEl = getEl('modalCamera');
+      const btnCamera = getEl('btnOpenCamera');
+      const btnGallery = getEl('btnOpenGallery');
+      const cameraInput = getEl('cameraCaptureInput');
+      const galleryInput = getEl('galleryInput');
+      const lwPhotos = getEl('lwPhotos');
+      const snapBtn = getEl('btnSnap');
+      const modalEl = getEl('modalCamera');
 
-        if (!btnCamera || !btnGallery || !cameraInput || !galleryInput || !lwPhotos) return;
+      if (!btnCamera || !btnGallery || !cameraInput || !galleryInput || !lwPhotos) return;
 
-        if (btnCamera.dataset.bound !== '1') {
+      if (btnCamera.dataset.bound !== '1') {
         btnCamera.dataset.bound = '1';
         btnCamera.onclick = function() {
-            if (isMobileDevice()) {
+          if (isMobileDevice()) {
             cameraInput.click();
-            } else {
+          } else {
             openDesktopCamera();
-            }
+          }
         };
-        }
+      }
 
-        if (btnGallery.dataset.bound !== '1') {
+      if (btnGallery.dataset.bound !== '1') {
         btnGallery.dataset.bound = '1';
         btnGallery.onclick = function() {
-            galleryInput.click();
+          galleryInput.click();
         };
-        }
+      }
 
-        cameraInput.onchange = async function() {
+      cameraInput.onchange = async function() {
         if (cameraInput.files && cameraInput.files.length) {
-            await mergeFilesToLivewire(cameraInput.files);
+          await mergeFilesToLivewire(cameraInput.files);
         }
         cameraInput.value = '';
-        };
+      };
 
-        galleryInput.onchange = async function() {
+      galleryInput.onchange = async function() {
         if (galleryInput.files && galleryInput.files.length) {
-            await mergeFilesToLivewire(galleryInput.files);
+          await mergeFilesToLivewire(galleryInput.files);
         }
         galleryInput.value = '';
-        };
+      };
 
-        lwPhotos.onchange = async function() {
+      lwPhotos.onchange = async function() {
         if (lwPhotos.files && lwPhotos.files.length) {
-            await renderPhotoPreview(lwPhotos.files);
+          await renderPhotoPreview(lwPhotos.files);
         } else {
-            clearPhotoPreview();
+          clearPhotoPreview();
         }
-        };
+      };
 
-        if (snapBtn && snapBtn.dataset.bound !== '1') {
+      if (snapBtn && snapBtn.dataset.bound !== '1') {
         snapBtn.dataset.bound = '1';
         snapBtn.onclick = function() {
-            snapDesktopPhoto();
+          snapDesktopPhoto();
         };
-        }
+      }
 
-        if (modalEl && !modalEl.dataset.bound) {
+      if (modalEl && !modalEl.dataset.bound) {
         modalEl.dataset.bound = '1';
         modalEl.addEventListener('hidden.bs.modal', function() {
-            stopCamera();
+          stopCamera();
         });
-        }
+      }
     }
 
     function initTanggalDefault() {
-        var el = getEl('tanggal_prospek');
-        if (!el) return;
-        if (!el.value) {
+      var el = getEl('tanggal_prospek');
+      if (!el) return;
+      if (!el.value) {
         var d = new Date();
         var mm = String(d.getMonth() + 1).padStart(2, '0');
         var dd = String(d.getDate()).padStart(2, '0');
         el.value = d.getFullYear() + '-' + mm + '-' + dd;
-        }
+      }
     }
 
     function bootAll() {
-        initTanggalDefault();
-        bindLocationButton();
-        initWilayahProspek();
-        bindPhoto();
-        updatePickedPreview();
+      initTanggalDefault();
+      bindLocationButton();
+      bindContactPicker();
+      initWilayahProspek();
+      bindPhoto();
+      updatePickedPreview();
     }
 
     document.addEventListener('DOMContentLoaded', bootAll);
     document.addEventListener('livewire:navigated', function() {
-        setTimeout(bootAll, 100);
+      setTimeout(bootAll, 100);
     });
 
     document.addEventListener('livewire:init', function() {
-        if (!window.Livewire) return;
-        Livewire.hook('morphed', function() {
+      if (!window.Livewire) return;
+      Livewire.hook('morphed', function() {
         setTimeout(bootAll, 100);
-        });
+      });
     });
-    })();
-    </script>
-
+  })();
+  </script>
 
 </div>
