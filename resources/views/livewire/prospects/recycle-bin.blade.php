@@ -22,13 +22,14 @@
       <div class="col-12 col-md-7">
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-          <input class="form-control" style="border-left:0"
+          <input class="form-control"
+                 style="border-left:0"
                  placeholder="Cari nama / no hp / nik..."
-                 wire:model.debounce.400ms="search">
+                 wire:model.live.debounce.400ms="search">
         </div>
       </div>
       <div class="col-12 col-md-5 text-md-end text-muted small">
-        Total: <span class="fw-bold">{{ $items->total() }}</span> prospek (terhapus oleh Anda)
+        Total: <span class="fw-bold">{{ $items->total() }}</span> prospek (terhapus)
       </div>
     </div>
   </div>
@@ -49,7 +50,7 @@
 
         <tbody>
           @forelse($items as $p)
-            <tr>
+            <tr wire:key="recycle-prospect-row-{{ $p->id }}">
               <td class="small">
                 {{ \Illuminate\Support\Carbon::parse($p->tanggal_prospek)->format('d/m/Y') }}
               </td>
@@ -76,14 +77,18 @@
               <td class="text-end text-nowrap">
                 <button type="button"
                         class="btn btn-success btn-sm rounded-pill px-3"
-                        wire:click="restore({{ $p->id }})">
+                        wire:click="restore({{ $p->id }})"
+                        wire:loading.attr="disabled"
+                        wire:target="restore({{ $p->id }})">
                   <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
                 </button>
 
                 <button type="button"
                         class="btn btn-outline-danger btn-sm rounded-pill px-3"
-                        onclick="if(!confirm('Hapus permanen? Data tidak bisa dikembalikan.')) return false;"
-                        wire:click="forceDelete({{ $p->id }})">
+                        wire:click="forceDelete({{ $p->id }})"
+                        wire:loading.attr="disabled"
+                        wire:target="forceDelete({{ $p->id }})"
+                        onclick="return confirm('Hapus permanen? Data tidak bisa dikembalikan.')">
                   <i class="bi bi-trash3 me-1"></i> Hapus
                 </button>
               </td>

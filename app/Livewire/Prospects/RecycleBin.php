@@ -10,31 +10,39 @@ class RecycleBin extends Component
 {
     use WithPagination;
 
+    protected $paginationTheme = 'bootstrap';
+
     public string $search = '';
 
-    protected $queryString = ['search'];
+    protected $queryString = [
+        'search' => ['except' => ''],
+    ];
 
-    public function updatingSearch()
+    public function updatingSearch(): void
     {
         $this->resetPage();
     }
 
     public function restore(int $id): void
     {
-        $p = Prospect::onlyTrashed()->findOrFail($id);
+        $p = Prospect::onlyTrashed()
+            ->where('id', $id)
+            ->firstOrFail();
 
-        // hanya admin (route sudah pakai middleware role:ADMIN)
         $p->restore();
+
         session()->flash('ok', 'Prospek berhasil dipulihkan.');
         $this->resetPage();
     }
 
     public function forceDelete(int $id): void
     {
-        $p = Prospect::onlyTrashed()->findOrFail($id);
+        $p = Prospect::onlyTrashed()
+            ->where('id', $id)
+            ->firstOrFail();
 
-        // hapus permanen
         $p->forceDelete();
+
         session()->flash('ok', 'Prospek dihapus permanen.');
         $this->resetPage();
     }
@@ -42,11 +50,12 @@ class RecycleBin extends Component
     public function render()
     {
         $q = Prospect::onlyTrashed()
-            ->with(['cabang','creator'])
+            ->with(['cabang', 'creator'])
             ->latest('deleted_at');
 
-        if ($this->search !== '') {
-            $s = '%' . $this->search . '%';
+        if (trim($this->search) !== '') {
+            $s = '%' . trim($this->search) . '%';
+
             $q->where(function ($w) use ($s) {
                 $w->where('nama', 'like', $s)
                   ->orWhere('no_hp', 'like', $s)

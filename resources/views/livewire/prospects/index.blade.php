@@ -85,7 +85,7 @@
         elseif($p->status === 'CLOSING') $badge = 'primary';
       @endphp
 
-      <div class="card-soft p-3 mb-2">
+      <div class="card-soft p-3 mb-2" wire:key="prospect-card-{{ $p->id }}">
         <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
           <div class="flex-grow-1">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -122,9 +122,13 @@
               <i class="bi bi-pencil"></i> Detail
             </a>
 
-            <button class="btn btn-outline-danger btn-sm w-100"
-                    wire:click="trash({{ $p->id }})"
-                    onclick="return confirm('Pindahkan ke Recycle Bin?')">
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-sm w-100"
+              wire:click="trash({{ $p->id }})"
+              wire:loading.attr="disabled"
+              wire:target="trash({{ $p->id }})"
+              onclick="return confirm('Pindahkan ke Recycle Bin?')">
               <i class="bi bi-trash"></i> Hapus
             </button>
           </div>

@@ -41,16 +41,18 @@ class Index extends Component
 
     public function trash(int $id): void
     {
-        $p = Prospect::findOrFail($id);
         $u = Auth::user();
 
-        if ((int) $p->input_by !== (int) $u->id) {
-            abort(403);
-        }
+        $p = Prospect::query()
+            ->where('id', $id)
+            ->where('input_by', $u->id)
+            ->firstOrFail();
 
         $p->delete();
 
         session()->flash('ok', 'Data dipindahkan ke Recycle Bin.');
+
+        // kalau item terakhir di halaman terhapus, balik ke halaman valid
         $this->resetPage();
     }
 
