@@ -576,7 +576,7 @@
 
                 @if($canProspects)
                   <a class="item" href="/prospects">
-                    <i class="bi bi-grid me-2"></i> Prospek
+                    <i class="bi bi-grid me-2"></i> Prospek Saya
                   </a>
                 @endif
 
