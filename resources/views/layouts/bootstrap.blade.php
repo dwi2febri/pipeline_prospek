@@ -752,7 +752,7 @@
             </div>
             <div>
               <div class="session-expired-title">Sesi Halaman Sudah Kedaluwarsa</div>
-              <div class="session-expired-sub">Halaman ini sudah terlalu lama terbuka. Untuk melanjutkan, silakan refresh halaman.</div>
+              <div class="session-expired-sub">Halaman ini sudah terlalu lama terbuka. Untuk melanjutkan, silakan masuk ulang.</div>
             </div>
           </div>
         </div>
@@ -761,17 +761,17 @@
           <div class="session-expired-card">
             <div class="session-expired-card-title">Kenapa ini muncul?</div>
             <p class="session-expired-card-desc mb-0">
-              Biasanya karena sesi login atau token keamanan sudah habis. Refresh akan memuat ulang halaman dan memperbarui sesi.
+              Biasanya karena sesi login atau token keamanan Livewire sudah habis. Supaya aman, sistem akan mengarahkan ke halaman login.
             </p>
           </div>
         </div>
 
         <div class="modal-footer border-0">
           <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
-            Nanti Saja
+            Tutup
           </button>
           <button type="button" class="btn btn-primary rounded-pill px-4" id="btnRefreshExpiredPage">
-            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Sekarang
+            <i class="bi bi-box-arrow-in-right me-1"></i> Ke Halaman Login
           </button>
         </div>
       </div>
@@ -842,10 +842,18 @@
         if (!expiredModal) {
           expiredModal = bootstrap.Modal.getOrCreateInstance(expiredModalEl, {
             backdrop: 'static',
-            keyboard: true
+            keyboard: false
           });
         }
         return expiredModal;
+      }
+
+      function getLoginUrl(){
+        return @json(route('login'));
+      }
+
+      function goToSafeLogin(){
+        window.location.href = getLoginUrl();
       }
 
       function showExpiredModal(){
@@ -855,20 +863,23 @@
         var modal = getExpiredModal();
         if (modal) {
           modal.show();
+        } else {
+          goToSafeLogin();
         }
+      }
 
-        setTimeout(function(){
+      if (expiredModalEl) {
+        expiredModalEl.addEventListener('hidden.bs.modal', function(){
           isShowingExpiredModal = false;
-        }, 500);
+        });
       }
 
       if (refreshBtn) {
         refreshBtn.addEventListener('click', function(){
-          window.location.reload();
+          goToSafeLogin();
         });
       }
 
-      // Ganti popup confirm bawaan "This page has expired..."
       window.confirm = function(message){
         var msg = String(message || '').toLowerCase();
 
@@ -884,12 +895,11 @@
         return originalConfirm.apply(window, arguments);
       };
 
-      // Tangkap response 419 dari fetch
       if (window.fetch) {
         var originalFetch = window.fetch;
         window.fetch = function(){
           return originalFetch.apply(window, arguments).then(function(response){
-            if (response && response.status === 419) {
+            if (response && [401, 403, 419].indexOf(response.status) !== -1) {
               showExpiredModal();
             }
             return response;
@@ -899,7 +909,6 @@
         };
       }
 
-      // Tangkap response 419 dari XHR
       if (window.XMLHttpRequest) {
         var OriginalXHR = window.XMLHttpRequest;
 
@@ -907,7 +916,7 @@
           var xhr = new OriginalXHR();
 
           xhr.addEventListener('load', function(){
-            if (xhr.status === 419) {
+            if ([401, 403, 419].indexOf(xhr.status) !== -1) {
               showExpiredModal();
             }
           });
@@ -915,12 +924,30 @@
           return xhr;
         }
 
+        CustomXHR.UNSENT = OriginalXHR.UNSENT;
+        CustomXHR.OPENED = OriginalXHR.OPENED;
+        CustomXHR.HEADERS_RECEIVED = OriginalXHR.HEADERS_RECEIVED;
+        CustomXHR.LOADING = OriginalXHR.LOADING;
+        CustomXHR.DONE = OriginalXHR.DONE;
+        CustomXHR.prototype = OriginalXHR.prototype;
+
         window.XMLHttpRequest = CustomXHR;
       }
 
-      // fallback manual event
       window.addEventListener('session-expired', function(){
         showExpiredModal();
+      });
+
+      document.addEventListener('livewire:init', function () {
+        try {
+          Livewire.hook('request', ({ fail }) => {
+            fail(({ status }) => {
+              if ([401, 403, 419].indexOf(status) !== -1) {
+                showExpiredModal();
+              }
+            });
+          });
+        } catch (e) {}
       });
     })();
   </script>
