@@ -8,6 +8,7 @@ use App\Models\ProspectNotification;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Carbon;
 
 class Submissions extends Component
 {
@@ -48,7 +49,7 @@ class Submissions extends Component
         $role = $this->currentUserRole();
         $now = now();
 
-        if (in_array($role, ['MANAJEMEN', 'SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
+        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
             $this->filterBulan = (string) $now->month;
             $this->filterTahun = (string) $now->year;
         }
@@ -108,7 +109,7 @@ class Submissions extends Component
         $role = $this->currentUserRole();
         $now = now();
 
-        if (in_array($role, ['MANAJEMEN', 'SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
+        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
             $this->filterBulan = (string) $now->month;
             $this->filterTahun = (string) $now->year;
         } else {
@@ -523,7 +524,6 @@ class Submissions extends Component
             $p->is_diambil = 1;
             $p->diambil_oleh = $u->name;
 
-            // otomatis FOLLOW UP saat diambil
             if ((string) $p->status !== 'CLOSING' && (string) $p->status !== 'REJECTED') {
                 $p->status = 'FOLLOW UP';
                 $this->statusUpdate = 'FOLLOW UP';
@@ -582,8 +582,8 @@ class Submissions extends Component
 
         $bulanOptions = collect(range(1, 12))->map(function ($b) {
             return [
-                'id' => $b,
-                'label' => now()->copy()->month($b)->translatedFormat('F'),
+                'id' => (string) $b,
+                'label' => Carbon::create(null, $b, 1, 0, 0, 0)->translatedFormat('F'),
             ];
         });
 

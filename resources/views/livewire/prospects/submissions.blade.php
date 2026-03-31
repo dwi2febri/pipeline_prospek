@@ -368,25 +368,25 @@
         </select>
       </div>
 
-      @if(in_array(strtoupper(trim((string)(auth()->user()->role ?? ''))), ['MANAJEMEN','SUPERVISOR','AO','AO_KREDIT','AO_DANA','AO_REMEDIAL']))
+        @if(in_array(strtoupper(trim((string)(auth()->user()->role ?? ''))), ['ADMIN','MANAJEMEN','SUPERVISOR','AO','AO_KREDIT','AO_DANA','AO_REMEDIAL']))
         <div class="col-6 col-md-1">
-          <label class="form-label small text-muted">Bulan</label>
-          <select class="form-select" wire:model.live="filterBulan">
+            <label class="form-label small text-muted">Bulan</label>
+            <select class="form-select" wire:model.live="filterBulan">
             @foreach($bulanOptions as $b)
-              <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
+                <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
             @endforeach
-          </select>
+            </select>
         </div>
 
         <div class="col-6 col-md-1">
-          <label class="form-label small text-muted">Tahun</label>
-          <select class="form-select" wire:model.live="filterTahun">
+            <label class="form-label small text-muted">Tahun</label>
+            <select class="form-select" wire:model.live="filterTahun">
             @foreach($tahunOptions as $t)
-              <option value="{{ $t }}">{{ $t }}</option>
+                <option value="{{ $t }}">{{ $t }}</option>
             @endforeach
-          </select>
+            </select>
         </div>
-      @endif
+        @endif
 
       <div class="col-12 col-md-2">
         <label class="form-label small text-muted d-block">&nbsp;</label>
