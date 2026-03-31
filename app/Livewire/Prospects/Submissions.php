@@ -124,6 +124,39 @@ class Submissions extends Component
         return strtoupper(trim((string) (auth()->user()->role ?? '')));
     }
 
+    protected function currentUserJobPosition(): string
+    {
+        $u = auth()->user();
+
+        return strtoupper(trim((string) (
+            $u->job_position
+            ?? $u->job_posisition
+            ?? ''
+        )));
+    }
+
+    protected function getAllowedProdukByUser(): array
+    {
+        $role = $this->currentUserRole();
+        $jobPosition = $this->currentUserJobPosition();
+
+        if ($role === 'AO') {
+            if ($jobPosition === 'AO DANA') {
+                return ['TABUNGAN', 'DEPOSITO'];
+            }
+
+            if ($jobPosition === 'AO KREDIT') {
+                return ['KREDIT'];
+            }
+
+            if ($jobPosition === 'AO REMIDIAL' || $jobPosition === 'AO REMEDIAL') {
+                return ['ASET'];
+            }
+        }
+
+        return [];
+    }
+
     protected function isAdminOrManagementRole(?string $role = null): bool
     {
         $role = $role ?: $this->currentUserRole();
@@ -172,6 +205,7 @@ class Submissions extends Component
     {
         $u = auth()->user();
         $role = $this->currentUserRole();
+        $allowedProduk = $this->getAllowedProdukByUser();
 
         if ($this->lockCabangFilter) {
             $this->filterCabang = (int) ($u->cabang_id ?? 0);
@@ -213,7 +247,10 @@ class Submissions extends Component
                 function ($q) use ($u) {
                     $q->where('cabang_id', $u->cabang_id);
                 }
-            );
+            )
+            ->when(!empty($allowedProduk), function ($q) use ($allowedProduk) {
+                $q->whereIn('jenis_produk', $allowedProduk);
+            });
     }
 
     protected function esc($value): string
@@ -317,8 +354,16 @@ class Submissions extends Component
 
         $p = Prospect::with(['cabang', 'creator', 'creator.cabang', 'documents'])->findOrFail($id);
 
+        $allowedProduk = $this->getAllowedProdukByUser();
+        if (!empty($allowedProduk) && !in_array((string) $p->jenis_produk, $allowedProduk, true)) {
+            session()->flash('ok', 'Anda tidak berhak melihat prospek dengan rekomendasi produk tersebut.');
+            return;
+        }
+
         $this->detailId = $p->id;
-        $this->statusUpdate = $p->status ?: 'OPEN';
+        $this->statusUpdate = in_array((string) $p->status, ['FOLLOW UP', 'CLOSING', 'REJECTED'], true)
+            ? (string) $p->status
+            : 'FOLLOW UP';
         $this->ambilStatus = (string) ((int) ($p->is_diambil ?? 0));
         $this->canViewDetail = false;
         $this->showTakenMessage = false;
@@ -376,10 +421,10 @@ class Submissions extends Component
     public function updateStatus(): void
     {
         $this->validate([
-            'statusUpdate' => ['required', 'in:OPEN,FOLLOW UP,REJECTED,CLOSING'],
+            'statusUpdate' => ['required', 'in:FOLLOW UP,REJECTED,CLOSING'],
         ], [
             'statusUpdate.required' => 'Status wajib dipilih.',
-            'statusUpdate.in' => 'Status hanya boleh OPEN, FOLLOW UP, REJECTED, atau CLOSING.',
+            'statusUpdate.in' => 'Status hanya boleh FOLLOW UP, REJECTED, atau CLOSING.',
         ]);
 
         if (!$this->detailId || !$this->canViewDetail || $this->hideActionForm) {
@@ -392,6 +437,12 @@ class Submissions extends Component
         $p = Prospect::findOrFail($this->detailId);
         $oldStatus = (string) $p->status;
         $newStatus = (string) $this->statusUpdate;
+
+        $allowedProduk = $this->getAllowedProdukByUser();
+        if (!empty($allowedProduk) && !in_array((string) $p->jenis_produk, $allowedProduk, true)) {
+            session()->flash('ok', 'Anda tidak berhak mengubah status prospek dengan rekomendasi produk tersebut.');
+            return;
+        }
 
         if (!$this->isAdminOrManagementRole($role)) {
             if ($this->isCabangRestrictedRole($role) && (int) $p->cabang_id !== (int) $u->cabang_id) {
@@ -448,6 +499,12 @@ class Submissions extends Component
 
         $p = Prospect::findOrFail($this->detailId);
 
+        $allowedProduk = $this->getAllowedProdukByUser();
+        if (!empty($allowedProduk) && !in_array((string) $p->jenis_produk, $allowedProduk, true)) {
+            session()->flash('ok', 'Anda tidak berhak mengubah pengambilan prospek dengan rekomendasi produk tersebut.');
+            return;
+        }
+
         if (!$this->isAdminOrManagementRole($role)) {
             if ($this->isCabangRestrictedRole($role) && (int) $p->cabang_id !== (int) $u->cabang_id) {
                 session()->flash('ok', 'Anda tidak berhak mengubah pengambilan prospek ini.');
@@ -465,6 +522,12 @@ class Submissions extends Component
         if ($this->ambilStatus === '1') {
             $p->is_diambil = 1;
             $p->diambil_oleh = $u->name;
+
+            // otomatis FOLLOW UP saat diambil
+            if ((string) $p->status !== 'CLOSING' && (string) $p->status !== 'REJECTED') {
+                $p->status = 'FOLLOW UP';
+                $this->statusUpdate = 'FOLLOW UP';
+            }
         } else {
             if (!$this->isAdminOrManagementRole($role)) {
                 if (!empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {

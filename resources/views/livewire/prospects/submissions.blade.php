@@ -341,7 +341,6 @@
         <label class="form-label small text-muted">Status</label>
         <select class="form-select" wire:model.live="filterStatus">
           <option value="">-- Semua Status --</option>
-          <option value="OPEN">OPEN</option>
           <option value="FOLLOW UP">FOLLOW UP</option>
           <option value="CLOSING">CLOSING</option>
           <option value="REJECTED">REJECTED</option>
@@ -909,7 +908,6 @@
                           <label class="form-label small text-muted">Pilih Status</label>
                           <select class="form-select" wire:model.live="statusUpdate">
                             <option value="">-- Pilih Status --</option>
-                            <option value="OPEN">OPEN</option>
                             <option value="FOLLOW UP">FOLLOW UP</option>
                             <option value="CLOSING">CLOSING</option>
                             <option value="REJECTED">REJECTED</option>

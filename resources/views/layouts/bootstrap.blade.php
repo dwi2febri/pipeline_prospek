@@ -242,10 +242,10 @@
     }
 
     .page-wrap{
-        width:100%;
-        padding:18px;
-        max-width:none;
-        margin:0;
+      width:100%;
+      padding:18px;
+      max-width:none;
+      margin:0;
     }
 
     .content-wrap{padding-bottom:78px;}
@@ -360,6 +360,84 @@
       position: relative;
       z-index: 7000;
     }
+
+    /* ===== SESSION EXPIRED MODAL ===== */
+    .session-expired-modal .modal-content{
+      border:0;
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:0 24px 80px rgba(15,23,42,.24);
+    }
+
+    .session-expired-modal .modal-header{
+      border-bottom:1px solid #eef2f7;
+      background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+      padding:20px 22px 16px 22px;
+    }
+
+    .session-expired-modal .modal-body{
+      padding:22px;
+      background:#fff;
+    }
+
+    .session-expired-modal .modal-footer{
+      border-top:1px solid #eef2f7;
+      padding:16px 22px 22px 22px;
+      background:#fff;
+    }
+
+    .session-expired-head{
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+    }
+
+    .session-expired-icon{
+      width:52px;
+      height:52px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 52px;
+      color:#b45309;
+      background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);
+      box-shadow:0 10px 24px rgba(245,158,11,.18);
+      font-size:22px;
+    }
+
+    .session-expired-title{
+      font-size:1.18rem;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.2;
+    }
+
+    .session-expired-sub{
+      color:#64748b;
+      font-size:.92rem;
+      margin-top:4px;
+    }
+
+    .session-expired-card{
+      border:1px solid #e8eef6;
+      border-radius:18px;
+      padding:14px 16px;
+      background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+    }
+
+    .session-expired-card-title{
+      font-size:.92rem;
+      font-weight:800;
+      color:#0f172a;
+      margin-bottom:4px;
+    }
+
+    .session-expired-card-desc{
+      font-size:.9rem;
+      color:#64748b;
+      margin:0;
+    }
   </style>
 </head>
 
@@ -376,7 +454,7 @@
     $canDashboard         = $isAdmin || $isManajemen || $isSupervisor;
     $canProspects         = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
     $canProspectsDiajukan = $isAdmin || $isManajemen || $isSupervisor || $isAo;
-    $canRekapProspek = $isAdmin || $isManajemen || $isSupervisor;
+    $canRekapProspek      = $isAdmin || $isManajemen || $isSupervisor;
     $canRecycleBin        = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
     $canProfile           = auth()->check();
     $canAuditLog          = $isAdmin;
@@ -411,11 +489,11 @@
             </a>
           @endif
 
-            @if($canRekapProspek)
+          @if($canRekapProspek)
             <a href="/rekap-prospek" class="navlink {{ request()->is('rekap-prospek') ? 'active' : '' }}">
-                <i class="bi bi-table"></i><span>Rekap Prospek</span>
+              <i class="bi bi-table"></i><span>Rekap Prospek</span>
             </a>
-            @endif
+          @endif
 
           @if($canProspectsDiajukan)
             <a href="/prospects-diajukan" class="navlink {{ request()->is('prospects-diajukan') ? 'active' : '' }}">
@@ -618,12 +696,12 @@
         </a>
       @endif
 
-        @if($canRekapProspek)
+      @if($canRekapProspek)
         <a href="/rekap-prospek" class="{{ request()->is('rekap-prospek') ? 'active' : '' }}">
-            <div><i class="bi bi-table fs-5"></i></div>
-            Rekap
+          <div><i class="bi bi-table fs-5"></i></div>
+          Rekap
         </a>
-        @endif
+      @endif
 
       @if($canProspectsDiajukan)
         <a href="/prospects-diajukan" class="{{ request()->is('prospects-diajukan') ? 'active' : '' }}">
@@ -662,6 +740,43 @@
       </form>
     </div>
   </nav>
+
+  <!-- MODAL SESSION EXPIRED -->
+  <div class="modal fade session-expired-modal" id="sessionExpiredModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <div class="session-expired-head">
+            <div class="session-expired-icon">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div>
+              <div class="session-expired-title">Sesi Halaman Sudah Kedaluwarsa</div>
+              <div class="session-expired-sub">Halaman ini sudah terlalu lama terbuka. Untuk melanjutkan, silakan refresh halaman.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body pt-0">
+          <div class="session-expired-card">
+            <div class="session-expired-card-title">Kenapa ini muncul?</div>
+            <p class="session-expired-card-desc mb-0">
+              Biasanya karena sesi login atau token keamanan sudah habis. Refresh akan memuat ulang halaman dan memperbarui sesi.
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
+            Nanti Saja
+          </button>
+          <button type="button" class="btn btn-primary rounded-pill px-4" id="btnRefreshExpiredPage">
+            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Sekarang
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script
     src="/vendor/livewire/livewire.js"
@@ -712,6 +827,100 @@
         document.querySelectorAll('.profile-menu.show').forEach(function(el){
           el.classList.remove('show');
         });
+      });
+    })();
+
+    (function(){
+      var expiredModalEl = document.getElementById('sessionExpiredModal');
+      var refreshBtn = document.getElementById('btnRefreshExpiredPage');
+      var expiredModal = null;
+      var originalConfirm = window.confirm;
+      var isShowingExpiredModal = false;
+
+      function getExpiredModal(){
+        if (!expiredModalEl || typeof bootstrap === 'undefined') return null;
+        if (!expiredModal) {
+          expiredModal = bootstrap.Modal.getOrCreateInstance(expiredModalEl, {
+            backdrop: 'static',
+            keyboard: true
+          });
+        }
+        return expiredModal;
+      }
+
+      function showExpiredModal(){
+        if (isShowingExpiredModal) return;
+        isShowingExpiredModal = true;
+
+        var modal = getExpiredModal();
+        if (modal) {
+          modal.show();
+        }
+
+        setTimeout(function(){
+          isShowingExpiredModal = false;
+        }, 500);
+      }
+
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', function(){
+          window.location.reload();
+        });
+      }
+
+      // Ganti popup confirm bawaan "This page has expired..."
+      window.confirm = function(message){
+        var msg = String(message || '').toLowerCase();
+
+        if (
+          msg.indexOf('this page has expired') !== -1 ||
+          msg.indexOf('would you like to refresh the page') !== -1 ||
+          msg.indexOf('page has expired') !== -1
+        ) {
+          showExpiredModal();
+          return false;
+        }
+
+        return originalConfirm.apply(window, arguments);
+      };
+
+      // Tangkap response 419 dari fetch
+      if (window.fetch) {
+        var originalFetch = window.fetch;
+        window.fetch = function(){
+          return originalFetch.apply(window, arguments).then(function(response){
+            if (response && response.status === 419) {
+              showExpiredModal();
+            }
+            return response;
+          }).catch(function(error){
+            throw error;
+          });
+        };
+      }
+
+      // Tangkap response 419 dari XHR
+      if (window.XMLHttpRequest) {
+        var OriginalXHR = window.XMLHttpRequest;
+
+        function CustomXHR(){
+          var xhr = new OriginalXHR();
+
+          xhr.addEventListener('load', function(){
+            if (xhr.status === 419) {
+              showExpiredModal();
+            }
+          });
+
+          return xhr;
+        }
+
+        window.XMLHttpRequest = CustomXHR;
+      }
+
+      // fallback manual event
+      window.addEventListener('session-expired', function(){
+        showExpiredModal();
       });
     })();
   </script>
