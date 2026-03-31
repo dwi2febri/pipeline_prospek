@@ -55,18 +55,18 @@ class Index extends Component
     protected function getUsahaReference()
     {
         $palette = [
-            '#22c55e', // hijau
-            '#3b82f6', // biru
-            '#f59e0b', // amber
-            '#ef4444', // merah
-            '#8b5cf6', // ungu
-            '#14b8a6', // teal
-            '#f97316', // orange
-            '#06b6d4', // cyan
-            '#84cc16', // lime
-            '#ec4899', // pink
-            '#64748b', // slate
-            '#a855f7', // violet
+            '#22c55e',
+            '#3b82f6',
+            '#f59e0b',
+            '#ef4444',
+            '#8b5cf6',
+            '#14b8a6',
+            '#f97316',
+            '#06b6d4',
+            '#84cc16',
+            '#ec4899',
+            '#64748b',
+            '#a855f7',
         ];
 
         $refs = DB::table('ref_jenis_usaha')
@@ -127,6 +127,7 @@ class Index extends Component
 
         $summary = [
             'total'     => (clone $base)->count(),
+            'open'      => (clone $base)->where('status', 'OPEN')->count(),
             'follow_up' => (clone $base)->where('status', 'FOLLOW UP')->count(),
             'rejected'  => (clone $base)->where('status', 'REJECTED')->count(),
             'closing'   => (clone $base)->where('status', 'CLOSING')->count(),
@@ -164,11 +165,22 @@ class Index extends Component
         $produkLabels = $produkRows->pluck('jenis_produk')->map(fn($v) => $v ?: '-')->values();
         $produkValues = $produkRows->pluck('total')->map(fn($v) => (int) $v)->values();
 
+        $statusOrderMap = [
+            'OPEN' => 1,
+            'FOLLOW UP' => 2,
+            'REJECTED' => 3,
+            'CLOSING' => 4,
+        ];
+
         $statusRows = $this->baseQuery()
             ->select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')
-            ->orderBy('status')
-            ->get();
+            ->get()
+            ->sortBy(function ($row) use ($statusOrderMap) {
+                $status = strtoupper(trim((string) $row->status));
+                return $statusOrderMap[$status] ?? 99;
+            })
+            ->values();
 
         $statusLabels = $statusRows->pluck('status')->map(fn($v) => $v ?: '-')->values();
         $statusValues = $statusRows->pluck('total')->map(fn($v) => (int) $v)->values();
