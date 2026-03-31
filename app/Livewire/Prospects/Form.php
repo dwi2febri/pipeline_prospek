@@ -46,7 +46,7 @@ class Form extends Component
     public ?string $kode_kecamatan = null;
     public ?string $kode_desa = null;
 
-    public string $status = 'FOLLOW UP';
+    public string $status = 'OPEN';
 
     public array $photos = [];
 
@@ -104,12 +104,13 @@ class Form extends Component
             if ($u->role === 'CABANG' && (int)$p->cabang_id !== (int)$u->cabang_id) {
                 abort(403);
             }
+
             if (($u->role === 'PEGAWAI' || str_starts_with((string)$u->role, 'AO_')) && (int)$p->input_by !== (int)$u->id) {
                 abort(403);
             }
 
-            $this->tanggal_prospek  = (string)$p->tanggal_prospek;
-            $this->nama             = (string)$p->nama;
+            $this->tanggal_prospek  = (string) $p->tanggal_prospek;
+            $this->nama             = (string) $p->nama;
             $this->nik              = $p->nik;
             $this->no_hp            = $p->no_hp;
 
@@ -126,22 +127,22 @@ class Form extends Component
             $this->lokasi_lat       = $p->lokasi_lat;
             $this->lokasi_lng       = $p->lokasi_lng;
 
-            $this->jenis_usaha      = (string)($p->jenis_usaha ?? '');
+            $this->jenis_usaha      = (string) ($p->jenis_usaha ?? '');
             $this->keterangan_usaha = $p->keterangan_usaha;
 
-            $this->jenis_produk     = (string)($p->jenis_produk ?? 'KREDIT');
+            $this->jenis_produk     = (string) ($p->jenis_produk ?? 'KREDIT');
             $this->catatan          = $p->catatan;
 
-            $this->cabang_id        = $p->cabang_id ? (int)$p->cabang_id : null;
-            $this->status           = $p->status ?: 'FOLLOW UP';
+            $this->cabang_id        = $p->cabang_id ? (int) $p->cabang_id : null;
+            $this->status           = $p->status ?: 'OPEN';
         } else {
             $this->tanggal_prospek = now()->toDateString();
 
             $u = auth()->user();
-            $this->cabang_id = $u && $u->cabang_id ? (int)$u->cabang_id : null;
+            $this->cabang_id = $u && $u->cabang_id ? (int) $u->cabang_id : null;
 
             $this->kode_provinsi = '33';
-            $this->status = 'FOLLOW UP';
+            $this->status = 'OPEN';
             $this->jenis_produk = 'KREDIT';
         }
     }
@@ -171,7 +172,7 @@ class Form extends Component
             'keterangan_usaha'  => ['nullable', 'string'],
 
             'jenis_produk'      => ['required', 'string', 'max:60'],
-            'status'            => ['required', 'in:FOLLOW UP,REJECTED,CLOSING'],
+            'status'            => ['required', 'in:OPEN,FOLLOW UP,REJECTED,CLOSING'],
             'catatan'           => ['nullable', 'string'],
 
             'cabang_id'         => ['required', 'integer', 'exists:cabangs,id'],
@@ -184,20 +185,21 @@ class Form extends Component
     protected function messages(): array
     {
         return [
-            'nik.regex'   => 'NIK hanya boleh angka.',
-            'no_hp.regex' => 'No HP hanya boleh angka.',
-            'no_hp.required' => 'No HP wajib diisi.',
+            'nik.regex'        => 'NIK hanya boleh angka.',
+            'no_hp.regex'      => 'No HP hanya boleh angka.',
+            'no_hp.required'   => 'No HP wajib diisi.',
+            'status.in'        => 'Status harus OPEN, FOLLOW UP, REJECTED, atau CLOSING.',
         ];
     }
 
     public function updatedNoHp($value): void
     {
-        $this->no_hp = preg_replace('/[^0-9]/', '', (string)$value);
+        $this->no_hp = preg_replace('/[^0-9]/', '', (string) $value);
     }
 
     public function updatedNik($value): void
     {
-        $this->nik = preg_replace('/[^0-9]/', '', (string)$value);
+        $this->nik = preg_replace('/[^0-9]/', '', (string) $value);
     }
 
     public function closeDuplicateHpModal(): void
@@ -208,7 +210,7 @@ class Form extends Component
 
     protected function normalizeDigits(?string $value): string
     {
-        return preg_replace('/[^0-9]/', '', (string)$value);
+        return preg_replace('/[^0-9]/', '', (string) $value);
     }
 
     protected function isDuplicatePhone(string $phone): bool
@@ -253,7 +255,7 @@ class Form extends Component
         } else {
             $p = new Prospect();
             $p->input_by = $u->id;
-            $p->status = 'FOLLOW UP';
+            $p->status = 'OPEN';
         }
 
         $p->tanggal_prospek   = $this->tanggal_prospek;
@@ -278,7 +280,7 @@ class Form extends Component
         $p->keterangan_usaha  = $this->keterangan_usaha;
 
         $p->jenis_produk      = $this->jenis_produk;
-        $p->status            = $this->status ?: 'FOLLOW UP';
+        $p->status            = $this->status ?: 'OPEN';
         $p->catatan           = $this->catatan;
 
         $p->cabang_id         = $this->cabang_id;
@@ -338,14 +340,14 @@ class Form extends Component
     #[\Livewire\Attributes\On('setLatLngProspek')]
     public function setLatLngProspek($lat, $lng): void
     {
-        $this->lokasi_lat = (string)$lat;
-        $this->lokasi_lng = (string)$lng;
+        $this->lokasi_lat = (string) $lat;
+        $this->lokasi_lng = (string) $lng;
     }
 
     #[\Livewire\Attributes\On('setAlamatProspek')]
     public function setAlamatProspek($alamat): void
     {
-        $this->alamat = (string)$alamat;
+        $this->alamat = (string) $alamat;
     }
 
     public function render()

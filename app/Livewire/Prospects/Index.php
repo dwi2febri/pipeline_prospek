@@ -35,6 +35,12 @@ class Index extends Component
 
     public function setStatus(string $s): void
     {
+        $allowed = ['ALL', 'OPEN', 'FOLLOW UP', 'REJECTED', 'CLOSING'];
+
+        if (!in_array($s, $allowed, true)) {
+            return;
+        }
+
         $this->status = $s;
         $this->resetPage();
     }
@@ -52,7 +58,6 @@ class Index extends Component
 
         session()->flash('ok', 'Data dipindahkan ke Recycle Bin.');
 
-        // kalau item terakhir di halaman terhapus, balik ke halaman valid
         $this->resetPage();
     }
 
@@ -86,7 +91,9 @@ class Index extends Component
                 $w->where('nama', 'like', $s)
                   ->orWhere('no_hp', 'like', $s)
                   ->orWhere('nik', 'like', $s)
-                  ->orWhere('alamat', 'like', $s);
+                  ->orWhere('alamat', 'like', $s)
+                  ->orWhere('status', 'like', $s)
+                  ->orWhere('jenis_produk', 'like', $s);
             });
         }
 
@@ -99,6 +106,7 @@ class Index extends Component
 
         $summary = [
             'TOTAL'     => (clone $baseSummary)->count(),
+            'OPEN'      => (clone $baseSummary)->where('status', 'OPEN')->count(),
             'FOLLOW UP' => (clone $baseSummary)->where('status', 'FOLLOW UP')->count(),
             'REJECTED'  => (clone $baseSummary)->where('status', 'REJECTED')->count(),
             'CLOSING'   => (clone $baseSummary)->where('status', 'CLOSING')->count(),

@@ -5,40 +5,111 @@
   @endif
 
   @php
-    $cards = [
-      ['key'=>'ALL', 'count_key'=>'TOTAL', 'label'=>'Total', 'bg'=>'linear-gradient(135deg,#f59e0b 0%,#d97706 100%)', 'icon'=>'bi-collection'],
-      ['key'=>'FOLLOW UP', 'count_key'=>'FOLLOW UP', 'label'=>'Follow Up', 'bg'=>'linear-gradient(135deg,#10b981 0%,#059669 100%)', 'icon'=>'bi-arrow-repeat'],
-      ['key'=>'REJECTED', 'count_key'=>'REJECTED', 'label'=>'Rejected', 'bg'=>'linear-gradient(135deg,#fb7185 0%,#ef4444 100%)', 'icon'=>'bi-x-circle'],
-      ['key'=>'CLOSING', 'count_key'=>'CLOSING', 'label'=>'Closing', 'bg'=>'linear-gradient(135deg,#60a5fa 0%,#2563eb 100%)', 'icon'=>'bi-check2-circle'],
+    $desktopCards = [
+      ['key'=>'ALL', 'count_key'=>'TOTAL', 'label'=>'Total', 'bg'=>'linear-gradient(135deg,#f59e0b 0%,#d97706 100%)', 'icon'=>'bi-collection', 'text'=>'#fff', 'border'=>'0'],
+      ['key'=>'OPEN', 'count_key'=>'OPEN', 'label'=>'Open', 'bg'=>'linear-gradient(135deg,#6b7280 0%,#4b5563 100%)', 'icon'=>'bi-folder2-open', 'text'=>'#fff', 'border'=>'1px solid #4b5563'],
+      ['key'=>'FOLLOW UP', 'count_key'=>'FOLLOW UP', 'label'=>'Follow Up', 'bg'=>'linear-gradient(135deg,#10b981 0%,#059669 100%)', 'icon'=>'bi-arrow-repeat', 'text'=>'#fff', 'border'=>'0'],
+      ['key'=>'REJECTED', 'count_key'=>'REJECTED', 'label'=>'Rejected', 'bg'=>'linear-gradient(135deg,#fb7185 0%,#ef4444 100%)', 'icon'=>'bi-x-circle', 'text'=>'#fff', 'border'=>'0'],
+      ['key'=>'CLOSING', 'count_key'=>'CLOSING', 'label'=>'Closing', 'bg'=>'linear-gradient(135deg,#60a5fa 0%,#2563eb 100%)', 'icon'=>'bi-check2-circle', 'text'=>'#fff', 'border'=>'0'],
+    ];
+
+    $mobileTopCard = ['key'=>'ALL', 'count_key'=>'TOTAL', 'label'=>'Total', 'bg'=>'linear-gradient(135deg,#f59e0b 0%,#d97706 100%)', 'icon'=>'bi-collection', 'text'=>'#fff', 'border'=>'2px solid #111827'];
+
+    $mobileGridCards = [
+      ['key'=>'OPEN', 'count_key'=>'OPEN', 'label'=>'Open', 'bg'=>'linear-gradient(135deg,#6b7280 0%,#4b5563 100%)', 'icon'=>'bi-folder2-open', 'text'=>'#fff', 'border'=>'1px solid #4b5563'],
+      ['key'=>'FOLLOW UP', 'count_key'=>'FOLLOW UP', 'label'=>'Follow Up', 'bg'=>'linear-gradient(135deg,#10b981 0%,#059669 100%)', 'icon'=>'bi-arrow-repeat', 'text'=>'#fff', 'border'=>'0'],
+      ['key'=>'CLOSING', 'count_key'=>'CLOSING', 'label'=>'Closing', 'bg'=>'linear-gradient(135deg,#60a5fa 0%,#2563eb 100%)', 'icon'=>'bi-check2-circle', 'text'=>'#fff', 'border'=>'0'],
+      ['key'=>'REJECTED', 'count_key'=>'REJECTED', 'label'=>'Rejected', 'bg'=>'linear-gradient(135deg,#fb7185 0%,#ef4444 100%)', 'icon'=>'bi-x-circle', 'text'=>'#fff', 'border'=>'0'],
     ];
   @endphp
 
-  <div class="row g-2">
-    @foreach($cards as $c)
-      <div class="col-12 col-md-3">
-        <button
-          type="button"
-          class="w-100 text-start position-relative p-3"
-          wire:click="setStatus('{{ $c['key'] }}')"
-          style="
-            border: {{ $status === $c['key'] ? '2px solid #111827' : '0' }};
-            border-radius:16px;
-            color:#fff;
-            overflow:hidden;
-            background:{!! $c['bg'] !!};
-            box-shadow:0 12px 30px rgba(15,23,42,.12);
-          "
-        >
-          <div style="font-size:.95rem;opacity:.95;font-weight:700;">{{ $c['label'] }}</div>
-          <div style="font-size:2.1rem;font-weight:900;line-height:1;">
-            {{ $summary[$c['count_key']] ?? 0 }}
-          </div>
-          <div style="position:absolute;right:14px;bottom:10px;opacity:.25;font-size:48px;">
-            <i class="bi {{ $c['icon'] }}"></i>
-          </div>
-        </button>
-      </div>
-    @endforeach
+  {{-- DESKTOP / TABLET --}}
+  <div class="d-none d-md-block">
+    <div class="row g-2">
+      @foreach($desktopCards as $c)
+        <div class="col-12 col-md-6 col-xl">
+          <button
+            type="button"
+            class="w-100 text-start position-relative p-3"
+            wire:click="setStatus('{{ $c['key'] }}')"
+            style="
+              border: {{ $status === $c['key'] ? '2px solid #111827' : $c['border'] }};
+              border-radius:16px;
+              color:{{ $c['text'] }};
+              overflow:hidden;
+              background:{!! $c['bg'] !!};
+              box-shadow:0 12px 30px rgba(15,23,42,.12);
+              min-height:96px;
+            "
+          >
+            <div style="font-size:.95rem;opacity:.95;font-weight:700;">{{ $c['label'] }}</div>
+            <div style="font-size:2.1rem;font-weight:900;line-height:1;">
+              {{ $summary[$c['count_key']] ?? 0 }}
+            </div>
+            <div style="position:absolute;right:14px;bottom:10px;opacity:.22;font-size:48px;">
+              <i class="bi {{ $c['icon'] }}"></i>
+            </div>
+          </button>
+        </div>
+      @endforeach
+    </div>
+  </div>
+
+  {{-- MOBILE / ANDROID --}}
+  <div class="d-block d-md-none">
+    <div class="mb-2">
+      <button
+        type="button"
+        class="w-100 text-start position-relative p-3"
+        wire:click="setStatus('{{ $mobileTopCard['key'] }}')"
+        style="
+          border: {{ $status === $mobileTopCard['key'] ? '2px solid #111827' : $mobileTopCard['border'] }};
+          border-radius:16px;
+          color:{{ $mobileTopCard['text'] }};
+          overflow:hidden;
+          background:{!! $mobileTopCard['bg'] !!};
+          box-shadow:0 12px 30px rgba(15,23,42,.12);
+          min-height:96px;
+        "
+      >
+        <div style="font-size:.95rem;opacity:.95;font-weight:700;">{{ $mobileTopCard['label'] }}</div>
+        <div style="font-size:2.1rem;font-weight:900;line-height:1;">
+          {{ $summary[$mobileTopCard['count_key']] ?? 0 }}
+        </div>
+        <div style="position:absolute;right:14px;bottom:10px;opacity:.22;font-size:48px;">
+          <i class="bi {{ $mobileTopCard['icon'] }}"></i>
+        </div>
+      </button>
+    </div>
+
+    <div class="row g-2">
+      @foreach($mobileGridCards as $c)
+        <div class="col-6">
+          <button
+            type="button"
+            class="w-100 text-start position-relative p-3"
+            wire:click="setStatus('{{ $c['key'] }}')"
+            style="
+              border: {{ $status === $c['key'] ? '2px solid #111827' : $c['border'] }};
+              border-radius:16px;
+              color:{{ $c['text'] }};
+              overflow:hidden;
+              background:{!! $c['bg'] !!};
+              box-shadow:0 12px 30px rgba(15,23,42,.12);
+              min-height:96px;
+            "
+          >
+            <div style="font-size:.95rem;opacity:.95;font-weight:700;">{{ $c['label'] }}</div>
+            <div style="font-size:2rem;font-weight:900;line-height:1;">
+              {{ $summary[$c['count_key']] ?? 0 }}
+            </div>
+            <div style="position:absolute;right:12px;bottom:10px;opacity:.18;font-size:38px;">
+              <i class="bi {{ $c['icon'] }}"></i>
+            </div>
+          </button>
+        </div>
+      @endforeach
+    </div>
   </div>
 
   <div class="card-soft p-3 mt-3">
@@ -79,10 +150,13 @@
 
     @forelse($items as $p)
       @php
-        $badge = 'secondary';
-        if($p->status === 'FOLLOW UP') $badge = 'warning text-dark';
-        elseif($p->status === 'REJECTED') $badge = 'danger';
-        elseif($p->status === 'CLOSING') $badge = 'primary';
+        $badgeClass = 'bg-secondary';
+        $produkBadgeClass = 'bg-light text-dark';
+
+        if($p->status === 'OPEN') $badgeClass = 'bg-info text-dark';
+        elseif($p->status === 'FOLLOW UP') $badgeClass = 'bg-warning text-dark';
+        elseif($p->status === 'REJECTED') $badgeClass = 'bg-danger';
+        elseif($p->status === 'CLOSING') $badgeClass = 'bg-primary';
       @endphp
 
       <div class="card-soft p-3 mb-2" wire:key="prospect-card-{{ $p->id }}">
@@ -90,8 +164,8 @@
           <div class="flex-grow-1">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
               <div class="fw-bold">{{ $p->nama }}</div>
-              <span class="badge bg-{{ $badge }} fw-bold">
-                {{ $p->status }}
+              <span class="badge {{ $badgeClass }} fw-bold">
+                {{ $p->status ?: '-' }}
               </span>
             </div>
 
@@ -106,7 +180,7 @@
               &nbsp;•&nbsp;
               <i class="bi bi-building"></i> {{ $p->cabang->nama_cabang ?? '-' }}
               &nbsp;•&nbsp;
-              <span class="badge bg-light text-dark">{{ $p->jenis_produk }}</span>
+              <span class="badge {{ $produkBadgeClass }}">{{ $p->jenis_produk ?: '-' }}</span>
             </div>
 
             @if($p->alamat)
