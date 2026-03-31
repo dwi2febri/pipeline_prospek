@@ -128,6 +128,7 @@ class ProspectRecap extends Component
                 'kode_cabang',
                 'nama_cabang',
                 'total_pengajuan',
+                'total_open',
                 'total_follow_up',
                 'total_closing',
                 'total_rejected',
@@ -141,7 +142,7 @@ class ProspectRecap extends Component
                 $this->sortDirectionKc = $this->sortDirectionKc === 'asc' ? 'desc' : 'asc';
             } else {
                 $this->sortFieldKc = $field;
-                $this->sortDirectionKc = in_array($field, ['total_pengajuan', 'total_follow_up', 'total_closing', 'total_rejected'], true)
+                $this->sortDirectionKc = in_array($field, ['total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'], true)
                     ? 'desc'
                     : 'asc';
             }
@@ -153,6 +154,7 @@ class ProspectRecap extends Component
                 'job_position',
                 'kode_cabang',
                 'total_pengajuan',
+                'total_open',
                 'total_follow_up',
                 'total_closing',
                 'total_rejected',
@@ -166,7 +168,7 @@ class ProspectRecap extends Component
                 $this->sortDirectionPegawai = $this->sortDirectionPegawai === 'asc' ? 'desc' : 'asc';
             } else {
                 $this->sortFieldPegawai = $field;
-                $this->sortDirectionPegawai = in_array($field, ['total_pengajuan', 'total_follow_up', 'total_closing', 'total_rejected'], true)
+                $this->sortDirectionPegawai = in_array($field, ['total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'], true)
                     ? 'desc'
                     : 'asc';
             }
@@ -224,6 +226,7 @@ class ProspectRecap extends Component
                 'cabangs.kode_cabang',
                 'cabangs.nama_cabang',
                 DB::raw('COUNT(prospects.id) as total_pengajuan'),
+                DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as total_open"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as total_follow_up"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as total_closing"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'REJECTED' THEN 1 ELSE 0 END) as total_rejected"),
@@ -261,6 +264,7 @@ class ProspectRecap extends Component
                 'cabangs.kode_cabang',
                 'cabangs.nama_cabang',
                 DB::raw('COUNT(prospects.id) as total_pengajuan'),
+                DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as total_open"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as total_follow_up"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as total_closing"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'REJECTED' THEN 1 ELSE 0 END) as total_rejected"),
@@ -327,12 +331,13 @@ class ProspectRecap extends Component
             return response()->streamDownload(function () use ($rows, $bulanNama) {
                 echo '<html><head><meta charset="UTF-8"></head><body>';
                 echo '<table border="1">';
-                echo '<tr><th colspan="7" style="font-weight:bold;">Rekap Prospek Per KC Bulan ' . e($bulanNama) . ' ' . e($this->filterTahun) . '</th></tr>';
+                echo '<tr><th colspan="8" style="font-weight:bold;">Rekap Prospek Per KC Bulan ' . e($bulanNama) . ' ' . e($this->filterTahun) . '</th></tr>';
                 echo '<tr>';
                 echo '<th>No</th>';
                 echo '<th>Kode Cabang</th>';
                 echo '<th>Nama Cabang</th>';
                 echo '<th>Jumlah Pengajuan</th>';
+                echo '<th>Open</th>';
                 echo '<th>Follow Up</th>';
                 echo '<th>Closing</th>';
                 echo '<th>Rejected</th>';
@@ -344,6 +349,7 @@ class ProspectRecap extends Component
                     echo '<td>' . e($row->kode_cabang) . '</td>';
                     echo '<td>' . e($row->nama_cabang) . '</td>';
                     echo '<td>' . (int) $row->total_pengajuan . '</td>';
+                    echo '<td>' . (int) $row->total_open . '</td>';
                     echo '<td>' . (int) $row->total_follow_up . '</td>';
                     echo '<td>' . (int) $row->total_closing . '</td>';
                     echo '<td>' . (int) $row->total_rejected . '</td>';
@@ -367,7 +373,7 @@ class ProspectRecap extends Component
         return response()->streamDownload(function () use ($rows, $bulanNama) {
             echo '<html><head><meta charset="UTF-8"></head><body>';
             echo '<table border="1">';
-            echo '<tr><th colspan="10" style="font-weight:bold;">Rekap Prospek Per Pegawai Bulan ' . e($bulanNama) . ' ' . e($this->filterTahun) . '</th></tr>';
+            echo '<tr><th colspan="11" style="font-weight:bold;">Rekap Prospek Per Pegawai Bulan ' . e($bulanNama) . ' ' . e($this->filterTahun) . '</th></tr>';
             echo '<tr>';
             echo '<th>No</th>';
             echo '<th>Username</th>';
@@ -376,6 +382,7 @@ class ProspectRecap extends Component
             echo '<th>Jabatan</th>';
             echo '<th>Cabang</th>';
             echo '<th>Jumlah Pengajuan</th>';
+            echo '<th>Open</th>';
             echo '<th>Follow Up</th>';
             echo '<th>Closing</th>';
             echo '<th>Rejected</th>';
@@ -390,6 +397,7 @@ class ProspectRecap extends Component
                 echo '<td>' . e($row->job_position ?: '-') . '</td>';
                 echo '<td>' . e(($row->kode_cabang ?: '-') . ' - ' . ($row->nama_cabang ?: '-')) . '</td>';
                 echo '<td>' . (int) $row->total_pengajuan . '</td>';
+                echo '<td>' . (int) $row->total_open . '</td>';
                 echo '<td>' . (int) $row->total_follow_up . '</td>';
                 echo '<td>' . (int) $row->total_closing . '</td>';
                 echo '<td>' . (int) $row->total_rejected . '</td>';

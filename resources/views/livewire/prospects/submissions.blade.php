@@ -1,5 +1,300 @@
 <div class="container-fluid px-0">
 
+  <style>
+    .sub-card{
+      border:0;
+      border-radius:24px;
+      background:#ffffff;
+      box-shadow:0 14px 40px rgba(15,23,42,.08);
+    }
+
+    .soft-filter-card{
+      border:1px solid #eef2f7;
+      border-radius:24px;
+      background:linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%);
+      box-shadow:0 10px 28px rgba(15,23,42,.05);
+    }
+
+    .modern-table thead th{
+      border-bottom:1px solid #e9eef5 !important;
+      background:#f8fafc !important;
+      color:#334155;
+      font-size:.92rem;
+      font-weight:800;
+      white-space:nowrap;
+      vertical-align:middle;
+    }
+
+    .modern-table tbody td{
+      border-color:#eef2f7 !important;
+      vertical-align:middle;
+    }
+
+    .row-hover-modern{
+      transition:all .18s ease;
+    }
+    .row-hover-modern:hover{
+      background:#fbfdff;
+    }
+
+    .badge-modern{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:38px;
+      padding:8px 16px;
+      border-radius:999px;
+      font-size:.84rem;
+      font-weight:800;
+      letter-spacing:.01em;
+      border:1px solid transparent;
+      box-shadow:0 8px 20px rgba(15,23,42,.08);
+      white-space:nowrap;
+    }
+
+    .badge-status-open{
+      background:linear-gradient(180deg,#ffffff 0%,#f1f5f9 100%);
+      border-color:#dbe3ee;
+      color:#475569;
+      box-shadow:0 6px 16px rgba(148,163,184,.18);
+    }
+
+    .badge-status-follow{
+      background:linear-gradient(135deg,#ffd84d 0%,#f4b400 100%);
+      color:#3b2f00;
+      box-shadow:0 10px 24px rgba(244,180,0,.24);
+    }
+
+    .badge-status-closing{
+      background:linear-gradient(135deg,#34d399 0%,#059669 100%);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(5,150,105,.24);
+    }
+
+    .badge-status-rejected{
+      background:linear-gradient(135deg,#fb7185 0%,#e11d48 100%);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(225,29,72,.22);
+    }
+
+    .badge-produk-kredit{
+      background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);
+      color:#fff;
+    }
+
+    .badge-produk-tabungan{
+      background:linear-gradient(135deg,#22c55e 0%,#15803d 100%);
+      color:#fff;
+    }
+
+    .badge-produk-deposito{
+      background:linear-gradient(135deg,#facc15 0%,#eab308 100%);
+      color:#3b2f00;
+    }
+
+    .badge-produk-aset{
+      background:linear-gradient(135deg,#374151 0%,#111827 100%);
+      color:#fff;
+    }
+
+    .badge-pengambilan-yes{
+      background:linear-gradient(135deg,#1f2937 0%,#111827 100%);
+      color:#fff;
+    }
+
+    .badge-pengambilan-no{
+      background:linear-gradient(180deg,#ffffff 0%,#f3f4f6 100%);
+      border:1px solid #e5e7eb;
+      color:#6b7280;
+      box-shadow:none;
+    }
+
+    .prospect-name{
+      font-weight:800;
+      font-size:1rem;
+      color:#0f172a;
+      line-height:1.2;
+    }
+
+    .prospect-sub{
+      color:#64748b;
+      font-size:.86rem;
+    }
+
+    .modal-modern .modal-content{
+      border:0;
+      border-radius:28px;
+      overflow:hidden;
+      box-shadow:0 30px 80px rgba(15,23,42,.20);
+      background:
+        radial-gradient(circle at top right, rgba(99,102,241,.08), transparent 28%),
+        linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%);
+    }
+
+    .modal-modern .modal-header{
+      border-bottom:1px solid #edf2f7;
+      padding:22px 24px 18px 24px;
+      background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+    }
+
+    .modal-modern .modal-title{
+      font-size:1.55rem;
+      font-weight:900;
+      color:#1e293b;
+      letter-spacing:-.02em;
+    }
+
+    .modal-modern .modal-body{
+      padding:22px 24px;
+    }
+
+    .modal-modern .modal-footer{
+      border-top:1px solid #edf2f7;
+      padding:18px 24px 22px 24px;
+      background:#fff;
+    }
+
+    .detail-hero{
+      border:1px solid #edf2f7;
+      border-radius:24px;
+      padding:18px;
+      background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+      box-shadow:0 10px 24px rgba(15,23,42,.05);
+    }
+
+    .detail-avatar{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      font-size:1.1rem;
+      color:#1d4ed8;
+      background:linear-gradient(135deg,#dbeafe 0%,#eff6ff 100%);
+      border:1px solid #bfdbfe;
+      flex:0 0 58px;
+    }
+
+    .detail-hero-name{
+      font-size:1.2rem;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.2;
+    }
+
+    .detail-hero-sub{
+      font-size:.9rem;
+      color:#64748b;
+    }
+
+    .detail-grid-card{
+      border:1px solid #edf2f7;
+      border-radius:22px;
+      background:#fff;
+      padding:18px;
+      height:100%;
+      box-shadow:0 10px 24px rgba(15,23,42,.04);
+    }
+
+    .detail-section-title{
+      font-size:.84rem;
+      font-weight:800;
+      color:#94a3b8;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:12px;
+    }
+
+    .detail-item{
+      margin-bottom:14px;
+    }
+
+    .detail-item:last-child{
+      margin-bottom:0;
+    }
+
+    .detail-label{
+      display:block;
+      font-size:.83rem;
+      color:#64748b;
+      margin-bottom:4px;
+    }
+
+    .detail-value{
+      font-size:1rem;
+      font-weight:800;
+      color:#1f2937;
+      line-height:1.45;
+      word-break:break-word;
+    }
+
+    .detail-value-soft{
+      font-size:.95rem;
+      font-weight:700;
+      color:#334155;
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    .detail-full-card{
+      border:1px solid #edf2f7;
+      border-radius:22px;
+      background:#fff;
+      padding:18px;
+      box-shadow:0 10px 24px rgba(15,23,42,.04);
+    }
+
+    .doc-card-modern{
+      border:1px solid #edf2f7;
+      border-radius:20px;
+      padding:10px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(15,23,42,.04);
+      height:100%;
+    }
+
+    .doc-card-modern img{
+      border-radius:16px;
+    }
+
+    .btn-wa-modern{
+      border-radius:999px;
+      padding:8px 16px;
+      font-weight:800;
+      background:linear-gradient(135deg,#22c55e 0%,#15803d 100%);
+      border:0;
+      color:#fff;
+      box-shadow:0 10px 24px rgba(21,128,61,.22);
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .modal-action-card{
+      border:1px solid #edf2f7;
+      border-radius:22px;
+      background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+      padding:18px;
+      box-shadow:0 10px 24px rgba(15,23,42,.04);
+    }
+
+    .mobile-prospect-card{
+      border:0;
+      border-radius:22px;
+      background:#fff;
+      box-shadow:0 12px 30px rgba(15,23,42,.08);
+    }
+
+    .divider-soft{
+      border-top:1px dashed #e5e7eb;
+      margin:2px 0 0 0;
+    }
+  </style>
+
   @if(session('ok'))
     <div class="alert alert-success rounded-4 shadow-sm">
       {{ session('ok') }}
@@ -29,7 +324,7 @@
     </div>
   </div>
 
-  <div class="card-soft p-3 mb-3">
+  <div class="soft-filter-card p-3 mb-3">
     <div class="row g-2 align-items-end">
       <div class="col-12 col-md-4">
         <label class="form-label small text-muted">Cari</label>
@@ -46,6 +341,7 @@
         <label class="form-label small text-muted">Status</label>
         <select class="form-select" wire:model.live="filterStatus">
           <option value="">-- Semua Status --</option>
+          <option value="OPEN">OPEN</option>
           <option value="FOLLOW UP">FOLLOW UP</option>
           <option value="CLOSING">CLOSING</option>
           <option value="REJECTED">REJECTED</option>
@@ -106,70 +402,88 @@
     </div>
   </div>
 
-  <div class="card-soft overflow-hidden d-none d-md-block">
+  <div class="sub-card overflow-hidden d-none d-md-block">
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
+      <table class="table modern-table table-hover align-middle mb-0">
+        <thead>
           <tr>
             <th style="min-width:140px;">Tanggal</th>
             <th style="min-width:240px;">Prospek</th>
-            <th style="min-width:180px;">Pengaju</th>
+            <th style="min-width:220px;">Pengaju</th>
             <th style="min-width:220px;">Cabang</th>
             <th style="min-width:170px;">Rekomendasi Produk</th>
             <th style="min-width:140px;">Status</th>
-            <th style="min-width:140px;">Pengambilan</th>
+            <th style="min-width:180px;">Pengambilan</th>
             <th style="width:120px;" class="text-end">Aksi</th>
           </tr>
         </thead>
         <tbody>
           @forelse($items as $p)
             @php
-              $badgeClass = 'bg-secondary';
-              if($p->status === 'FOLLOW UP') $badgeClass = 'bg-warning text-dark';
-              elseif($p->status === 'CLOSING') $badgeClass = 'bg-success';
-              elseif($p->status === 'REJECTED') $badgeClass = 'bg-danger';
+              $statusClass = 'badge-status-open';
+              if($p->status === 'FOLLOW UP') $statusClass = 'badge-status-follow';
+              elseif($p->status === 'CLOSING') $statusClass = 'badge-status-closing';
+              elseif($p->status === 'REJECTED') $statusClass = 'badge-status-rejected';
 
-              $produkClass = 'bg-secondary';
-              if($p->jenis_produk === 'KREDIT') $produkClass = 'bg-primary';
-              elseif($p->jenis_produk === 'TABUNGAN') $produkClass = 'bg-success';
-              elseif($p->jenis_produk === 'DEPOSITO') $produkClass = 'bg-warning text-dark';
-              elseif($p->jenis_produk === 'ASET') $produkClass = 'bg-dark';
+              $produkClass = 'badge-produk-kredit';
+              if($p->jenis_produk === 'TABUNGAN') $produkClass = 'badge-produk-tabungan';
+              elseif($p->jenis_produk === 'DEPOSITO') $produkClass = 'badge-produk-deposito';
+              elseif($p->jenis_produk === 'ASET') $produkClass = 'badge-produk-aset';
+
+              $pengambilanClass = ((int)($p->is_diambil ?? 0) === 1) ? 'badge-pengambilan-yes' : 'badge-pengambilan-no';
+              $cabangPengaju = optional($p->creator->cabang)->kode_cabang
+                ? optional($p->creator->cabang)->kode_cabang . ' - ' . optional($p->creator->cabang)->nama_cabang
+                : '-';
             @endphp
-            <tr>
-              <td class="small">
+            <tr class="row-hover-modern">
+              <td class="small fw-semibold text-slate-700">
                 {{ \Illuminate\Support\Carbon::parse($p->tanggal_prospek)->format('d/m/Y') }}
               </td>
+
               <td>
-                <div class="fw-bold">{{ $p->nama }}</div>
-                <div class="text-muted small">
-                  {{ $p->no_hp ?: '-' }} <span class="mx-1">•</span> NIK: {{ $p->nik ?: '-' }}
+                <div class="prospect-name">{{ $p->nama }}</div>
+                <div class="prospect-sub mt-1">
+                  {{ $p->no_hp ?: '-' }}
+                  <span class="mx-1">•</span>
+                  NIK: {{ $p->nik ?: '-' }}
                 </div>
               </td>
+
               <td class="small">
-                <div class="fw-semibold">{{ $p->creator->name ?? '-' }}</div>
+                <div class="fw-bold text-dark">{{ $p->creator->name ?? '-' }}</div>
                 <div class="text-muted">{{ $p->creator->nama_lengkap ?? '-' }}</div>
+                <div class="text-muted">{{ $cabangPengaju }}</div>
               </td>
+
               <td class="small">
-                {{ $p->cabang ? ($p->cabang->kode_cabang.' - '.$p->cabang->nama_cabang) : '-' }}
+                <div class="fw-semibold text-dark">
+                  {{ $p->cabang ? ($p->cabang->kode_cabang.' - '.$p->cabang->nama_cabang) : '-' }}
+                </div>
               </td>
+
               <td>
-                <span class="badge {{ $produkClass }} rounded-pill px-3 py-2">
+                <span class="badge-modern {{ $produkClass }}">
                   {{ $p->jenis_produk ?: '-' }}
                 </span>
               </td>
+
               <td>
-                <span class="badge {{ $badgeClass }} rounded-pill px-3 py-2">
+                <span class="badge-modern {{ $statusClass }}">
                   {{ $p->status ?: '-' }}
                 </span>
               </td>
+
               <td class="small">
                 @if((int)($p->is_diambil ?? 0) === 1)
-                  <span class="badge bg-dark rounded-pill px-3 py-2">Diambil</span>
-                  <div class="text-muted mt-1">{{ $p->diambil_oleh ?: '-' }}</div>
+                  <span class="badge-modern {{ $pengambilanClass }}">Diambil</span>
+                  <div class="text-muted mt-2 fw-semibold">
+                    {{ $namaPengambilMap[$p->diambil_oleh] ?? ($p->diambil_oleh ?: '-') }}
+                  </div>
                 @else
-                  <span class="badge bg-light text-dark rounded-pill px-3 py-2">Belum</span>
+                  <span class="badge-modern {{ $pengambilanClass }}">Belum</span>
                 @endif
               </td>
+
               <td class="text-end">
                 <button type="button"
                         class="btn btn-outline-primary btn-sm rounded-pill px-3"
@@ -193,20 +507,29 @@
   <div class="d-block d-md-none">
     @forelse($items as $p)
       @php
-        $badgeClass = 'bg-secondary';
-        if($p->status === 'FOLLOW UP') $badgeClass = 'bg-warning text-dark';
-        elseif($p->status === 'CLOSING') $badgeClass = 'bg-success';
-        elseif($p->status === 'REJECTED') $badgeClass = 'bg-danger';
+        $statusClass = 'badge-status-open';
+        if($p->status === 'FOLLOW UP') $statusClass = 'badge-status-follow';
+        elseif($p->status === 'CLOSING') $statusClass = 'badge-status-closing';
+        elseif($p->status === 'REJECTED') $statusClass = 'badge-status-rejected';
 
-        $produkClass = 'bg-secondary';
-        if($p->jenis_produk === 'KREDIT') $produkClass = 'bg-primary';
-        elseif($p->jenis_produk === 'TABUNGAN') $produkClass = 'bg-success';
-        elseif($p->jenis_produk === 'DEPOSITO') $produkClass = 'bg-warning text-dark';
-        elseif($p->jenis_produk === 'ASET') $produkClass = 'bg-dark';
+        $produkClass = 'badge-produk-kredit';
+        if($p->jenis_produk === 'TABUNGAN') $produkClass = 'badge-produk-tabungan';
+        elseif($p->jenis_produk === 'DEPOSITO') $produkClass = 'badge-produk-deposito';
+        elseif($p->jenis_produk === 'ASET') $produkClass = 'badge-produk-aset';
+
+        $pengambilanClass = ((int)($p->is_diambil ?? 0) === 1) ? 'badge-pengambilan-yes' : 'badge-pengambilan-no';
+        $cabangPengaju = optional($p->creator->cabang)->kode_cabang
+          ? optional($p->creator->cabang)->kode_cabang . ' - ' . optional($p->creator->cabang)->nama_cabang
+          : '-';
       @endphp
 
-      <div class="card-soft p-3 mb-2">
-        <div class="fw-bold">{{ $p->nama }}</div>
+      <div class="mobile-prospect-card p-3 mb-2">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+          <div class="fw-bold fs-6">{{ $p->nama }}</div>
+          <div class="text-muted small">
+            {{ \Illuminate\Support\Carbon::parse($p->tanggal_prospek)->format('d/m/Y') }}
+          </div>
+        </div>
 
         <div class="text-muted small mt-1">
           <i class="bi bi-telephone"></i> {{ $p->no_hp ?: '-' }}
@@ -215,9 +538,6 @@
         </div>
 
         <div class="text-muted small mt-1">
-          <i class="bi bi-calendar-event"></i>
-          {{ \Illuminate\Support\Carbon::parse($p->tanggal_prospek)->format('d/m/Y') }}
-          &nbsp;•&nbsp;
           <i class="bi bi-building"></i>
           {{ $p->cabang->kode_cabang ?? '-' }}{{ $p->cabang ? ' - '.$p->cabang->nama_cabang : '' }}
         </div>
@@ -230,21 +550,27 @@
           @endif
         </div>
 
-        <div class="mt-2 d-flex flex-wrap gap-2">
-          <span class="badge {{ $produkClass }} rounded-pill px-3 py-2 fw-bold">
+        <div class="text-muted small mt-1">
+          <i class="bi bi-shop"></i> {{ $cabangPengaju }}
+        </div>
+
+        <div class="divider-soft my-3"></div>
+
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge-modern {{ $produkClass }}">
             {{ $p->jenis_produk ?: '-' }}
           </span>
 
-          <span class="badge {{ $badgeClass }} rounded-pill px-3 py-2 fw-bold">
+          <span class="badge-modern {{ $statusClass }}">
             {{ $p->status ?: '-' }}
           </span>
 
           @if((int)($p->is_diambil ?? 0) === 1)
-            <span class="badge bg-dark rounded-pill px-3 py-2 fw-bold">
-              Diambil: {{ $p->diambil_oleh ?: '-' }}
+            <span class="badge-modern {{ $pengambilanClass }}">
+              Diambil: {{ $namaPengambilMap[$p->diambil_oleh] ?? ($p->diambil_oleh ?: '-') }}
             </span>
           @else
-            <span class="badge bg-light text-dark rounded-pill px-3 py-2 fw-bold">
+            <span class="badge-modern {{ $pengambilanClass }}">
               Belum Diambil
             </span>
           @endif
@@ -259,7 +585,7 @@
         </div>
       </div>
     @empty
-      <div class="card-soft p-4 text-center text-muted">
+      <div class="sub-card p-4 text-center text-muted">
         Belum ada pengajuan prospek dari pegawai / AO.
       </div>
     @endforelse
@@ -269,12 +595,12 @@
     {{ $items->links() }}
   </div>
 
-  <div wire:ignore.self class="modal fade" id="prospectDetailModal" tabindex="-1" aria-hidden="true">
+  <div wire:ignore.self class="modal fade modal-modern" id="prospectDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-sm-down">
-      <div class="modal-content border-0" style="border-radius:20px; overflow:hidden;">
+      <div class="modal-content">
         <div class="modal-header">
           <div>
-            <h5 class="modal-title fw-bold mb-0">Detail Prospek Diajukan</h5>
+            <h5 class="modal-title mb-1">Detail Prospek Diajukan</h5>
             <div class="text-muted small">ID Prospek: {{ $detail->id ?? '-' }}</div>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -286,7 +612,7 @@
             @if($showTakenMessage && !$canViewDetail)
               <div class="alert alert-warning rounded-4 mb-0">
                 Prospek ini <b>sudah diambil</b> oleh
-                <b>{{ $takenByUsername ?: '-' }}</b>.
+                <b>{{ $takenByFullName ?: ($takenByUsername ?: '-') }}</b>.
                 Anda tidak bisa melihat detailnya.
               </div>
             @elseif(!$canViewDetail)
@@ -294,242 +620,315 @@
                 Anda tidak berhak melihat detail prospek ini.
               </div>
             @else
+
+              @php
+                $detailStatusClass = 'badge-status-open';
+                if($detail->status === 'FOLLOW UP') $detailStatusClass = 'badge-status-follow';
+                elseif($detail->status === 'CLOSING') $detailStatusClass = 'badge-status-closing';
+                elseif($detail->status === 'REJECTED') $detailStatusClass = 'badge-status-rejected';
+
+                $detailProdukClass = 'badge-produk-kredit';
+                if($detail->jenis_produk === 'TABUNGAN') $detailProdukClass = 'badge-produk-tabungan';
+                elseif($detail->jenis_produk === 'DEPOSITO') $detailProdukClass = 'badge-produk-deposito';
+                elseif($detail->jenis_produk === 'ASET') $detailProdukClass = 'badge-produk-aset';
+
+                $detailPengambilanClass = ((int)($detail->is_diambil ?? 0) === 1) ? 'badge-pengambilan-yes' : 'badge-pengambilan-no';
+                $detailCabangPengaju = optional($detail->creator->cabang)->kode_cabang
+                  ? optional($detail->creator->cabang)->kode_cabang . ' - ' . optional($detail->creator->cabang)->nama_cabang
+                  : '-';
+              @endphp
+
+              <div class="detail-hero mb-4">
+                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="detail-avatar">
+                      {{ strtoupper(substr((string)($detail->nama ?? 'P'),0,1)) }}
+                    </div>
+                    <div>
+                      <div class="detail-hero-name">{{ $detail->nama ?: '-' }}</div>
+                      <div class="detail-hero-sub mt-1">
+                        {{ \Illuminate\Support\Carbon::parse($detail->tanggal_prospek)->format('d/m/Y') }}
+                        <span class="mx-1">•</span>
+                        {{ $detail->cabang ? ($detail->cabang->kode_cabang.' - '.$detail->cabang->nama_cabang) : '-' }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="badge-modern {{ $detailProdukClass }}">
+                      {{ $detail->jenis_produk ?: '-' }}
+                    </span>
+                    <span class="badge-modern {{ $detailStatusClass }}">
+                      {{ $detail->status ?: '-' }}
+                    </span>
+                    <span class="badge-modern {{ $detailPengambilanClass }}">
+                      @if((int)($detail->is_diambil ?? 0) === 1)
+                        Diambil
+                      @else
+                        Belum
+                      @endif
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div class="row g-3">
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Nama Prospek</div>
-                  <div class="fw-semibold">{{ $detail->nama }}</div>
-                </div>
+                <div class="col-12 col-lg-6">
+                  <div class="detail-grid-card">
+                    <div class="detail-section-title">Informasi Prospek</div>
 
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Tanggal Prospek</div>
-                  <div class="fw-semibold">{{ \Illuminate\Support\Carbon::parse($detail->tanggal_prospek)->format('d/m/Y') }}</div>
-                </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Nama Prospek</span>
+                      <div class="detail-value">{{ $detail->nama ?: '-' }}</div>
+                    </div>
 
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">No HP</div>
+                    <div class="detail-item">
+                      <span class="detail-label">No HP</span>
 
-                  @php
-                    $waNumber = preg_replace('/[^0-9]/', '', (string) ($detail->no_hp ?? ''));
+                      @php
+                        $waNumber = preg_replace('/[^0-9]/', '', (string) ($detail->no_hp ?? ''));
 
-                    if ($waNumber !== '') {
-                      if (substr($waNumber, 0, 1) === '0') {
-                        $waNumber = '62' . substr($waNumber, 1);
-                      } elseif (substr($waNumber, 0, 2) !== '62') {
-                        $waNumber = '62' . $waNumber;
-                      }
-                    }
-                  @endphp
+                        if ($waNumber !== '') {
+                          if (substr($waNumber, 0, 1) === '0') {
+                            $waNumber = '62' . substr($waNumber, 1);
+                          } elseif (substr($waNumber, 0, 2) !== '62') {
+                            $waNumber = '62' . $waNumber;
+                          }
+                        }
+                      @endphp
 
-                  <div class="d-flex flex-wrap align-items-center gap-2">
-                    <div class="fw-semibold">{{ $detail->no_hp ?: '-' }}</div>
+                      <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="detail-value">{{ $detail->no_hp ?: '-' }}</div>
 
-                    @if(!empty($detail->no_hp) && !empty($waNumber))
-                      <a href="https://wa.me/{{ $waNumber }}"
-                         target="_blank"
-                         class="btn btn-success btn-sm rounded-pill px-3">
-                        <i class="bi bi-whatsapp me-1"></i> WA
-                      </a>
-                    @endif
+                        @if(!empty($detail->no_hp) && !empty($waNumber))
+                          <a href="https://wa.me/{{ $waNumber }}"
+                             target="_blank"
+                             class="btn-wa-modern">
+                            <i class="bi bi-whatsapp"></i> WA
+                          </a>
+                        @endif
+                      </div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">NIK</span>
+                      <div class="detail-value-soft">{{ $detail->nik ?: '-' }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Tanggal Prospek</span>
+                      <div class="detail-value-soft">{{ \Illuminate\Support\Carbon::parse($detail->tanggal_prospek)->format('d/m/Y') }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Jenis Produk</span>
+                      <div class="detail-value-soft">{{ $detail->jenis_produk ?: '-' }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Jenis Usaha</span>
+                      <div class="detail-value-soft">{{ $detail->jenis_usaha ?: '-' }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Keterangan Usaha</span>
+                      <div class="detail-value-soft">{{ $detail->keterangan_usaha ?: '-' }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Catatan</span>
+                      <div class="detail-value-soft">{{ $detail->catatan ?: '-' }}</div>
+                    </div>
                   </div>
                 </div>
 
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">NIK</div>
-                  <div class="fw-semibold">{{ $detail->nik ?: '-' }}</div>
-                </div>
+                <div class="col-12 col-lg-6">
+                  <div class="detail-grid-card">
+                    <div class="detail-section-title">Informasi Pengaju & Lokasi</div>
 
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Pengaju</div>
-                  <div class="fw-semibold">{{ $detail->creator->name ?? '-' }}</div>
-                  <div class="text-muted small">{{ $detail->creator->nama_lengkap ?? '-' }}</div>
-                </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Pengaju</span>
+                      <div class="detail-value">{{ $detail->creator->name ?? '-' }}</div>
+                      <div class="text-muted small mt-1">{{ $detail->creator->nama_lengkap ?? '-' }}</div>
+                    </div>
 
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Cabang</div>
-                  <div class="fw-semibold">
-                    {{ $detail->cabang ? ($detail->cabang->kode_cabang.' - '.$detail->cabang->nama_cabang) : '-' }}
+                    <div class="detail-item">
+                      <span class="detail-label">Cabang Pengaju</span>
+                      <div class="detail-value-soft">{{ $detailCabangPengaju }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Cabang Prospek</span>
+                      <div class="detail-value-soft">
+                        {{ $detail->cabang ? ($detail->cabang->kode_cabang.' - '.$detail->cabang->nama_cabang) : '-' }}
+                      </div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Status Saat Ini</span>
+                      <div class="detail-value-soft">{{ $detail->status ?: '-' }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Diambil</span>
+                      <div class="detail-value-soft">
+                        @if((int)($detail->is_diambil ?? 0) === 1)
+                          YA
+                          <span class="text-muted">- {{ $takenByFullName ?: ($takenByUsername ?: '-') }}</span>
+                        @else
+                          TIDAK
+                        @endif
+                      </div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Alamat</span>
+                      <div class="detail-value-soft">{{ $detail->alamat ?: '-' }}</div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                      <div class="col-12 col-md-4">
+                        <span class="detail-label">Kab/Kota</span>
+                        <div class="detail-value-soft">{{ $detail->kab_kota ?: '-' }}</div>
+                      </div>
+                      <div class="col-12 col-md-4">
+                        <span class="detail-label">Kecamatan</span>
+                        <div class="detail-value-soft">{{ $detail->kecamatan ?: '-' }}</div>
+                      </div>
+                      <div class="col-12 col-md-4">
+                        <span class="detail-label">Desa</span>
+                        <div class="detail-value-soft">{{ $detail->desa ?: '-' }}</div>
+                      </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                      <div class="col-12 col-md-6">
+                        <span class="detail-label">Latitude</span>
+                        <div class="detail-value-soft">{{ $detail->lokasi_lat ?: '-' }}</div>
+                      </div>
+                      <div class="col-12 col-md-6">
+                        <span class="detail-label">Longitude</span>
+                        <div class="detail-value-soft">{{ $detail->lokasi_lng ?: '-' }}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Jenis Produk</div>
-                  <div class="fw-semibold">{{ $detail->jenis_produk ?: '-' }}</div>
-                </div>
+                <div class="col-12">
+                  <div class="detail-full-card">
+                    <div class="detail-section-title">Titik Lokasi</div>
 
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Jenis Usaha</div>
-                  <div class="fw-semibold">
-                    {{ $detail->jenis_usaha ?: '-' }}
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Status Saat Ini</div>
-                  <div class="fw-semibold">{{ $detail->status ?: '-' }}</div>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Diambil</div>
-                  <div class="fw-semibold">
-                    @if((int)($detail->is_diambil ?? 0) === 1)
-                      YA
-                      <span class="text-muted">- {{ $detail->diambil_oleh ?: '-' }}</span>
+                    @if(!empty($detail->lokasi_lat) && !empty($detail->lokasi_lng))
+                      <div id="detailProspectMap"
+                           data-lat="{{ $detail->lokasi_lat }}"
+                           data-lng="{{ $detail->lokasi_lng }}"
+                           data-title="{{ $detail->nama }}"
+                           data-alamat="{{ $detail->alamat }}"
+                           style="height:320px;border-radius:18px;overflow:hidden;border:1px solid #e5e7eb;"></div>
                     @else
-                      TIDAK
+                      <div class="text-muted">Koordinat lokasi belum tersedia.</div>
                     @endif
                   </div>
                 </div>
 
                 <div class="col-12">
-                  <div class="small text-muted">Alamat</div>
-                  <div class="fw-semibold">{{ $detail->alamat ?: '-' }}</div>
-                </div>
+                  <div class="detail-full-card">
+                    <div class="detail-section-title">Foto / Dokumen</div>
 
-                <div class="col-12 col-md-4">
-                  <div class="small text-muted">Kab/Kota</div>
-                  <div class="fw-semibold">{{ $detail->kab_kota ?: '-' }}</div>
-                </div>
+                    @if($detail->documents && $detail->documents->count())
+                      <div class="row g-3">
+                        @foreach($detail->documents as $doc)
+                          <div class="col-6 col-md-4 col-lg-3">
+                            <div class="doc-card-modern">
+                              @php
+                                $path = $doc->file_path ?? '';
+                                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                                $isImage = in_array($ext, ['jpg','jpeg','png','webp','gif']);
+                              @endphp
 
-                <div class="col-12 col-md-4">
-                  <div class="small text-muted">Kecamatan</div>
-                  <div class="fw-semibold">{{ $detail->kecamatan ?: '-' }}</div>
-                </div>
+                              @if($isImage)
+                                <a href="{{ $doc->url }}" target="_blank">
+                                  <img src="{{ $doc->url }}"
+                                       class="img-fluid w-100"
+                                       style="height:180px;object-fit:cover;">
+                                </a>
+                              @else
+                                <div class="text-muted small mb-2">File non-gambar</div>
+                                <a href="{{ $doc->url }}" target="_blank" class="btn btn-light btn-sm rounded-pill">
+                                  Buka File
+                                </a>
+                              @endif
 
-                <div class="col-12 col-md-4">
-                  <div class="small text-muted">Desa</div>
-                  <div class="fw-semibold">{{ $detail->desa ?: '-' }}</div>
-                </div>
-
-                <div class="col-12">
-                  <div class="small text-muted">Keterangan Usaha</div>
-                  <div class="fw-semibold">{{ $detail->keterangan_usaha ?: '-' }}</div>
-                </div>
-
-                <div class="col-12">
-                  <div class="small text-muted">Catatan</div>
-                  <div class="fw-semibold">{{ $detail->catatan ?: '-' }}</div>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Latitude</div>
-                  <div class="fw-semibold">{{ $detail->lokasi_lat ?: '-' }}</div>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted">Longitude</div>
-                  <div class="fw-semibold">{{ $detail->lokasi_lng ?: '-' }}</div>
-                </div>
-
-                <div class="col-12">
-                  <hr>
-                  <div class="fw-semibold mb-2">Titik Lokasi</div>
-
-                  @if(!empty($detail->lokasi_lat) && !empty($detail->lokasi_lng))
-                    <div id="detailProspectMap"
-                         data-lat="{{ $detail->lokasi_lat }}"
-                         data-lng="{{ $detail->lokasi_lng }}"
-                         data-title="{{ $detail->nama }}"
-                         data-alamat="{{ $detail->alamat }}"
-                         style="height:320px;border-radius:18px;overflow:hidden;border:1px solid #e5e7eb;"></div>
-                  @else
-                    <div class="text-muted">Koordinat lokasi belum tersedia.</div>
-                  @endif
-                </div>
-
-                <div class="col-12">
-                  <hr>
-                  <div class="fw-semibold mb-2">Foto / Dokumen</div>
-
-                  @if($detail->documents && $detail->documents->count())
-                    <div class="row g-2">
-                      @foreach($detail->documents as $doc)
-                        <div class="col-6 col-md-4">
-                          <div class="border rounded-4 p-2 h-100">
-                            @php
-                              $path = $doc->file_path ?? '';
-                              $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-                              $isImage = in_array($ext, ['jpg','jpeg','png','webp','gif']);
-                            @endphp
-
-                            @if($isImage)
-                              <a href="{{ $doc->url }}" target="_blank">
-                                <img src="{{ $doc->url }}"
-                                     class="img-fluid rounded-3"
-                                     style="width:100%;height:180px;object-fit:cover;">
-                              </a>
-                            @else
-                              <div class="text-muted small mb-2">File non-gambar</div>
-                              <a href="{{ $doc->url }}" target="_blank" class="btn btn-light btn-sm rounded-pill">
-                                Buka File
-                              </a>
-                            @endif
-
-                            <div class="small text-muted mt-2 text-break">
-                              {{ basename($doc->file_path ?? '-') }}
+                              <div class="small text-muted mt-2 text-break">
+                                {{ basename($doc->file_path ?? '-') }}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      @endforeach
-                    </div>
-                  @else
-                    <div class="text-muted">Belum ada foto / dokumen.</div>
-                  @endif
+                        @endforeach
+                      </div>
+                    @else
+                      <div class="text-muted">Belum ada foto / dokumen.</div>
+                    @endif
+                  </div>
                 </div>
 
                 @if(!$hideActionForm)
-                  <div class="col-12">
-                    <hr>
-                    <div class="fw-semibold mb-2">Status Pengambilan</div>
+                  <div class="col-12 col-lg-6">
+                    <div class="modal-action-card h-100">
+                      <div class="detail-section-title">Status Pengambilan</div>
 
-                    <div class="row g-2 align-items-end">
-                      <div class="col-12 col-md-7">
-                        <label class="form-label small text-muted">Diambil / Tidak Diambil</label>
-                        <select class="form-select" wire:model.live="ambilStatus">
-                          <option value="0">TIDAK DIAMBIL</option>
-                          <option value="1">DIAMBIL</option>
-                        </select>
-                      </div>
+                      <div class="row g-2 align-items-end">
+                        <div class="col-12">
+                          <label class="form-label small text-muted">Diambil / Tidak Diambil</label>
+                          <select class="form-select" wire:model.live="ambilStatus">
+                            <option value="0">TIDAK DIAMBIL</option>
+                            <option value="1">DIAMBIL</option>
+                          </select>
+                        </div>
 
-                      <div class="col-12 col-md-5">
-                        <button type="button"
-                                class="btn btn-dark w-100 rounded-pill"
-                                wire:click="updateAmbilStatus"
-                                wire:loading.attr="disabled"
-                                wire:target="updateAmbilStatus">
-                          <span wire:loading.remove wire:target="updateAmbilStatus">Simpan Pengambilan</span>
-                          <span wire:loading wire:target="updateAmbilStatus">Menyimpan...</span>
-                        </button>
+                        <div class="col-12">
+                          <button type="button"
+                                  class="btn btn-dark w-100 rounded-pill"
+                                  wire:click="updateAmbilStatus"
+                                  wire:loading.attr="disabled"
+                                  wire:target="updateAmbilStatus">
+                            <span wire:loading.remove wire:target="updateAmbilStatus">Simpan Pengambilan</span>
+                            <span wire:loading wire:target="updateAmbilStatus">Menyimpan...</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div class="col-12">
-                    <hr>
-                    <div class="fw-semibold mb-2">Update Status (opsional)</div>
+                  <div class="col-12 col-lg-6">
+                    <div class="modal-action-card h-100">
+                      <div class="detail-section-title">Update Status</div>
 
-                    <div class="row g-2 align-items-end">
-                      <div class="col-12 col-md-7">
-                        <label class="form-label small text-muted">Pilih Status</label>
-                        <select class="form-select" wire:model.live="statusUpdate">
-                          <option value="">-- Pilih Status --</option>
-                          <option value="FOLLOW UP">FOLLOW UP</option>
-                          <option value="CLOSING">CLOSING</option>
-                          <option value="REJECTED">REJECTED</option>
-                        </select>
-                        @error('statusUpdate')
-                          <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                      </div>
+                      <div class="row g-2 align-items-end">
+                        <div class="col-12">
+                          <label class="form-label small text-muted">Pilih Status</label>
+                          <select class="form-select" wire:model.live="statusUpdate">
+                            <option value="">-- Pilih Status --</option>
+                            <option value="OPEN">OPEN</option>
+                            <option value="FOLLOW UP">FOLLOW UP</option>
+                            <option value="CLOSING">CLOSING</option>
+                            <option value="REJECTED">REJECTED</option>
+                          </select>
+                          @error('statusUpdate')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                          @enderror
+                        </div>
 
-                      <div class="col-12 col-md-5">
-                        <button type="button"
-                                class="btn btn-primary w-100 rounded-pill"
-                                wire:click="updateStatus"
-                                wire:loading.attr="disabled"
-                                wire:target="updateStatus">
-                          <span wire:loading.remove wire:target="updateStatus">Simpan Status</span>
-                          <span wire:loading wire:target="updateStatus">Menyimpan...</span>
-                        </button>
+                        <div class="col-12">
+                          <button type="button"
+                                  class="btn btn-primary w-100 rounded-pill"
+                                  wire:click="updateStatus"
+                                  wire:loading.attr="disabled"
+                                  wire:target="updateStatus">
+                            <span wire:loading.remove wire:target="updateStatus">Simpan Status</span>
+                            <span wire:loading wire:target="updateStatus">Menyimpan...</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -596,7 +995,7 @@ document.addEventListener('livewire:init', function () {
         const modalEl = document.getElementById('prospectDetailModal');
         if (!modalEl || typeof bootstrap === 'undefined') return;
 
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
+        bootstrap.Modal.getOrCreateInstance(modalEl, {
             backdrop: true,
             keyboard: true
         });

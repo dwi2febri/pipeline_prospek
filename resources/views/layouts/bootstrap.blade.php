@@ -242,10 +242,10 @@
     }
 
     .page-wrap{
-      width:100%;
-      padding:18px;
-      max-width:1400px;
-      margin:0 auto;
+        width:100%;
+        padding:18px;
+        max-width:none;
+        margin:0;
     }
 
     .content-wrap{padding-bottom:78px;}

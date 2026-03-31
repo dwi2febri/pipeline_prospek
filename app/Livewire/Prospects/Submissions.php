@@ -5,6 +5,7 @@ namespace App\Livewire\Prospects;
 use App\Models\Cabang;
 use App\Models\Prospect;
 use App\Models\ProspectNotification;
+use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -28,6 +29,7 @@ class Submissions extends Component
     public bool $canViewDetail = false;
     public bool $showTakenMessage = false;
     public ?string $takenByUsername = null;
+    public ?string $takenByFullName = null;
     public bool $isAdminOrManagement = false;
     public bool $hideActionForm = false;
     public bool $lockCabangFilter = false;
@@ -147,6 +149,25 @@ class Submissions extends Component
         return in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'], true);
     }
 
+    protected function getNamaLengkapUserByUsername(?string $username): ?string
+    {
+        $username = trim((string) $username);
+
+        if ($username === '') {
+            return null;
+        }
+
+        $user = User::query()
+            ->where('name', $username)
+            ->first(['name', 'nama_lengkap']);
+
+        if (!$user) {
+            return $username;
+        }
+
+        return $user->nama_lengkap ?: $user->name;
+    }
+
     protected function baseQuery()
     {
         $u = auth()->user();
@@ -157,15 +178,19 @@ class Submissions extends Component
         }
 
         return Prospect::query()
-            ->with(['cabang', 'creator'])
+            ->with([
+                'cabang',
+                'creator',
+                'creator.cabang',
+            ])
             ->when(trim($this->search) !== '', function ($q) {
                 $s = '%' . trim($this->search) . '%';
                 $q->where(function ($w) use ($s) {
                     $w->where('nama', 'like', $s)
-                      ->orWhere('no_hp', 'like', $s)
-                      ->orWhere('nik', 'like', $s)
-                      ->orWhere('status', 'like', $s)
-                      ->orWhere('diambil_oleh', 'like', $s);
+                        ->orWhere('no_hp', 'like', $s)
+                        ->orWhere('nik', 'like', $s)
+                        ->orWhere('status', 'like', $s)
+                        ->orWhere('diambil_oleh', 'like', $s);
                 });
             })
             ->when($this->filterStatus !== null && $this->filterStatus !== '', function ($q) {
@@ -199,7 +224,7 @@ class Submissions extends Component
     public function exportExcel()
     {
         $rows = $this->baseQuery()
-            ->with(['cabang', 'creator'])
+            ->with(['cabang', 'creator', 'creator.cabang'])
             ->latest('tanggal_prospek')
             ->latest('id')
             ->get();
@@ -212,7 +237,7 @@ class Submissions extends Component
         $html .= '<body>';
         $html .= '<table border="1">';
         $html .= '<tr>';
-        $html .= '<th colspan="19" style="font-weight:bold; font-size:16px;">DATA PROSPEK DIAJUKAN</th>';
+        $html .= '<th colspan="22" style="font-weight:bold; font-size:16px;">DATA PROSPEK DIAJUKAN</th>';
         $html .= '</tr>';
 
         $html .= '<tr>';
@@ -222,12 +247,15 @@ class Submissions extends Component
         $html .= '<th>NIK</th>';
         $html .= '<th>Username Pengaju</th>';
         $html .= '<th>Nama Lengkap Pengaju</th>';
-        $html .= '<th>Kode Cabang</th>';
-        $html .= '<th>Nama Cabang</th>';
+        $html .= '<th>Cabang Pengaju</th>';
+        $html .= '<th>Kode Cabang Prospek</th>';
+        $html .= '<th>Nama Cabang Prospek</th>';
         $html .= '<th>Jenis Produk</th>';
+        $html .= '<th>Jenis Usaha</th>';
         $html .= '<th>Status</th>';
         $html .= '<th>Status Pengambilan</th>';
-        $html .= '<th>Diambil Oleh</th>';
+        $html .= '<th>Username Pengambil</th>';
+        $html .= '<th>Nama Lengkap Pengambil</th>';
         $html .= '<th>Alamat</th>';
         $html .= '<th>Kab/Kota</th>';
         $html .= '<th>Kecamatan</th>';
@@ -239,6 +267,11 @@ class Submissions extends Component
         $html .= '</tr>';
 
         foreach ($rows as $p) {
+            $namaPengambil = $this->getNamaLengkapUserByUsername($p->diambil_oleh);
+            $cabangPengaju = optional($p->creator->cabang)->kode_cabang
+                ? optional($p->creator->cabang)->kode_cabang . ' - ' . optional($p->creator->cabang)->nama_cabang
+                : '-';
+
             $html .= '<tr>';
             $html .= '<td>' . $this->esc(optional($p->tanggal_prospek ? \Illuminate\Support\Carbon::parse($p->tanggal_prospek) : null)->format('d/m/Y')) . '</td>';
             $html .= '<td>' . $this->esc($p->nama) . '</td>';
@@ -246,12 +279,15 @@ class Submissions extends Component
             $html .= '<td style="mso-number-format:\'@\';">' . $this->esc($p->nik) . '</td>';
             $html .= '<td>' . $this->esc(optional($p->creator)->name) . '</td>';
             $html .= '<td>' . $this->esc(optional($p->creator)->nama_lengkap) . '</td>';
+            $html .= '<td>' . $this->esc($cabangPengaju) . '</td>';
             $html .= '<td style="mso-number-format:\'@\';">' . $this->esc(optional($p->cabang)->kode_cabang) . '</td>';
             $html .= '<td>' . $this->esc(optional($p->cabang)->nama_cabang) . '</td>';
             $html .= '<td>' . $this->esc($p->jenis_produk) . '</td>';
+            $html .= '<td>' . $this->esc($p->jenis_usaha) . '</td>';
             $html .= '<td>' . $this->esc($p->status) . '</td>';
             $html .= '<td>' . ((int)($p->is_diambil ?? 0) === 1 ? 'DIAMBIL' : 'BELUM') . '</td>';
             $html .= '<td>' . $this->esc($p->diambil_oleh) . '</td>';
+            $html .= '<td>' . $this->esc($namaPengambil) . '</td>';
             $html .= '<td>' . $this->esc($p->alamat) . '</td>';
             $html .= '<td>' . $this->esc($p->kab_kota) . '</td>';
             $html .= '<td>' . $this->esc($p->kecamatan) . '</td>';
@@ -279,16 +315,16 @@ class Submissions extends Component
         $u = auth()->user();
         $role = $this->currentUserRole();
 
-        $p = Prospect::with(['cabang', 'creator', 'documents'])->findOrFail($id);
+        $p = Prospect::with(['cabang', 'creator', 'creator.cabang', 'documents'])->findOrFail($id);
 
         $this->detailId = $p->id;
-        $this->statusUpdate = $p->status ?: 'FOLLOW UP';
+        $this->statusUpdate = $p->status ?: 'OPEN';
         $this->ambilStatus = (string) ((int) ($p->is_diambil ?? 0));
         $this->canViewDetail = false;
         $this->showTakenMessage = false;
         $this->takenByUsername = $p->diambil_oleh;
+        $this->takenByFullName = $this->getNamaLengkapUserByUsername($p->diambil_oleh);
         $this->isAdminOrManagement = $this->isAdminOrManagementRole($role);
-
         $this->hideActionForm = in_array($role, ['MANAJEMEN', 'SUPERVISOR'], true);
 
         if ($this->isAdminOrManagementRole($role)) {
@@ -325,6 +361,7 @@ class Submissions extends Component
         $this->canViewDetail = false;
         $this->showTakenMessage = false;
         $this->takenByUsername = null;
+        $this->takenByFullName = null;
         $this->isAdminOrManagement = false;
         $this->hideActionForm = false;
         $this->resetValidation();
@@ -339,10 +376,10 @@ class Submissions extends Component
     public function updateStatus(): void
     {
         $this->validate([
-            'statusUpdate' => ['required', 'in:FOLLOW UP,REJECTED,CLOSING'],
+            'statusUpdate' => ['required', 'in:OPEN,FOLLOW UP,REJECTED,CLOSING'],
         ], [
             'statusUpdate.required' => 'Status wajib dipilih.',
-            'statusUpdate.in' => 'Status hanya boleh FOLLOW UP, REJECTED, atau CLOSING.',
+            'statusUpdate.in' => 'Status hanya boleh OPEN, FOLLOW UP, REJECTED, atau CLOSING.',
         ]);
 
         if (!$this->detailId || !$this->canViewDetail || $this->hideActionForm) {
@@ -390,7 +427,6 @@ class Submissions extends Component
         }
 
         session()->flash('ok', 'Status prospek berhasil diperbarui.');
-
         $this->openDetail($p->id);
     }
 
@@ -443,8 +479,10 @@ class Submissions extends Component
 
         $p->save();
 
-        session()->flash('ok', 'Status pengambilan prospek berhasil diperbarui.');
+        $this->takenByUsername = $p->diambil_oleh;
+        $this->takenByFullName = $this->getNamaLengkapUserByUsername($p->diambil_oleh);
 
+        session()->flash('ok', 'Status pengambilan prospek berhasil diperbarui.');
         $this->openDetail($p->id);
     }
 
@@ -455,9 +493,23 @@ class Submissions extends Component
             ->latest('id')
             ->paginate(10);
 
+        $usernamesPengambil = collect($items->items())
+            ->pluck('diambil_oleh')
+            ->filter(fn ($v) => trim((string) $v) !== '')
+            ->unique()
+            ->values();
+
+        $namaPengambilMap = User::query()
+            ->whereIn('name', $usernamesPengambil)
+            ->get(['name', 'nama_lengkap'])
+            ->mapWithKeys(function ($u) {
+                return [$u->name => ($u->nama_lengkap ?: $u->name)];
+            })
+            ->toArray();
+
         $detail = null;
         if ($this->detailId) {
-            $detail = Prospect::with(['cabang', 'creator', 'documents'])->find($this->detailId);
+            $detail = Prospect::with(['cabang', 'creator', 'creator.cabang', 'documents'])->find($this->detailId);
         }
 
         $cabangOptions = Cabang::query()
@@ -480,7 +532,8 @@ class Submissions extends Component
             'detail',
             'cabangOptions',
             'bulanOptions',
-            'tahunOptions'
+            'tahunOptions',
+            'namaPengambilMap'
         ))->layout('layouts.bootstrap');
     }
 }

@@ -130,6 +130,18 @@
 
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark"
+                        wire:click="sortBy('total_open')">
+                  Open
+                  @if($sortFieldKc === 'total_open')
+                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </button>
+              </th>
+
+              <th class="text-end" style="min-width:120px;">
+                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark"
                         wire:click="sortBy('total_follow_up')">
                   Follow Up
                   @if($sortFieldKc === 'total_follow_up')
@@ -173,13 +185,14 @@
                 <td class="fw-semibold">{{ $row->kode_cabang }}</td>
                 <td>{{ $row->nama_cabang }}</td>
                 <td class="text-end fw-bold">{{ number_format($row->total_pengajuan) }}</td>
+                <td class="text-end text-secondary fw-bold">{{ number_format($row->total_open) }}</td>
                 <td class="text-end text-warning fw-bold">{{ number_format($row->total_follow_up) }}</td>
                 <td class="text-end text-success fw-bold">{{ number_format($row->total_closing) }}</td>
                 <td class="text-end text-danger fw-bold">{{ number_format($row->total_rejected) }}</td>
               </tr>
             @empty
               <tr>
-                <td colspan="7" class="text-center text-muted p-5">
+                <td colspan="8" class="text-center text-muted p-5">
                   Belum ada data rekap prospek per KC.
                 </td>
               </tr>
@@ -266,6 +279,18 @@
 
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark"
+                        wire:click="sortBy('total_open')">
+                  Open
+                  @if($sortFieldPegawai === 'total_open')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </button>
+              </th>
+
+              <th class="text-end" style="min-width:120px;">
+                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark"
                         wire:click="sortBy('total_follow_up')">
                   Follow Up
                   @if($sortFieldPegawai === 'total_follow_up')
@@ -314,6 +339,7 @@
                 <td>{{ $row->job_position ?: '-' }}</td>
                 <td>{{ ($row->kode_cabang ?: '-') . ' - ' . ($row->nama_cabang ?: '-') }}</td>
                 <td class="text-end fw-bold">{{ number_format($row->total_pengajuan) }}</td>
+                <td class="text-end text-secondary fw-bold">{{ number_format($row->total_open) }}</td>
                 <td class="text-end text-warning fw-bold">{{ number_format($row->total_follow_up) }}</td>
                 <td class="text-end text-success fw-bold">{{ number_format($row->total_closing) }}</td>
                 <td class="text-end text-danger fw-bold">{{ number_format($row->total_rejected) }}</td>
@@ -327,7 +353,7 @@
               </tr>
             @empty
               <tr>
-                <td colspan="11" class="text-center text-muted p-5">
+                <td colspan="12" class="text-center text-muted p-5">
                   Belum ada data rekap prospek per pegawai.
                 </td>
               </tr>
@@ -410,7 +436,8 @@
                     <td>
                       @php
                         $badgeClass = 'bg-secondary';
-                        if($d->status === 'FOLLOW UP') $badgeClass = 'bg-warning text-dark';
+                        if($d->status === 'OPEN') $badgeClass = 'bg-light text-dark';
+                        elseif($d->status === 'FOLLOW UP') $badgeClass = 'bg-warning text-dark';
                         elseif($d->status === 'CLOSING') $badgeClass = 'bg-success';
                         elseif($d->status === 'REJECTED') $badgeClass = 'bg-danger';
                       @endphp
