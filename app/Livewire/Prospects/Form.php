@@ -55,7 +55,7 @@ class Form extends Component
 
     public function mount($id = null)
     {
-        $this->id = $id ? (int)$id : null;
+        $this->id = $id ? (int) $id : null;
 
         $this->cabangOptions = Cabang::query()
             ->where('aktif', 1)
@@ -101,11 +101,11 @@ class Form extends Component
             $p = Prospect::findOrFail($this->id);
 
             $u = auth()->user();
-            if ($u->role === 'CABANG' && (int)$p->cabang_id !== (int)$u->cabang_id) {
+            if ($u->role === 'CABANG' && (int) $p->cabang_id !== (int) $u->cabang_id) {
                 abort(403);
             }
 
-            if (($u->role === 'PEGAWAI' || str_starts_with((string)$u->role, 'AO_')) && (int)$p->input_by !== (int)$u->id) {
+            if (($u->role === 'PEGAWAI' || str_starts_with((string) $u->role, 'AO_')) && (int) $p->input_by !== (int) $u->id) {
                 abort(403);
             }
 
@@ -263,7 +263,7 @@ class Form extends Component
         }
 
         $items = Prospect::query()
-            ->when($this->id, fn($q) => $q->where('id', '!=', $this->id))
+            ->when($this->id, fn ($q) => $q->where('id', '!=', $this->id))
             ->whereNotNull('no_hp')
             ->get(['id', 'no_hp']);
 

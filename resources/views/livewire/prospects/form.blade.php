@@ -67,7 +67,7 @@
           </div>
 
           <div class="text-muted small mt-1" id="contactHint">
-            Klik kolom No HP atau ikon kontak untuk ambil nomor dari kontak HP.
+            Klik ikon kontak untuk ambil nomor dari kontak HP.
           </div>
 
           @error('no_hp')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
@@ -425,1066 +425,1084 @@
     }
   </style>
 
-    <script>
-        (function () {
-        if (window.__prospectFormLocationBound) return;
-        window.__prospectFormLocationBound = true;
+  <script>
+  (function () {
+    if (window.__prospectFormLocationBound) return;
+    window.__prospectFormLocationBound = true;
 
-        function getEl(id) {
-            return document.getElementById(id);
-        }
+    function getEl(id) {
+      return document.getElementById(id);
+    }
 
-        function setInputValue(el, value) {
-            if (!el) return;
-            el.value = value || '';
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+    function setInputValue(el, value) {
+      if (!el) return;
+      el.value = value || '';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
 
-        function setHint(msg, isError) {
-            var hint = getEl('locHint');
-            if (!hint) return;
-            hint.innerHTML = msg;
-            hint.className = 'small mt-2 ' + (isError ? 'text-danger' : 'text-muted');
-        }
+    function setHint(msg, isError) {
+      var hint = getEl('locHint');
+      if (!hint) return;
+      hint.innerHTML = msg;
+      hint.className = 'small mt-2 ' + (isError ? 'text-danger' : 'text-muted');
+    }
 
-        function setContactHint(msg, isError) {
-            var hint = getEl('contactHint');
-            if (!hint) return;
-            hint.innerHTML = msg;
-            hint.className = 'small mt-1 ' + (isError ? 'text-danger' : 'text-muted');
-        }
+    function setContactHint(msg, isError) {
+      var hint = getEl('contactHint');
+      if (!hint) return;
+      hint.innerHTML = msg;
+      hint.className = 'small mt-1 ' + (isError ? 'text-danger' : 'text-muted');
+    }
 
-        function isSecurePage() {
-            return window.isSecureContext === true
-            || location.protocol === 'https:'
-            || location.hostname === 'localhost'
-            || location.hostname === '127.0.0.1';
-        }
+    function isSecurePage() {
+      return window.isSecureContext === true
+        || location.protocol === 'https:'
+        || location.hostname === 'localhost'
+        || location.hostname === '127.0.0.1';
+    }
 
-        async function fetchJson(url) {
-            const res = await fetch(url, {
+    async function fetchJson(url) {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!res.ok) {
+        throw new Error('HTTP ' + res.status + ' - ' + url);
+      }
+
+      return await res.json();
+    }
+
+    function normalizeText(str) {
+      return String(str || '')
+        .toUpperCase()
+        .replace(/\./g, '')
+        .replace(/KABUPATEN/g, '')
+        .replace(/KOTA/g, '')
+        .replace(/KECAMATAN/g, '')
+        .replace(/KELURAHAN/g, '')
+        .replace(/DESA/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function findByNameLoose(list, text) {
+      if (!text) return null;
+      const target = normalizeText(text);
+
+      let found = list.find(function(item) {
+        return normalizeText(item.name) === target;
+      });
+      if (found) return found;
+
+      found = list.find(function(item) {
+        const n = normalizeText(item.name);
+        return n.includes(target) || target.includes(n);
+      });
+
+      return found || null;
+    }
+
+    function normalizePhoneNumber(phone) {
+      let cleaned = String(phone || '').trim();
+
+      if (cleaned.indexOf('+62') === 0) {
+        cleaned = '0' + cleaned.substring(3);
+      }
+
+      cleaned = cleaned.replace(/[^0-9]/g, '');
+
+      if (cleaned.indexOf('62') === 0) {
+        cleaned = '0' + cleaned.substring(2);
+      }
+
+      if (cleaned.indexOf('8') === 0) {
+        cleaned = '0' + cleaned;
+      }
+
+      cleaned = cleaned.replace(/^00+/, '0');
+
+      return cleaned;
+    }
+
+    window.setPickedContactFromAndroid = function(name, phone) {
+      const input = getEl('no_hp_input');
+
+      if (!input) return;
+
+      const cleanPhone = normalizePhoneNumber(phone || '');
+
+      if (!cleanPhone) {
+        setContactHint('Tidak ada kontak yang dipilih.', true);
+        return;
+      }
+
+      setInputValue(input, cleanPhone);
+      setContactHint('Nomor dari kontak "' + (name || 'Kontak') + '" berhasil diisi ✅', false);
+    };
+
+    async function reverseGeocode(lat, lng) {
+      const url1 = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
+      const url2 = 'https://geocode.maps.co/reverse?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
+
+      async function tryFetch(url) {
+        try {
+          const res = await fetch(url, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
+          });
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (data && data.display_name) return data.display_name;
+          if (data && data.address) return Object.values(data.address).filter(Boolean).join(', ');
+          return null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      return (await tryFetch(url1)) || (await tryFetch(url2)) || null;
+    }
+
+    async function searchLocation(keyword) {
+      const q = String(keyword || '').trim();
+      if (!q) return [];
+
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=' + encodeURIComponent(q);
+
+      try {
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function pickPhoneFromContacts() {
+      const input = getEl('no_hp_input');
+
+      if (!input) return;
+
+      if (window.Android && typeof window.Android.pickContact === 'function') {
+        setContactHint('Membuka daftar kontak...', false);
+        try {
+          window.Android.pickContact();
+        } catch (err) {
+          console.error('Android pickContact error:', err);
+          setContactHint('Gagal membuka kontak dari aplikasi.', true);
+        }
+        return;
+      }
+
+      if (!isSecurePage()) {
+        setContactHint('Fitur kontak hanya bisa dipakai di HTTPS / localhost.', true);
+        return;
+      }
+
+      if (!('contacts' in navigator) || !navigator.contacts || typeof navigator.contacts.select !== 'function') {
+        setContactHint('Browser ini belum mendukung akses kontak. Gunakan aplikasi Android atau Chrome Android.', true);
+        return;
+      }
+
+      try {
+        setContactHint('Membuka daftar kontak...', false);
+
+        let props = ['tel', 'name'];
+
+        if (typeof navigator.contacts.getProperties === 'function') {
+          try {
+            const supported = await navigator.contacts.getProperties();
+            props = props.filter(function(p) {
+              return Array.isArray(supported) ? supported.includes(p) : true;
             });
-
-            if (!res.ok) {
-            throw new Error('HTTP ' + res.status + ' - ' + url);
-            }
-
-            return await res.json();
+          } catch (e) {}
         }
 
-        function normalizeText(str) {
-            return String(str || '')
-            .toUpperCase()
-            .replace(/\./g, '')
-            .replace(/KABUPATEN/g, '')
-            .replace(/KOTA/g, '')
-            .replace(/KECAMATAN/g, '')
-            .replace(/KELURAHAN/g, '')
-            .replace(/DESA/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
+        if (!props.includes('tel')) {
+          setContactHint('Browser mendukung kontak, tapi field nomor telepon tidak tersedia.', true);
+          return;
         }
 
-        function findByNameLoose(list, text) {
-            if (!text) return null;
-            const target = normalizeText(text);
+        const contacts = await navigator.contacts.select(props, { multiple: false });
 
-            let found = list.find(function(item) {
-            return normalizeText(item.name) === target;
-            });
-            if (found) return found;
-
-            found = list.find(function(item) {
-            const n = normalizeText(item.name);
-            return n.includes(target) || target.includes(n);
-            });
-
-            return found || null;
+        if (!contacts || !contacts.length) {
+          setContactHint('Tidak ada kontak yang dipilih.', true);
+          return;
         }
 
-        function normalizePhoneNumber(phone) {
-            return String(phone || '').replace(/[^0-9]/g, '');
+        const picked = contacts[0];
+        const telList = Array.isArray(picked.tel) ? picked.tel : [];
+        const firstPhone = telList.length ? normalizePhoneNumber(telList[0]) : '';
+
+        if (!firstPhone) {
+          setContactHint('Kontak terpilih tidak memiliki nomor telepon.', true);
+          return;
         }
 
-        window.setPickedContactFromAndroid = function(name, phone) {
-            const input = getEl('no_hp_input');
+        setInputValue(input, firstPhone);
 
-            if (!input) return;
+        const pickedName = Array.isArray(picked.name) && picked.name.length ? picked.name[0] : 'Kontak';
+        setContactHint('Nomor dari kontak "' + pickedName + '" berhasil diisi ✅', false);
+      } catch (err) {
+        console.error('Contact picker error:', err);
 
-            const cleanPhone = normalizePhoneNumber(phone || '');
-
-            if (!cleanPhone) {
-            setContactHint('Tidak ada kontak yang dipilih.', true);
-            return;
-            }
-
-            setInputValue(input, cleanPhone);
-            setContactHint('Nomor dari kontak "' + (name || 'Kontak') + '" berhasil diisi ✅', false);
-        };
-
-        async function reverseGeocode(lat, lng) {
-            const url1 = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
-            const url2 = 'https://geocode.maps.co/reverse?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
-
-            async function tryFetch(url) {
-            try {
-                const res = await fetch(url, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
-                });
-                if (!res.ok) return null;
-                const data = await res.json();
-                if (data && data.display_name) return data.display_name;
-                if (data && data.address) return Object.values(data.address).filter(Boolean).join(', ');
-                return null;
-            } catch (e) {
-                return null;
-            }
-            }
-
-            return (await tryFetch(url1)) || (await tryFetch(url2)) || null;
+        if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
+          setContactHint('Akses kontak ditolak atau butuh klik manual dari user.', true);
+          return;
         }
 
-        async function searchLocation(keyword) {
-            const q = String(keyword || '').trim();
-            if (!q) return [];
-
-            const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=' + encodeURIComponent(q);
-
-            try {
-            const res = await fetch(url, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
-            });
-
-            if (!res.ok) return [];
-            const data = await res.json();
-            return Array.isArray(data) ? data : [];
-            } catch (e) {
-            return [];
-            }
+        if (err && err.name === 'InvalidStateError') {
+          setContactHint('Pemilih kontak sudah terbuka atau halaman bukan top-level.', true);
+          return;
         }
 
-        async function pickPhoneFromContacts() {
-            const input = getEl('no_hp_input');
-
-            if (!input) return;
-
-            if (window.Android && typeof window.Android.pickContact === 'function') {
-            setContactHint('Membuka daftar kontak...', false);
-            try {
-                window.Android.pickContact();
-            } catch (err) {
-                console.error('Android pickContact error:', err);
-                setContactHint('Gagal membuka kontak dari aplikasi.', true);
-            }
-            return;
-            }
-
-            if (!isSecurePage()) {
-            setContactHint('Fitur kontak hanya bisa dipakai di HTTPS / localhost.', true);
-            return;
-            }
-
-            if (!('contacts' in navigator) || !navigator.contacts || typeof navigator.contacts.select !== 'function') {
-            setContactHint('Browser ini belum mendukung akses kontak. Gunakan aplikasi Android atau Chrome Android.', true);
-            return;
-            }
-
-            try {
-            setContactHint('Membuka daftar kontak...', false);
-
-            let props = ['tel', 'name'];
-
-            if (typeof navigator.contacts.getProperties === 'function') {
-                try {
-                const supported = await navigator.contacts.getProperties();
-                props = props.filter(function(p) {
-                    return Array.isArray(supported) ? supported.includes(p) : true;
-                });
-                } catch (e) {}
-            }
-
-            if (!props.includes('tel')) {
-                setContactHint('Browser mendukung kontak, tapi field nomor telepon tidak tersedia.', true);
-                return;
-            }
-
-            const contacts = await navigator.contacts.select(props, { multiple: false });
-
-            if (!contacts || !contacts.length) {
-                setContactHint('Tidak ada kontak yang dipilih.', true);
-                return;
-            }
-
-            const picked = contacts[0];
-            const telList = Array.isArray(picked.tel) ? picked.tel : [];
-            const firstPhone = telList.length ? normalizePhoneNumber(telList[0]) : '';
-
-            if (!firstPhone) {
-                setContactHint('Kontak terpilih tidak memiliki nomor telepon.', true);
-                return;
-            }
-
-            setInputValue(input, firstPhone);
-
-            const pickedName = Array.isArray(picked.name) && picked.name.length ? picked.name[0] : 'Kontak';
-            setContactHint('Nomor dari kontak "' + pickedName + '" berhasil diisi ✅', false);
-            } catch (err) {
-            console.error('Contact picker error:', err);
-
-            if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
-                setContactHint('Akses kontak ditolak atau butuh klik manual dari user.', true);
-                return;
-            }
-
-            if (err && err.name === 'InvalidStateError') {
-                setContactHint('Pemilih kontak sudah terbuka atau halaman bukan top-level.', true);
-                return;
-            }
-
-            if (err && err.name === 'TypeError') {
-                setContactHint('Fitur kontak tidak didukung browser ini.', true);
-                return;
-            }
-
-            setContactHint('Gagal mengambil nomor dari kontak.', true);
-            }
+        if (err && err.name === 'TypeError') {
+          setContactHint('Fitur kontak tidak didukung browser ini.', true);
+          return;
         }
 
-        function resetSelect(el, placeholder, disabled) {
-            if (!el) return;
-            el.innerHTML = '<option value="">' + placeholder + '</option>';
-            el.disabled = typeof disabled === 'boolean' ? disabled : true;
-        }
-
-        async function fillLocation() {
-            const btn = getEl('btnGetLoc');
-            const latInput = getEl('lokasi_lat');
-            const lngInput = getEl('lokasi_lng');
-            const alamatInput = getEl('alamat_input');
-
-            if (!btn) return;
-
-            if (!navigator.geolocation) {
-            setHint('Browser tidak mendukung GPS.', true);
-            return;
-            }
-
-            if (!isSecurePage()) {
-            setHint('Lokasi hanya bisa dipakai di HTTPS / localhost.', true);
-            return;
-            }
-
-            btn.disabled = true;
-            setHint('Mengambil lokasi saat ini dari device...', false);
-
-            navigator.geolocation.getCurrentPosition(
-            async function (pos) {
-                try {
-                const lat = String(pos.coords.latitude || '');
-                const lng = String(pos.coords.longitude || '');
-
-                setInputValue(latInput, lat);
-                setInputValue(lngInput, lng);
-
-                if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
-                    window.Livewire.dispatch('setLatLngProspek', { lat: lat, lng: lng });
-                }
-
-                const addr = await reverseGeocode(lat, lng);
-
-                if (addr) {
-                    setInputValue(alamatInput, addr);
-
-                    if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
-                    window.Livewire.dispatch('setAlamatProspek', { alamat: addr });
-                    }
-
-                    setHint('Lokasi saat ini berhasil diambil ✅', false);
-                } else {
-                    setHint('Lat/Lng berhasil diambil, tapi alamat belum didapat.', true);
-                }
-                } catch (e) {
-                console.error('Gagal proses lokasi:', e);
-                setHint('Gagal memproses lokasi.', true);
-                } finally {
-                btn.disabled = false;
-                }
-            },
-            function (err) {
-                btn.disabled = false;
-
-                if (err && err.code === 1) {
-                setHint('Izin lokasi ditolak. Aktifkan permission lokasi di browser.', true);
-                } else if (err && err.code === 2) {
-                setHint('Lokasi tidak tersedia. Nyalakan GPS dan coba lagi.', true);
-                } else if (err && err.code === 3) {
-                setHint('Request lokasi timeout. Coba lagi.', true);
-                } else {
-                setHint('Gagal mengambil lokasi.', true);
-                }
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 20000,
-                maximumAge: 0
-            }
-            );
-        }
-
-        async function initWilayahProspek() {
-            const PROV_ID = '33';
-
-            const kabSelect = getEl('kabKotaSelect');
-            const kecSelect = getEl('kecamatanSelect');
-            const desaSelect = getEl('desaSelect');
-
-            const kabHidden = getEl('kab_kota_hidden');
-            const kecHidden = getEl('kecamatan_hidden');
-            const desaHidden = getEl('desa_hidden');
-
-            const kodeProvHidden = getEl('kode_provinsi_hidden');
-            const kodeKabHidden = getEl('kode_kab_kota_hidden');
-            const kodeKecHidden = getEl('kode_kecamatan_hidden');
-            const kodeDesaHidden = getEl('kode_desa_hidden');
-
-            if (!kabSelect || !kecSelect || !desaSelect || !kabHidden || !kecHidden || !desaHidden) {
-            return;
-            }
-
-            setInputValue(kodeProvHidden, PROV_ID);
-
-            async function loadKabupaten(initialName) {
-            resetSelect(kabSelect, '-- Loading Kab/Kota --', true);
-
-            const json = await fetchJson('/api-wilayah/regencies/' + PROV_ID);
-            const list = Array.isArray(json.data) ? json.data : [];
-
-            kabSelect.innerHTML = '<option value="">-- Pilih Kab/Kota --</option>';
-
-            list.forEach(function(item) {
-                const opt = document.createElement('option');
-                opt.value = item.code;
-                opt.textContent = item.name;
-                kabSelect.appendChild(opt);
-            });
-
-            kabSelect.disabled = false;
-
-            if (initialName) {
-                const found = findByNameLoose(list, initialName);
-                if (found) {
-                kabSelect.value = found.code;
-                setInputValue(kabHidden, found.name);
-                setInputValue(kodeKabHidden, found.code);
-                }
-            }
-
-            return list;
-            }
-
-            async function loadKecamatan(regencyCode, initialName) {
-            if (!regencyCode) {
-                resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
-                resetSelect(desaSelect, '-- Pilih Desa --', true);
-                return [];
-            }
-
-            resetSelect(kecSelect, '-- Loading Kecamatan --', true);
-
-            const json = await fetchJson('/api-wilayah/districts/' + regencyCode);
-            const list = Array.isArray(json.data) ? json.data : [];
-
-            kecSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
-
-            list.forEach(function(item) {
-                const opt = document.createElement('option');
-                opt.value = item.code;
-                opt.textContent = item.name;
-                kecSelect.appendChild(opt);
-            });
-
-            kecSelect.disabled = false;
-
-            if (initialName) {
-                const found = findByNameLoose(list, initialName);
-                if (found) {
-                kecSelect.value = found.code;
-                setInputValue(kecHidden, found.name);
-                setInputValue(kodeKecHidden, found.code);
-                }
-            }
-
-            return list;
-            }
-
-            async function loadDesa(districtCode, initialName) {
-            if (!districtCode) {
-                resetSelect(desaSelect, '-- Pilih Desa --', true);
-                return [];
-            }
-
-            resetSelect(desaSelect, '-- Loading Desa --', true);
-
-            const json = await fetchJson('/api-wilayah/villages/' + districtCode);
-            const list = Array.isArray(json.data) ? json.data : [];
-
-            desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
-
-            list.forEach(function(item) {
-                const opt = document.createElement('option');
-                opt.value = item.code;
-                opt.textContent = item.name;
-                desaSelect.appendChild(opt);
-            });
-
-            desaSelect.disabled = false;
-
-            if (initialName) {
-                const found = findByNameLoose(list, initialName);
-                if (found) {
-                desaSelect.value = found.code;
-                setInputValue(desaHidden, found.name);
-                setInputValue(kodeDesaHidden, found.code);
-                }
-            }
-
-            return list;
-            }
-
-            if (kabSelect.dataset.bound !== '1') {
-            kabSelect.dataset.bound = '1';
-            kabSelect.addEventListener('change', async function () {
-                const selectedText = this.value ? this.options[this.selectedIndex].text : '';
-
-                setInputValue(kabHidden, selectedText);
-                setInputValue(kodeKabHidden, this.value || '');
-                setInputValue(kecHidden, '');
-                setInputValue(desaHidden, '');
-                setInputValue(kodeKecHidden, '');
-                setInputValue(kodeDesaHidden, '');
-
-                resetSelect(desaSelect, '-- Pilih Desa --', true);
-                await loadKecamatan(this.value || '', '');
-            });
-            }
-
-            if (kecSelect.dataset.bound !== '1') {
-            kecSelect.dataset.bound = '1';
-            kecSelect.addEventListener('change', async function () {
-                const selectedText = this.value ? this.options[this.selectedIndex].text : '';
-
-                setInputValue(kecHidden, selectedText);
-                setInputValue(kodeKecHidden, this.value || '');
-                setInputValue(desaHidden, '');
-                setInputValue(kodeDesaHidden, '');
-
-                await loadDesa(this.value || '', '');
-            });
-            }
-
-            if (desaSelect.dataset.bound !== '1') {
-            desaSelect.dataset.bound = '1';
-            desaSelect.addEventListener('change', function () {
-                const selectedText = this.value ? this.options[this.selectedIndex].text : '';
-                setInputValue(desaHidden, selectedText);
-                setInputValue(kodeDesaHidden, this.value || '');
-            });
-            }
-
-            try {
-            const initialKab = kabHidden.value || '';
-            const initialKec = kecHidden.value || '';
-            const initialDesa = desaHidden.value || '';
-
-            const kabList = await loadKabupaten(initialKab);
-
-            if (initialKab) {
-                const selectedKab = findByNameLoose(kabList, initialKab);
-                if (selectedKab) {
-                const kecList = await loadKecamatan(selectedKab.code, initialKec);
-
-                if (initialKec) {
-                    const selectedKec = findByNameLoose(kecList, initialKec);
-                    if (selectedKec) {
-                    await loadDesa(selectedKec.code, initialDesa);
-                    }
-                }
-                }
-            }
-            } catch (e) {
-            console.error('Wilayah gagal dimuat:', e);
-            resetSelect(kabSelect, '-- Gagal memuat Kab/Kota --', true);
-            resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
-            resetSelect(desaSelect, '-- Pilih Desa --', true);
-            }
-        }
-
-        let mediaStream = null;
-        let modalInstance = null;
-
-        let mapPickerInstance = null;
-        let mapPickerMarker = null;
-        let mapPickerModalInstance = null;
-        let pickedLat = '';
-        let pickedLng = '';
-        let pickedAddress = '';
-
-        function isMobileDevice() {
-            return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
-        }
-
-        function clearPhotoPreview() {
-            const wrap = getEl('photoPreviewWrap');
-            if (wrap) wrap.innerHTML = '';
-        }
-
-        function fileToDataUrl(file) {
-            return new Promise(function(resolve, reject) {
-            const reader = new FileReader();
-            reader.onload = function(e) { resolve(e.target.result); };
-            reader.onerror = function() { reject(new Error('Gagal baca file')); };
-            reader.readAsDataURL(file);
-            });
-        }
-
-        async function renderPhotoPreview(files) {
-            const wrap = getEl('photoPreviewWrap');
-            const lwPhotos = getEl('lwPhotos');
-
-            if (!wrap) return;
-
-            clearPhotoPreview();
-
-            if (!files || !files.length) return;
-
-            const arr = Array.from(files);
-
-            for (let i = 0; i < arr.length; i++) {
-            const file = arr[i];
-            if (!file.type || !file.type.startsWith('image/')) continue;
-
-            try {
-                const src = await fileToDataUrl(file);
-
-                const col = document.createElement('div');
-                col.className = 'col-6 col-md-3';
-                col.innerHTML = `
-                <div class="card-soft p-2 position-relative">
-                    <img src="${src}" class="w-100" style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;" loading="lazy">
-                    <button type="button" class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2 btn-remove-preview" data-idx="${i}">
-                    <i class="bi bi-x"></i>
-                    </button>
-                </div>
-                `;
-                wrap.appendChild(col);
-            } catch (e) {
-                console.error('Preview gagal:', e);
-            }
-            }
-
-            wrap.querySelectorAll('.btn-remove-preview').forEach(function(btn) {
-            btn.onclick = function() {
-                const idx = parseInt(this.getAttribute('data-idx'), 10);
-                if (!lwPhotos || !lwPhotos.files) return;
-
-                const dt = new DataTransfer();
-                Array.from(lwPhotos.files).forEach(function(file, i) {
-                if (i !== idx) dt.items.add(file);
-                });
-
-                lwPhotos.files = dt.files;
-                renderPhotoPreview(lwPhotos.files);
-                lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
-            };
-            });
-        }
-
-        function validateFiles(files) {
-            const maxSize = 5 * 1024 * 1024;
-            const valid = [];
-            const errors = [];
-
-            Array.from(files || []).forEach(function(file) {
-            if (!file.type || !file.type.startsWith('image/')) {
-                errors.push(file.name + ' bukan file gambar.');
-                return;
-            }
-            if (file.size > maxSize) {
-                errors.push(file.name + ' melebihi 5MB.');
-                return;
-            }
-            valid.push(file);
-            });
-
-            if (errors.length) {
-            alert(errors.join('\n'));
-            }
-
-            return valid;
-        }
-
-        async function mergeFilesToLivewire(sourceFiles) {
-            const lwPhotos = getEl('lwPhotos');
-            if (!lwPhotos || !sourceFiles || !sourceFiles.length) return;
-
-            const validFiles = validateFiles(sourceFiles);
-            if (!validFiles.length) return;
-
-            const dt = new DataTransfer();
-
-            if (lwPhotos.files && lwPhotos.files.length) {
-            Array.from(lwPhotos.files).forEach(function(file) {
-                dt.items.add(file);
-            });
-            }
-
-            validFiles.forEach(function(file) {
-            dt.items.add(file);
-            });
-
-            lwPhotos.files = dt.files;
-            await renderPhotoPreview(lwPhotos.files);
-            lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-
-        function stopCamera() {
-            if (mediaStream) {
-            mediaStream.getTracks().forEach(function(track) {
-                track.stop();
-            });
-            mediaStream = null;
-            }
-        }
-
-        function showCamWarn(msg) {
-            const el = getEl('camWarn');
-            if (!el) return;
-            el.classList.remove('d-none');
-            el.innerText = msg;
-        }
-
-        function hideCamWarn() {
-            const el = getEl('camWarn');
-            if (!el) return;
-            el.classList.add('d-none');
-            el.innerText = '';
-        }
-
-        async function openDesktopCamera() {
-            const modalEl = getEl('modalCamera');
-            const video = getEl('camVideo');
-            if (!modalEl || !video) return;
-
-            hideCamWarn();
-
-            try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showCamWarn('Browser desktop ini tidak mendukung webcam.');
-                return;
-            }
-
-            mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                facingMode: 'environment',
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-                },
-                audio: false
-            });
-
-            video.srcObject = mediaStream;
-
-            if (!modalInstance) {
-                modalInstance = new bootstrap.Modal(modalEl);
-            }
-
-            modalInstance.show();
-            } catch (e) {
-            console.error(e);
-            showCamWarn('Kamera tidak bisa dibuka. Pastikan izin kamera diberikan.');
-            }
-        }
-
-        function snapDesktopPhoto() {
-            const video = getEl('camVideo');
-            const canvas = getEl('camCanvas');
-            if (!video || !canvas) return;
-
-            const width = video.videoWidth || 1280;
-            const height = video.videoHeight || 720;
-
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, width, height);
-
-            canvas.toBlob(async function(blob) {
-            if (!blob) return;
-
-            const file = new File([blob], 'camera-' + Date.now() + '.jpg', {
-                type: 'image/jpeg'
-            });
-
-            await mergeFilesToLivewire([file]);
-
-            if (modalInstance) modalInstance.hide();
-            stopCamera();
-            }, 'image/jpeg', 0.92);
-        }
-
-        function updatePickedPreview() {
-            const addrEl = getEl('pickedAddressPreview');
-            const latEl = getEl('pickedLatPreview');
-            const lngEl = getEl('pickedLngPreview');
-
-            if (addrEl) addrEl.textContent = pickedAddress || 'Belum ada titik dipilih.';
-            if (latEl) latEl.textContent = pickedLat || '-';
-            if (lngEl) lngEl.textContent = pickedLng || '-';
-        }
-
-        async function setPickedPoint(lat, lng, addressText) {
-            pickedLat = String(lat || '');
-            pickedLng = String(lng || '');
-
-            if (mapPickerMarker && mapPickerInstance) {
-            mapPickerMarker.setLatLng([lat, lng]);
-            } else if (mapPickerInstance) {
-            mapPickerMarker = L.marker([lat, lng], { draggable: true }).addTo(mapPickerInstance);
-
-            mapPickerMarker.on('dragend', async function(e) {
-                const pos = e.target.getLatLng();
-                pickedLat = String(pos.lat);
-                pickedLng = String(pos.lng);
-                const addr = await reverseGeocode(pos.lat, pos.lng);
-                pickedAddress = addr || '';
-                updatePickedPreview();
-            });
-            }
-
-            if (addressText) {
-            pickedAddress = addressText;
-            } else {
-            const addr = await reverseGeocode(lat, lng);
-            pickedAddress = addr || '';
-            }
-
-            updatePickedPreview();
-        }
-
-        function initMapPicker() {
-            const mapEl = getEl('mapPicker');
-            if (!mapEl || typeof L === 'undefined') return;
-
-            if (!mapPickerInstance) {
-            mapPickerInstance = L.map(mapEl, {
-                zoomControl: true
-            }).setView([-7.150975, 110.140259], 8);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap'
-            }).addTo(mapPickerInstance);
-
-            mapPickerInstance.on('click', async function(e) {
-                const lat = e.latlng.lat;
-                const lng = e.latlng.lng;
-                await setPickedPoint(lat, lng, '');
-            });
-            }
-
-            const currentLat = parseFloat(getEl('lokasi_lat')?.value || '');
-            const currentLng = parseFloat(getEl('lokasi_lng')?.value || '');
-
-            if (!isNaN(currentLat) && !isNaN(currentLng)) {
-            mapPickerInstance.setView([currentLat, currentLng], 16);
-            setPickedPoint(currentLat, currentLng, getEl('alamat_input')?.value || '');
-            } else {
-            mapPickerInstance.setView([-7.150975, 110.140259], 8);
-            pickedLat = '';
-            pickedLng = '';
-            pickedAddress = '';
-            if (mapPickerMarker) {
-                mapPickerInstance.removeLayer(mapPickerMarker);
-                mapPickerMarker = null;
-            }
-            updatePickedPreview();
-            }
-
-            setTimeout(function() {
-            mapPickerInstance.invalidateSize();
-            }, 250);
-        }
-
-        function openMapPicker() {
-            const modalEl = getEl('modalMapPicker');
-            if (!modalEl) return;
-
-            if (!mapPickerModalInstance) {
-            mapPickerModalInstance = new bootstrap.Modal(modalEl);
-            }
-
-            mapPickerModalInstance.show();
-
-            setTimeout(function() {
-            initMapPicker();
-            }, 250);
-        }
-
-        async function doMapSearch() {
-            const input = getEl('mapSearchInput');
-            const hint = getEl('mapSearchHint');
-
-            if (!input || !mapPickerInstance) return;
-
-            const keyword = String(input.value || '').trim();
-            if (!keyword) {
-            if (hint) hint.innerHTML = 'Masukkan kata kunci lokasi terlebih dahulu.';
-            return;
-            }
-
-            if (hint) hint.innerHTML = 'Mencari lokasi...';
-
-            const results = await searchLocation(keyword);
-
-            if (!results.length) {
-            if (hint) hint.innerHTML = 'Lokasi tidak ditemukan. Coba kata kunci lain.';
-            return;
-            }
-
-            const first = results[0];
-            const lat = parseFloat(first.lat);
-            const lng = parseFloat(first.lon);
-
-            if (isNaN(lat) || isNaN(lng)) {
-            if (hint) hint.innerHTML = 'Hasil lokasi tidak valid.';
-            return;
-            }
-
-            mapPickerInstance.setView([lat, lng], 16);
-            await setPickedPoint(lat, lng, first.display_name || '');
-
-            if (hint) hint.innerHTML = 'Lokasi ditemukan. Anda bisa klik titik lain di peta jika perlu.';
-        }
-
-        function usePickedPoint() {
-            if (!pickedLat || !pickedLng) {
-            alert('Silakan pilih titik pada peta terlebih dahulu.');
-            return;
-            }
-
-            const latInput = getEl('lokasi_lat');
-            const lngInput = getEl('lokasi_lng');
-            const alamatInput = getEl('alamat_input');
-
-            setInputValue(latInput, pickedLat);
-            setInputValue(lngInput, pickedLng);
-            setInputValue(alamatInput, pickedAddress);
+        setContactHint('Gagal mengambil nomor dari kontak.', true);
+      }
+    }
+
+    function resetSelect(el, placeholder, disabled) {
+      if (!el) return;
+      el.innerHTML = '<option value="">' + placeholder + '</option>';
+      el.disabled = typeof disabled === 'boolean' ? disabled : true;
+    }
+
+    async function fillLocation() {
+      const btn = getEl('btnGetLoc');
+      const latInput = getEl('lokasi_lat');
+      const lngInput = getEl('lokasi_lng');
+      const alamatInput = getEl('alamat_input');
+
+      if (!btn) return;
+
+      if (!navigator.geolocation) {
+        setHint('Browser tidak mendukung GPS.', true);
+        return;
+      }
+
+      if (!isSecurePage()) {
+        setHint('Lokasi hanya bisa dipakai di HTTPS / localhost.', true);
+        return;
+      }
+
+      btn.disabled = true;
+      setHint('Mengambil lokasi saat ini dari device...', false);
+
+      navigator.geolocation.getCurrentPosition(
+        async function (pos) {
+          try {
+            const lat = String(pos.coords.latitude || '');
+            const lng = String(pos.coords.longitude || '');
+
+            setInputValue(latInput, lat);
+            setInputValue(lngInput, lng);
 
             if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
-            window.Livewire.dispatch('setLatLngProspek', { lat: pickedLat, lng: pickedLng });
-            window.Livewire.dispatch('setAlamatProspek', { alamat: pickedAddress || '' });
+              window.Livewire.dispatch('setLatLngProspek', { lat: lat, lng: lng });
             }
 
-            setHint('Lokasi dari titik peta berhasil dipilih ✅', false);
+            const addr = await reverseGeocode(lat, lng);
 
-            if (mapPickerModalInstance) {
-            mapPickerModalInstance.hide();
-            }
-        }
+            if (addr) {
+              setInputValue(alamatInput, addr);
 
-        function resetPickedPoint() {
-            pickedLat = '';
-            pickedLng = '';
-            pickedAddress = '';
+              if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
+                window.Livewire.dispatch('setAlamatProspek', { alamat: addr });
+              }
 
-            if (mapPickerInstance && mapPickerMarker) {
-            mapPickerInstance.removeLayer(mapPickerMarker);
-            mapPickerMarker = null;
-            }
-
-            updatePickedPreview();
-        }
-
-        function bindLocationButton() {
-            const btn = getEl('btnGetLoc');
-            if (!btn) return;
-
-            if (btn.dataset.bound !== '1') {
-            btn.dataset.bound = '1';
-            btn.addEventListener('click', fillLocation);
-            }
-
-            const btnOpenMap = getEl('btnOpenMapPicker');
-            if (btnOpenMap && btnOpenMap.dataset.bound !== '1') {
-            btnOpenMap.dataset.bound = '1';
-            btnOpenMap.addEventListener('click', openMapPicker);
-            }
-
-            const btnSearch = getEl('btnMapSearch');
-            if (btnSearch && btnSearch.dataset.bound !== '1') {
-            btnSearch.dataset.bound = '1';
-            btnSearch.addEventListener('click', doMapSearch);
-            }
-
-            const searchInput = getEl('mapSearchInput');
-            if (searchInput && searchInput.dataset.bound !== '1') {
-            searchInput.dataset.bound = '1';
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                e.preventDefault();
-                doMapSearch();
-                }
-            });
-            }
-
-            const btnUsePoint = getEl('btnUsePickedPoint');
-            if (btnUsePoint && btnUsePoint.dataset.bound !== '1') {
-            btnUsePoint.dataset.bound = '1';
-            btnUsePoint.addEventListener('click', usePickedPoint);
-            }
-
-            const btnResetPoint = getEl('btnResetPickedPoint');
-            if (btnResetPoint && btnResetPoint.dataset.bound !== '1') {
-            btnResetPoint.dataset.bound = '1';
-            btnResetPoint.addEventListener('click', resetPickedPoint);
-            }
-
-            const modalMap = getEl('modalMapPicker');
-            if (modalMap && modalMap.dataset.bound !== '1') {
-            modalMap.dataset.bound = '1';
-
-            modalMap.addEventListener('shown.bs.modal', function() {
-                setTimeout(function() {
-                if (mapPickerInstance) {
-                    mapPickerInstance.invalidateSize();
-                } else {
-                    initMapPicker();
-                }
-                }, 250);
-            });
-            }
-        }
-
-        function bindContactPicker() {
-            const btn = getEl('btnPickContact');
-            const input = getEl('no_hp_input');
-
-            if (btn && btn.dataset.bound !== '1') {
-            btn.dataset.bound = '1';
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                pickPhoneFromContacts();
-            });
-            }
-
-            if (input && input.dataset.contactBound !== '1') {
-            input.dataset.contactBound = '1';
-            }
-        }
-
-        function bindPhoto() {
-            const btnCamera = getEl('btnOpenCamera');
-            const btnGallery = getEl('btnOpenGallery');
-            const cameraInput = getEl('cameraCaptureInput');
-            const galleryInput = getEl('galleryInput');
-            const lwPhotos = getEl('lwPhotos');
-            const snapBtn = getEl('btnSnap');
-            const modalEl = getEl('modalCamera');
-
-            if (!btnCamera || !btnGallery || !cameraInput || !galleryInput || !lwPhotos) return;
-
-            if (btnCamera.dataset.bound !== '1') {
-            btnCamera.dataset.bound = '1';
-            btnCamera.onclick = function() {
-                if (isMobileDevice()) {
-                cameraInput.click();
-                } else {
-                openDesktopCamera();
-                }
-            };
-            }
-
-            if (btnGallery.dataset.bound !== '1') {
-            btnGallery.dataset.bound = '1';
-            btnGallery.onclick = function() {
-                galleryInput.click();
-            };
-            }
-
-            cameraInput.onchange = async function() {
-            if (cameraInput.files && cameraInput.files.length) {
-                await mergeFilesToLivewire(cameraInput.files);
-            }
-            cameraInput.value = '';
-            };
-
-            galleryInput.onchange = async function() {
-            if (galleryInput.files && galleryInput.files.length) {
-                await mergeFilesToLivewire(galleryInput.files);
-            }
-            galleryInput.value = '';
-            };
-
-            lwPhotos.onchange = async function() {
-            if (lwPhotos.files && lwPhotos.files.length) {
-                await renderPhotoPreview(lwPhotos.files);
+              setHint('Lokasi saat ini berhasil diambil ✅', false);
             } else {
-                clearPhotoPreview();
+              setHint('Lat/Lng berhasil diambil, tapi alamat belum didapat.', true);
             }
-            };
+          } catch (e) {
+            console.error('Gagal proses lokasi:', e);
+            setHint('Gagal memproses lokasi.', true);
+          } finally {
+            btn.disabled = false;
+          }
+        },
+        function (err) {
+          btn.disabled = false;
 
-            if (snapBtn && snapBtn.dataset.bound !== '1') {
-            snapBtn.dataset.bound = '1';
-            snapBtn.onclick = function() {
-                snapDesktopPhoto();
-            };
-            }
-
-            if (modalEl && !modalEl.dataset.bound) {
-            modalEl.dataset.bound = '1';
-            modalEl.addEventListener('hidden.bs.modal', function() {
-                stopCamera();
-            });
-            }
+          if (err && err.code === 1) {
+            setHint('Izin lokasi ditolak. Aktifkan permission lokasi di browser.', true);
+          } else if (err && err.code === 2) {
+            setHint('Lokasi tidak tersedia. Nyalakan GPS dan coba lagi.', true);
+          } else if (err && err.code === 3) {
+            setHint('Request lokasi timeout. Coba lagi.', true);
+          } else {
+            setHint('Gagal mengambil lokasi.', true);
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0
         }
+      );
+    }
 
-        function initTanggalDefault() {
-            var el = getEl('tanggal_prospek');
-            if (!el) return;
-            if (!el.value) {
-            var d = new Date();
-            var mm = String(d.getMonth() + 1).padStart(2, '0');
-            var dd = String(d.getDate()).padStart(2, '0');
-            el.value = d.getFullYear() + '-' + mm + '-' + dd;
-            }
-        }
+    async function initWilayahProspek() {
+      const PROV_ID = '33';
 
-        function bootAll() {
-            initTanggalDefault();
-            bindLocationButton();
-            bindContactPicker();
-            initWilayahProspek();
-            bindPhoto();
-            updatePickedPreview();
-        }
+      const kabSelect = getEl('kabKotaSelect');
+      const kecSelect = getEl('kecamatanSelect');
+      const desaSelect = getEl('desaSelect');
 
-        document.addEventListener('DOMContentLoaded', bootAll);
-        document.addEventListener('livewire:navigated', function() {
-            setTimeout(bootAll, 100);
+      const kabHidden = getEl('kab_kota_hidden');
+      const kecHidden = getEl('kecamatan_hidden');
+      const desaHidden = getEl('desa_hidden');
+
+      const kodeProvHidden = getEl('kode_provinsi_hidden');
+      const kodeKabHidden = getEl('kode_kab_kota_hidden');
+      const kodeKecHidden = getEl('kode_kecamatan_hidden');
+      const kodeDesaHidden = getEl('kode_desa_hidden');
+
+      if (!kabSelect || !kecSelect || !desaSelect || !kabHidden || !kecHidden || !desaHidden) {
+        return;
+      }
+
+      setInputValue(kodeProvHidden, PROV_ID);
+
+      async function loadKabupaten(initialName) {
+        resetSelect(kabSelect, '-- Loading Kab/Kota --', true);
+
+        const json = await fetchJson('/api-wilayah/regencies/' + PROV_ID);
+        const list = Array.isArray(json.data) ? json.data : [];
+
+        kabSelect.innerHTML = '<option value="">-- Pilih Kab/Kota --</option>';
+
+        list.forEach(function(item) {
+          const opt = document.createElement('option');
+          opt.value = item.code;
+          opt.textContent = item.name;
+          kabSelect.appendChild(opt);
         });
 
-        document.addEventListener('livewire:init', function() {
-            if (!window.Livewire) return;
-            Livewire.hook('morphed', function() {
-            setTimeout(bootAll, 100);
-            });
+        kabSelect.disabled = false;
+
+        if (initialName) {
+          const found = findByNameLoose(list, initialName);
+          if (found) {
+            kabSelect.value = found.code;
+            setInputValue(kabHidden, found.name);
+            setInputValue(kodeKabHidden, found.code);
+          }
+        }
+
+        return list;
+      }
+
+      async function loadKecamatan(regencyCode, initialName) {
+        if (!regencyCode) {
+          resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
+          resetSelect(desaSelect, '-- Pilih Desa --', true);
+          return [];
+        }
+
+        resetSelect(kecSelect, '-- Loading Kecamatan --', true);
+
+        const json = await fetchJson('/api-wilayah/districts/' + regencyCode);
+        const list = Array.isArray(json.data) ? json.data : [];
+
+        kecSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+
+        list.forEach(function(item) {
+          const opt = document.createElement('option');
+          opt.value = item.code;
+          opt.textContent = item.name;
+          kecSelect.appendChild(opt);
         });
-        })();
-    </script>
+
+        kecSelect.disabled = false;
+
+        if (initialName) {
+          const found = findByNameLoose(list, initialName);
+          if (found) {
+            kecSelect.value = found.code;
+            setInputValue(kecHidden, found.name);
+            setInputValue(kodeKecHidden, found.code);
+          }
+        }
+
+        return list;
+      }
+
+      async function loadDesa(districtCode, initialName) {
+        if (!districtCode) {
+          resetSelect(desaSelect, '-- Pilih Desa --', true);
+          return [];
+        }
+
+        resetSelect(desaSelect, '-- Loading Desa --', true);
+
+        const json = await fetchJson('/api-wilayah/villages/' + districtCode);
+        const list = Array.isArray(json.data) ? json.data : [];
+
+        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+
+        list.forEach(function(item) {
+          const opt = document.createElement('option');
+          opt.value = item.code;
+          opt.textContent = item.name;
+          desaSelect.appendChild(opt);
+        });
+
+        desaSelect.disabled = false;
+
+        if (initialName) {
+          const found = findByNameLoose(list, initialName);
+          if (found) {
+            desaSelect.value = found.code;
+            setInputValue(desaHidden, found.name);
+            setInputValue(kodeDesaHidden, found.code);
+          }
+        }
+
+        return list;
+      }
+
+      if (kabSelect.dataset.bound !== '1') {
+        kabSelect.dataset.bound = '1';
+        kabSelect.addEventListener('change', async function () {
+          const selectedText = this.value ? this.options[this.selectedIndex].text : '';
+
+          setInputValue(kabHidden, selectedText);
+          setInputValue(kodeKabHidden, this.value || '');
+          setInputValue(kecHidden, '');
+          setInputValue(desaHidden, '');
+          setInputValue(kodeKecHidden, '');
+          setInputValue(kodeDesaHidden, '');
+
+          resetSelect(desaSelect, '-- Pilih Desa --', true);
+          await loadKecamatan(this.value || '', '');
+        });
+      }
+
+      if (kecSelect.dataset.bound !== '1') {
+        kecSelect.dataset.bound = '1';
+        kecSelect.addEventListener('change', async function () {
+          const selectedText = this.value ? this.options[this.selectedIndex].text : '';
+
+          setInputValue(kecHidden, selectedText);
+          setInputValue(kodeKecHidden, this.value || '');
+          setInputValue(desaHidden, '');
+          setInputValue(kodeDesaHidden, '');
+
+          await loadDesa(this.value || '', '');
+        });
+      }
+
+      if (desaSelect.dataset.bound !== '1') {
+        desaSelect.dataset.bound = '1';
+        desaSelect.addEventListener('change', function () {
+          const selectedText = this.value ? this.options[this.selectedIndex].text : '';
+          setInputValue(desaHidden, selectedText);
+          setInputValue(kodeDesaHidden, this.value || '');
+        });
+      }
+
+      try {
+        const initialKab = kabHidden.value || '';
+        const initialKec = kecHidden.value || '';
+        const initialDesa = desaHidden.value || '';
+
+        const kabList = await loadKabupaten(initialKab);
+
+        if (initialKab) {
+          const selectedKab = findByNameLoose(kabList, initialKab);
+          if (selectedKab) {
+            const kecList = await loadKecamatan(selectedKab.code, initialKec);
+
+            if (initialKec) {
+              const selectedKec = findByNameLoose(kecList, initialKec);
+              if (selectedKec) {
+                await loadDesa(selectedKec.code, initialDesa);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Wilayah gagal dimuat:', e);
+        resetSelect(kabSelect, '-- Gagal memuat Kab/Kota --', true);
+        resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
+        resetSelect(desaSelect, '-- Pilih Desa --', true);
+      }
+    }
+
+    let mediaStream = null;
+    let modalInstance = null;
+
+    let mapPickerInstance = null;
+    let mapPickerMarker = null;
+    let mapPickerModalInstance = null;
+    let pickedLat = '';
+    let pickedLng = '';
+    let pickedAddress = '';
+
+    function isMobileDevice() {
+      return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+    }
+
+    function clearPhotoPreview() {
+      const wrap = getEl('photoPreviewWrap');
+      if (wrap) wrap.innerHTML = '';
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise(function(resolve, reject) {
+        const reader = new FileReader();
+        reader.onload = function(e) { resolve(e.target.result); };
+        reader.onerror = function() { reject(new Error('Gagal baca file')); };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function renderPhotoPreview(files) {
+      const wrap = getEl('photoPreviewWrap');
+      const lwPhotos = getEl('lwPhotos');
+
+      if (!wrap) return;
+
+      clearPhotoPreview();
+
+      if (!files || !files.length) return;
+
+      const arr = Array.from(files);
+
+      for (let i = 0; i < arr.length; i++) {
+        const file = arr[i];
+        if (!file.type || !file.type.startsWith('image/')) continue;
+
+        try {
+          const src = await fileToDataUrl(file);
+
+          const col = document.createElement('div');
+          col.className = 'col-6 col-md-3';
+          col.innerHTML = `
+            <div class="card-soft p-2 position-relative">
+              <img src="${src}" class="w-100" style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;" loading="lazy">
+              <button type="button" class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2 btn-remove-preview" data-idx="${i}">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          `;
+          wrap.appendChild(col);
+        } catch (e) {
+          console.error('Preview gagal:', e);
+        }
+      }
+
+      wrap.querySelectorAll('.btn-remove-preview').forEach(function(btn) {
+        btn.onclick = function() {
+          const idx = parseInt(this.getAttribute('data-idx'), 10);
+          if (!lwPhotos || !lwPhotos.files) return;
+
+          const dt = new DataTransfer();
+          Array.from(lwPhotos.files).forEach(function(file, i) {
+            if (i !== idx) dt.items.add(file);
+          });
+
+          lwPhotos.files = dt.files;
+          renderPhotoPreview(lwPhotos.files);
+          lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+      });
+    }
+
+    function validateFiles(files) {
+      const maxSize = 5 * 1024 * 1024;
+      const valid = [];
+      const errors = [];
+
+      Array.from(files || []).forEach(function(file) {
+        if (!file.type || !file.type.startsWith('image/')) {
+          errors.push(file.name + ' bukan file gambar.');
+          return;
+        }
+        if (file.size > maxSize) {
+          errors.push(file.name + ' melebihi 5MB.');
+          return;
+        }
+        valid.push(file);
+      });
+
+      if (errors.length) {
+        alert(errors.join('\n'));
+      }
+
+      return valid;
+    }
+
+    async function mergeFilesToLivewire(sourceFiles) {
+      const lwPhotos = getEl('lwPhotos');
+      if (!lwPhotos || !sourceFiles || !sourceFiles.length) return;
+
+      const validFiles = validateFiles(sourceFiles);
+      if (!validFiles.length) return;
+
+      const dt = new DataTransfer();
+
+      if (lwPhotos.files && lwPhotos.files.length) {
+        Array.from(lwPhotos.files).forEach(function(file) {
+          dt.items.add(file);
+        });
+      }
+
+      validFiles.forEach(function(file) {
+        dt.items.add(file);
+      });
+
+      lwPhotos.files = dt.files;
+      await renderPhotoPreview(lwPhotos.files);
+      lwPhotos.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function stopCamera() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(function(track) {
+          track.stop();
+        });
+        mediaStream = null;
+      }
+    }
+
+    function showCamWarn(msg) {
+      const el = getEl('camWarn');
+      if (!el) return;
+      el.classList.remove('d-none');
+      el.innerText = msg;
+    }
+
+    function hideCamWarn() {
+      const el = getEl('camWarn');
+      if (!el) return;
+      el.classList.add('d-none');
+      el.innerText = '';
+    }
+
+    async function openDesktopCamera() {
+      const modalEl = getEl('modalCamera');
+      const video = getEl('camVideo');
+      if (!modalEl || !video) return;
+
+      hideCamWarn();
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          showCamWarn('Browser desktop ini tidak mendukung webcam.');
+          return;
+        }
+
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+
+        video.srcObject = mediaStream;
+
+        if (!modalInstance) {
+          modalInstance = new bootstrap.Modal(modalEl);
+        }
+
+        modalInstance.show();
+      } catch (e) {
+        console.error(e);
+        showCamWarn('Kamera tidak bisa dibuka. Pastikan izin kamera diberikan.');
+      }
+    }
+
+    function snapDesktopPhoto() {
+      const video = getEl('camVideo');
+      const canvas = getEl('camCanvas');
+      if (!video || !canvas) return;
+
+      const width = video.videoWidth || 1280;
+      const height = video.videoHeight || 720;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+
+      canvas.toBlob(async function(blob) {
+        if (!blob) return;
+
+        const file = new File([blob], 'camera-' + Date.now() + '.jpg', {
+          type: 'image/jpeg'
+        });
+
+        await mergeFilesToLivewire([file]);
+
+        if (modalInstance) modalInstance.hide();
+        stopCamera();
+      }, 'image/jpeg', 0.92);
+    }
+
+    function updatePickedPreview() {
+      const addrEl = getEl('pickedAddressPreview');
+      const latEl = getEl('pickedLatPreview');
+      const lngEl = getEl('pickedLngPreview');
+
+      if (addrEl) addrEl.textContent = pickedAddress || 'Belum ada titik dipilih.';
+      if (latEl) latEl.textContent = pickedLat || '-';
+      if (lngEl) lngEl.textContent = pickedLng || '-';
+    }
+
+    async function setPickedPoint(lat, lng, addressText) {
+      pickedLat = String(lat || '');
+      pickedLng = String(lng || '');
+
+      if (mapPickerMarker && mapPickerInstance) {
+        mapPickerMarker.setLatLng([lat, lng]);
+      } else if (mapPickerInstance) {
+        mapPickerMarker = L.marker([lat, lng], { draggable: true }).addTo(mapPickerInstance);
+
+        mapPickerMarker.on('dragend', async function(e) {
+          const pos = e.target.getLatLng();
+          pickedLat = String(pos.lat);
+          pickedLng = String(pos.lng);
+          const addr = await reverseGeocode(pos.lat, pos.lng);
+          pickedAddress = addr || '';
+          updatePickedPreview();
+        });
+      }
+
+      if (addressText) {
+        pickedAddress = addressText;
+      } else {
+        const addr = await reverseGeocode(lat, lng);
+        pickedAddress = addr || '';
+      }
+
+      updatePickedPreview();
+    }
+
+    function initMapPicker() {
+      const mapEl = getEl('mapPicker');
+      if (!mapEl || typeof L === 'undefined') return;
+
+      if (!mapPickerInstance) {
+        mapPickerInstance = L.map(mapEl, {
+          zoomControl: true
+        }).setView([-7.150975, 110.140259], 8);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(mapPickerInstance);
+
+        mapPickerInstance.on('click', async function(e) {
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+          await setPickedPoint(lat, lng, '');
+        });
+      }
+
+      const currentLat = parseFloat(getEl('lokasi_lat')?.value || '');
+      const currentLng = parseFloat(getEl('lokasi_lng')?.value || '');
+
+      if (!isNaN(currentLat) && !isNaN(currentLng)) {
+        mapPickerInstance.setView([currentLat, currentLng], 16);
+        setPickedPoint(currentLat, currentLng, getEl('alamat_input')?.value || '');
+      } else {
+        mapPickerInstance.setView([-7.150975, 110.140259], 8);
+        pickedLat = '';
+        pickedLng = '';
+        pickedAddress = '';
+        if (mapPickerMarker) {
+          mapPickerInstance.removeLayer(mapPickerMarker);
+          mapPickerMarker = null;
+        }
+        updatePickedPreview();
+      }
+
+      setTimeout(function() {
+        mapPickerInstance.invalidateSize();
+      }, 250);
+    }
+
+    function openMapPicker() {
+      const modalEl = getEl('modalMapPicker');
+      if (!modalEl) return;
+
+      if (!mapPickerModalInstance) {
+        mapPickerModalInstance = new bootstrap.Modal(modalEl);
+      }
+
+      mapPickerModalInstance.show();
+
+      setTimeout(function() {
+        initMapPicker();
+      }, 250);
+    }
+
+    async function doMapSearch() {
+      const input = getEl('mapSearchInput');
+      const hint = getEl('mapSearchHint');
+
+      if (!input || !mapPickerInstance) return;
+
+      const keyword = String(input.value || '').trim();
+      if (!keyword) {
+        if (hint) hint.innerHTML = 'Masukkan kata kunci lokasi terlebih dahulu.';
+        return;
+      }
+
+      if (hint) hint.innerHTML = 'Mencari lokasi...';
+
+      const results = await searchLocation(keyword);
+
+      if (!results.length) {
+        if (hint) hint.innerHTML = 'Lokasi tidak ditemukan. Coba kata kunci lain.';
+        return;
+      }
+
+      const first = results[0];
+      const lat = parseFloat(first.lat);
+      const lng = parseFloat(first.lon);
+
+      if (isNaN(lat) || isNaN(lng)) {
+        if (hint) hint.innerHTML = 'Hasil lokasi tidak valid.';
+        return;
+      }
+
+      mapPickerInstance.setView([lat, lng], 16);
+      await setPickedPoint(lat, lng, first.display_name || '');
+
+      if (hint) hint.innerHTML = 'Lokasi ditemukan. Anda bisa klik titik lain di peta jika perlu.';
+    }
+
+    function usePickedPoint() {
+      if (!pickedLat || !pickedLng) {
+        alert('Silakan pilih titik pada peta terlebih dahulu.');
+        return;
+      }
+
+      const latInput = getEl('lokasi_lat');
+      const lngInput = getEl('lokasi_lng');
+      const alamatInput = getEl('alamat_input');
+
+      setInputValue(latInput, pickedLat);
+      setInputValue(lngInput, pickedLng);
+      setInputValue(alamatInput, pickedAddress);
+
+      if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
+        window.Livewire.dispatch('setLatLngProspek', { lat: pickedLat, lng: pickedLng });
+        window.Livewire.dispatch('setAlamatProspek', { alamat: pickedAddress || '' });
+      }
+
+      setHint('Lokasi dari titik peta berhasil dipilih ✅', false);
+
+      if (mapPickerModalInstance) {
+        mapPickerModalInstance.hide();
+      }
+    }
+
+    function resetPickedPoint() {
+      pickedLat = '';
+      pickedLng = '';
+      pickedAddress = '';
+
+      if (mapPickerInstance && mapPickerMarker) {
+        mapPickerInstance.removeLayer(mapPickerMarker);
+        mapPickerMarker = null;
+      }
+
+      updatePickedPreview();
+    }
+
+    function bindLocationButton() {
+      const btn = getEl('btnGetLoc');
+      if (!btn) return;
+
+      if (btn.dataset.bound !== '1') {
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', fillLocation);
+      }
+
+      const btnOpenMap = getEl('btnOpenMapPicker');
+      if (btnOpenMap && btnOpenMap.dataset.bound !== '1') {
+        btnOpenMap.dataset.bound = '1';
+        btnOpenMap.addEventListener('click', openMapPicker);
+      }
+
+      const btnSearch = getEl('btnMapSearch');
+      if (btnSearch && btnSearch.dataset.bound !== '1') {
+        btnSearch.dataset.bound = '1';
+        btnSearch.addEventListener('click', doMapSearch);
+      }
+
+      const searchInput = getEl('mapSearchInput');
+      if (searchInput && searchInput.dataset.bound !== '1') {
+        searchInput.dataset.bound = '1';
+        searchInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            doMapSearch();
+          }
+        });
+      }
+
+      const btnUsePoint = getEl('btnUsePickedPoint');
+      if (btnUsePoint && btnUsePoint.dataset.bound !== '1') {
+        btnUsePoint.dataset.bound = '1';
+        btnUsePoint.addEventListener('click', usePickedPoint);
+      }
+
+      const btnResetPoint = getEl('btnResetPickedPoint');
+      if (btnResetPoint && btnResetPoint.dataset.bound !== '1') {
+        btnResetPoint.dataset.bound = '1';
+        btnResetPoint.addEventListener('click', resetPickedPoint);
+      }
+
+      const modalMap = getEl('modalMapPicker');
+      if (modalMap && modalMap.dataset.bound !== '1') {
+        modalMap.dataset.bound = '1';
+
+        modalMap.addEventListener('shown.bs.modal', function() {
+          setTimeout(function() {
+            if (mapPickerInstance) {
+              mapPickerInstance.invalidateSize();
+            } else {
+              initMapPicker();
+            }
+          }, 250);
+        });
+      }
+    }
+
+    function bindContactPicker() {
+      const btn = getEl('btnPickContact');
+      const input = getEl('no_hp_input');
+
+      if (btn && btn.dataset.bound !== '1') {
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          pickPhoneFromContacts();
+        });
+      }
+
+      if (input && input.dataset.contactBound !== '1') {
+        input.dataset.contactBound = '1';
+      }
+    }
+
+    function bindPhoto() {
+      const btnCamera = getEl('btnOpenCamera');
+      const btnGallery = getEl('btnOpenGallery');
+      const cameraInput = getEl('cameraCaptureInput');
+      const galleryInput = getEl('galleryInput');
+      const lwPhotos = getEl('lwPhotos');
+      const snapBtn = getEl('btnSnap');
+      const modalEl = getEl('modalCamera');
+
+      if (!btnCamera || !btnGallery || !cameraInput || !galleryInput || !lwPhotos) return;
+
+      if (btnCamera.dataset.bound !== '1') {
+        btnCamera.dataset.bound = '1';
+        btnCamera.onclick = function() {
+          if (isMobileDevice()) {
+            cameraInput.click();
+          } else {
+            openDesktopCamera();
+          }
+        };
+      }
+
+      if (btnGallery.dataset.bound !== '1') {
+        btnGallery.dataset.bound = '1';
+        btnGallery.onclick = function() {
+          galleryInput.click();
+        };
+      }
+
+      cameraInput.onchange = async function() {
+        if (cameraInput.files && cameraInput.files.length) {
+          await mergeFilesToLivewire(cameraInput.files);
+        }
+        cameraInput.value = '';
+      };
+
+      galleryInput.onchange = async function() {
+        if (galleryInput.files && galleryInput.files.length) {
+          await mergeFilesToLivewire(galleryInput.files);
+        }
+        galleryInput.value = '';
+      };
+
+      lwPhotos.onchange = async function() {
+        if (lwPhotos.files && lwPhotos.files.length) {
+          await renderPhotoPreview(lwPhotos.files);
+        } else {
+          clearPhotoPreview();
+        }
+      };
+
+      if (snapBtn && snapBtn.dataset.bound !== '1') {
+        snapBtn.dataset.bound = '1';
+        snapBtn.onclick = function() {
+          snapDesktopPhoto();
+        };
+      }
+
+      if (modalEl && !modalEl.dataset.bound) {
+        modalEl.dataset.bound = '1';
+        modalEl.addEventListener('hidden.bs.modal', function() {
+          stopCamera();
+        });
+      }
+    }
+
+    function initTanggalDefault() {
+      var el = getEl('tanggal_prospek');
+      if (!el) return;
+      if (!el.value) {
+        var d = new Date();
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        el.value = d.getFullYear() + '-' + mm + '-' + dd;
+      }
+    }
+
+    function bootAll() {
+      initTanggalDefault();
+      bindLocationButton();
+      bindContactPicker();
+      initWilayahProspek();
+      bindPhoto();
+      updatePickedPreview();
+    }
+
+    document.addEventListener('DOMContentLoaded', bootAll);
+    document.addEventListener('livewire:navigated', function() {
+      setTimeout(bootAll, 100);
+    });
+
+    document.addEventListener('livewire:init', function() {
+      if (!window.Livewire) return;
+      Livewire.hook('morphed', function() {
+        setTimeout(bootAll, 100);
+      });
+    });
+  })();
+  </script>
 
 </div>
