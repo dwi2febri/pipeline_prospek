@@ -213,6 +213,49 @@ class Form extends Component
         return preg_replace('/[^0-9]/', '', (string) $value);
     }
 
+    protected function normalizeUpper(?string $value): string
+    {
+        return strtoupper(trim((string) $value));
+    }
+
+    protected function currentUserRole(): string
+    {
+        $u = auth()->user();
+        return $this->normalizeUpper($u->role ?? '');
+    }
+
+    protected function currentUserJobPosition(): string
+    {
+        $u = auth()->user();
+
+        return $this->normalizeUpper(
+            $u->job_position
+            ?? $u->job_posisition
+            ?? ''
+        );
+    }
+
+    protected function shouldAutoTakeProspect(string $role, string $jobPosition, string $jenisProduk): bool
+    {
+        if ($role !== 'AO') {
+            return false;
+        }
+
+        if ($jobPosition === 'AO KREDIT' && $jenisProduk === 'KREDIT') {
+            return true;
+        }
+
+        if ($jobPosition === 'AO DANA' && in_array($jenisProduk, ['TABUNGAN', 'DEPOSITO'], true)) {
+            return true;
+        }
+
+        if (in_array($jobPosition, ['AO REMIDIAL', 'AO REMEDIAL'], true) && $jenisProduk === 'ASET') {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function isDuplicatePhone(string $phone): bool
     {
         if ($phone === '') {
@@ -249,6 +292,9 @@ class Form extends Component
         }
 
         $u = auth()->user();
+        $role = $this->currentUserRole();
+        $jobPosition = $this->currentUserJobPosition();
+        $jenisProduk = $this->normalizeUpper($this->jenis_produk);
 
         if ($this->id) {
             $p = Prospect::findOrFail($this->id);
@@ -285,6 +331,12 @@ class Form extends Component
 
         $p->cabang_id         = $this->cabang_id;
         $p->referral_user_id  = $u->name;
+
+        if ($this->shouldAutoTakeProspect($role, $jobPosition, $jenisProduk)) {
+            $p->is_diambil = 1;
+            $p->diambil_oleh = $u->name;
+            $p->status = 'FOLLOW UP';
+        }
 
         $p->save();
 
