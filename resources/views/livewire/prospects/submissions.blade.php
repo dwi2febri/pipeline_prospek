@@ -360,7 +360,7 @@
       </div>
 
       <div class="col-12 col-md-2">
-        <label class="form-label small text-muted">Pengambilan</label>
+        <label class="form-label small text-muted">Penugasan</label>
         <select class="form-select" wire:model.live="filterPengambilan">
           <option value="">-- Semua --</option>
           <option value="1">Diambil</option>
@@ -412,7 +412,7 @@
             <th style="min-width:220px;">Cabang</th>
             <th style="min-width:170px;">Rekomendasi Produk</th>
             <th style="min-width:140px;">Status</th>
-            <th style="min-width:180px;">Pengambilan</th>
+            <th style="min-width:180px;">Penugasan</th>
             <th style="width:120px;" class="text-end">Aksi</th>
           </tr>
         </thead>

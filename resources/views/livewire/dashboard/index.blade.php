@@ -59,7 +59,7 @@
     }
 
     .bg-open{
-      background:linear-gradient(135deg,#64748b 0%,#475569 100%);
+      background:linear-gradient(135deg,#ffcfcf 0%,#fc9d9d 100%);
     }
 
     .bg-follow{

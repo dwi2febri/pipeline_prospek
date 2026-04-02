@@ -7,7 +7,7 @@
   @php
     $desktopCards = [
       ['key'=>'ALL', 'count_key'=>'TOTAL', 'label'=>'Total', 'bg'=>'linear-gradient(135deg,#f59e0b 0%,#d97706 100%)', 'icon'=>'bi-collection', 'text'=>'#fff', 'border'=>'0'],
-      ['key'=>'OPEN', 'count_key'=>'OPEN', 'label'=>'Open', 'bg'=>'linear-gradient(135deg,#6b7280 0%,#4b5563 100%)', 'icon'=>'bi-folder2-open', 'text'=>'#fff', 'border'=>'1px solid #4b5563'],
+      ['key'=>'OPEN', 'count_key'=>'OPEN', 'label'=>'Open', 'bg'=>'linear-gradient(135deg,#ffcfcf 0%,#fc9d9d 100%)', 'icon'=>'bi-folder2-open', 'text'=>'#fff', 'border'=>'1px solid #fc9d9d'],
       ['key'=>'FOLLOW UP', 'count_key'=>'FOLLOW UP', 'label'=>'Follow Up', 'bg'=>'linear-gradient(135deg,#10b981 0%,#059669 100%)', 'icon'=>'bi-arrow-repeat', 'text'=>'#fff', 'border'=>'0'],
       ['key'=>'REJECTED', 'count_key'=>'REJECTED', 'label'=>'Rejected', 'bg'=>'linear-gradient(135deg,#fb7185 0%,#ef4444 100%)', 'icon'=>'bi-x-circle', 'text'=>'#fff', 'border'=>'0'],
       ['key'=>'CLOSING', 'count_key'=>'CLOSING', 'label'=>'Closing', 'bg'=>'linear-gradient(135deg,#60a5fa 0%,#2563eb 100%)', 'icon'=>'bi-check2-circle', 'text'=>'#fff', 'border'=>'0'],
@@ -16,7 +16,7 @@
     $mobileTopCard = ['key'=>'ALL', 'count_key'=>'TOTAL', 'label'=>'Total', 'bg'=>'linear-gradient(135deg,#f59e0b 0%,#d97706 100%)', 'icon'=>'bi-collection', 'text'=>'#fff', 'border'=>'2px solid #111827'];
 
     $mobileGridCards = [
-      ['key'=>'OPEN', 'count_key'=>'OPEN', 'label'=>'Open', 'bg'=>'linear-gradient(135deg,#6b7280 0%,#4b5563 100%)', 'icon'=>'bi-folder2-open', 'text'=>'#fff', 'border'=>'1px solid #4b5563'],
+      ['key'=>'OPEN', 'count_key'=>'OPEN', 'label'=>'Open', 'bg'=>'linear-gradient(135deg,#ffcfcf 0%,#fc9d9d 100%)', 'icon'=>'bi-folder2-open', 'text'=>'#fff', 'border'=>'1px solid #fc9d9d'],
       ['key'=>'FOLLOW UP', 'count_key'=>'FOLLOW UP', 'label'=>'Follow Up', 'bg'=>'linear-gradient(135deg,#10b981 0%,#059669 100%)', 'icon'=>'bi-arrow-repeat', 'text'=>'#fff', 'border'=>'0'],
       ['key'=>'CLOSING', 'count_key'=>'CLOSING', 'label'=>'Closing', 'bg'=>'linear-gradient(135deg,#60a5fa 0%,#2563eb 100%)', 'icon'=>'bi-check2-circle', 'text'=>'#fff', 'border'=>'0'],
       ['key'=>'REJECTED', 'count_key'=>'REJECTED', 'label'=>'Rejected', 'bg'=>'linear-gradient(135deg,#fb7185 0%,#ef4444 100%)', 'icon'=>'bi-x-circle', 'text'=>'#fff', 'border'=>'0'],
