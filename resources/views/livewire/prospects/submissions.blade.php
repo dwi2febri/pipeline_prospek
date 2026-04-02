@@ -472,16 +472,21 @@
                 </span>
               </td>
 
-              <td class="small">
+                <td class="small">
                 @if((int)($p->is_diambil ?? 0) === 1)
-                  <span class="badge-modern {{ $pengambilanClass }}">Diambil</span>
-                  <div class="text-muted mt-2 fw-semibold">
-                    {{ $namaPengambilMap[$p->diambil_oleh] ?? ($p->diambil_oleh ?: '-') }}
-                  </div>
+                    @php
+                    $namaPengambilLengkap = $namaPengambilMap[$p->diambil_oleh] ?? null;
+                    @endphp
+                    <div class="fw-bold text-dark">
+                    {{ $p->diambil_oleh ?: '-' }}
+                    </div>
+                    <div class="text-muted">
+                    {{ $namaPengambilLengkap ?: '-' }}
+                    </div>
                 @else
-                  <span class="badge-modern {{ $pengambilanClass }}">Belum</span>
+                    -
                 @endif
-              </td>
+                </td>
 
               <td class="text-end">
                 <button type="button"
@@ -564,15 +569,21 @@
             {{ $p->status ?: '-' }}
           </span>
 
-          @if((int)($p->is_diambil ?? 0) === 1)
-            <span class="badge-modern {{ $pengambilanClass }}">
-              Diambil: {{ $namaPengambilMap[$p->diambil_oleh] ?? ($p->diambil_oleh ?: '-') }}
-            </span>
-          @else
-            <span class="badge-modern {{ $pengambilanClass }}">
-              Belum Diambil
-            </span>
-          @endif
+            @if((int)($p->is_diambil ?? 0) === 1)
+            @php
+                $namaPengambilLengkap = $namaPengambilMap[$p->diambil_oleh] ?? null;
+            @endphp
+            <div class="w-100">
+                <div class="fw-bold text-dark">
+                {{ $p->diambil_oleh ?: '-' }}
+                </div>
+                <div class="text-muted small">
+                {{ $namaPengambilLengkap ?: '-' }}
+                </div>
+            </div>
+            @else
+            <div class="w-100">-</div>
+            @endif
         </div>
 
         <div class="mt-3">
