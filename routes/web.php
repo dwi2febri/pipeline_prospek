@@ -22,6 +22,8 @@ use App\Livewire\Cabangs\Form as CabangsForm;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuditLogExportController;
 use App\Livewire\Reports\ProspectRecap as ProspectRecapReport;
+use App\Livewire\Contents\Manager as ContentManager;
+use App\Livewire\Contents\Show as ContentShow;
 
 // Homepage
 Route::get('/', function () {
@@ -141,6 +143,10 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:ADMIN')
         ->name('audit.index');
 
+    Route::get('/audit-logs/export', [AuditLogExportController::class, 'export'])
+        ->middleware('role:ADMIN')
+        ->name('audit.export');
+
     // ===== MANAJEMEN USER =====
     Route::get('/users', UsersIndex::class)
         ->middleware('role:ADMIN')
@@ -186,12 +192,20 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:ADMIN')
         ->name('cabangs.edit');
 
-    Route::get('/audit-logs/export', [AuditLogExportController::class, 'export'])
-    ->middleware('role:ADMIN')
-    ->name('audit.export');
-
     // ===== REKAP PROSPEK =====
     Route::get('/rekap-prospek', ProspectRecapReport::class)
-    ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR')
-    ->name('reports.prospect-recap');
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR')
+        ->name('reports.prospect-recap');
+
+    // ===== KONTEN APP =====
+    Route::get('/konten-app', ContentManager::class)
+        ->middleware('role:ADMIN')
+        ->name('contents.manager');
+
+    Route::get('/contents', ContentManager::class)
+        ->middleware('role:ADMIN')
+        ->name('contents.index');
+
+    Route::get('/contents/{jenis}/{slug}', ContentShow::class)
+        ->name('contents.show');
 });

@@ -1,15 +1,455 @@
 <div class="container-fluid px-0">
 
-  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-    <div>
-      <div class="fw-bold fs-4">{{ $id ? 'Detail Prospek' : 'Input Prospek' }}</div>
-      <div class="text-muted">Isi data prospek nasabah dengan lengkap</div>
+  <style>
+    .mobile-back-btn{
+  display:none;
+}
+
+.form-title-row{
+  display:block;
+}
+
+@media (max-width: 767.98px){
+  .form-page-top{
+    margin:-14px -14px 14px -14px;
+    padding:18px 16px 14px 16px;
+    background:
+      radial-gradient(circle at 8% 12%, rgba(59,130,246,.14), transparent 22%),
+      radial-gradient(circle at 92% 16%, rgba(168,85,247,.12), transparent 24%),
+      linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+    border-bottom-left-radius:28px;
+    border-bottom-right-radius:28px;
+    box-shadow:0 14px 28px rgba(15,23,42,.06);
+  }
+
+  .form-title-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:4px;
+  }
+
+  .mobile-back-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:44px;
+    height:44px;
+    flex:0 0 44px;
+    border-radius:14px;
+    border:1px solid #e5e7eb;
+    background:#ffffff;
+    color:#0f172a;
+    text-decoration:none;
+    box-shadow:0 8px 20px rgba(15,23,42,.08);
+  }
+
+  .mobile-back-btn i{
+    font-size:1.05rem;
+  }
+
+  .back-btn-modern{
+    display:none !important;
+  }
+
+  .form-page-title{
+    margin-bottom:0;
+    line-height:1.1;
+  }
+
+  .form-page-subtitle{
+    margin-left:56px;
+  }
+}
+    .form-page-top{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .form-page-title{
+      font-size:1.55rem;
+      font-weight:900;
+      color:#0f172a;
+      letter-spacing:-.02em;
+      line-height:1.1;
+    }
+
+    .form-page-subtitle{
+      color:#64748b;
+      font-size:.92rem;
+      margin-top:4px;
+    }
+
+    .back-btn-modern{
+      border-radius:999px;
+      padding:.75rem 1.1rem;
+      font-weight:800;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      color:#0f172a;
+      box-shadow:0 10px 24px rgba(15,23,42,.06);
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .card-soft{
+      border:0;
+      border-radius:28px;
+      background:#fff;
+      box-shadow:0 18px 42px rgba(15,23,42,.08);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card-soft::before{
+      content:"";
+      position:absolute;
+      top:-48px;
+      right:-48px;
+      width:150px;
+      height:150px;
+      border-radius:999px;
+      background:radial-gradient(circle, rgba(59,130,246,.10) 0%, rgba(59,130,246,0) 72%);
+      pointer-events:none;
+    }
+
+    .card-soft::after{
+      content:"";
+      position:absolute;
+      left:-40px;
+      bottom:-40px;
+      width:130px;
+      height:130px;
+      border-radius:999px;
+      background:radial-gradient(circle, rgba(249,115,22,.08) 0%, rgba(249,115,22,0) 72%);
+      pointer-events:none;
+    }
+
+    .form-label.fw-semibold{
+      font-weight:800 !important;
+      color:#0f172a;
+      margin-bottom:.55rem;
+    }
+
+    .input-group{
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid #e7edf5;
+      background:#fff;
+      box-shadow:0 6px 18px rgba(15,23,42,.04);
+    }
+
+    .input-group-text{
+      border:0 !important;
+      background:#fff !important;
+      color:#64748b;
+      min-width:48px;
+      justify-content:center;
+    }
+
+    .form-control,
+    .form-select,
+    textarea.form-control{
+      border-radius:18px !important;
+      border:1px solid #e7edf5 !important;
+      min-height:50px;
+      padding:.85rem 1rem;
+      box-shadow:0 6px 18px rgba(15,23,42,.04);
+      background:#fff;
+      color:#0f172a;
+    }
+
+    .input-group .form-control{
+      border:0 !important;
+      box-shadow:none !important;
+      min-height:48px;
+    }
+
+    .input-group .btn{
+      border:0 !important;
+      border-left:1px solid #eef2f7 !important;
+      border-radius:0 !important;
+      background:#fff !important;
+      color:#334155 !important;
+      font-weight:700;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    textarea.form-control:focus{
+      border-color:#93c5fd !important;
+      box-shadow:0 0 0 .22rem rgba(59,130,246,.12) !important;
+    }
+
+    textarea.form-control{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    .section-soft{
+      border:1px solid #edf2f7;
+      border-radius:24px;
+      padding:16px;
+      background:
+        radial-gradient(circle at top right, rgba(59,130,246,.05), transparent 22%),
+        linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+      box-shadow:0 10px 24px rgba(15,23,42,.04);
+    }
+
+    .section-soft-title{
+      font-size:.82rem;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#94a3b8;
+      margin-bottom:12px;
+    }
+
+    .hint-soft{
+      color:#64748b;
+      font-size:.84rem;
+      line-height:1.55;
+    }
+
+    .btn-app-primary{
+      border:0;
+      border-radius:18px;
+      min-height:50px;
+      padding:.8rem 1rem;
+      font-weight:800;
+      background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);
+      color:#fff;
+      box-shadow:0 14px 28px rgba(37,99,235,.22);
+    }
+
+    .btn-app-primary:hover{
+      color:#fff;
+    }
+
+    .btn-app-outline{
+      border-radius:18px;
+      min-height:50px;
+      padding:.8rem 1rem;
+      font-weight:800;
+      background:#fff;
+      border:1px solid #dbeafe;
+      color:#2563eb;
+      box-shadow:0 10px 22px rgba(37,99,235,.08);
+    }
+
+    .btn-app-light{
+      border-radius:18px;
+      min-height:50px;
+      padding:.8rem 1rem;
+      font-weight:800;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      color:#334155;
+      box-shadow:0 10px 22px rgba(15,23,42,.05);
+    }
+
+    .photo-action-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+
+    .upload-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#f8fafc;
+      color:#64748b;
+      font-size:.82rem;
+      font-weight:700;
+      border:1px solid #eef2f7;
+    }
+
+    .preview-title{
+      font-weight:800;
+      color:#0f172a;
+      margin-bottom:10px;
+    }
+
+    .preview-card{
+      border-radius:18px;
+      overflow:hidden;
+      background:#fff;
+      border:1px solid #edf2f7;
+      box-shadow:0 10px 22px rgba(15,23,42,.05);
+    }
+
+    .sticky-action-bar{
+      position:sticky;
+      bottom:0;
+      z-index:20;
+      margin-top:18px;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(10px);
+      border:1px solid #eef2f7;
+      border-radius:22px;
+      padding:12px;
+      box-shadow:0 14px 28px rgba(15,23,42,.08);
+    }
+
+    .sticky-action-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .alert.rounded-4{
+      border-radius:18px !important;
+    }
+
+    .modal-content{
+      border-radius:24px !important;
+      overflow:hidden;
+    }
+
+    .modal-header,
+    .modal-footer{
+      border-color:#eef2f7 !important;
+    }
+
+    #mapPicker .leaflet-container,
+    #mapPicker{
+      background:#f8fafc !important;
+    }
+
+    @media (max-width: 767.98px){
+      body{
+        background:
+          radial-gradient(circle at 8% 8%, rgba(37,99,235,.14), transparent 22%),
+          radial-gradient(circle at 92% 10%, rgba(139,92,246,.14), transparent 24%),
+          radial-gradient(circle at 12% 88%, rgba(251,146,60,.10), transparent 20%),
+          linear-gradient(180deg,#eef5ff 0%,#f6f8ff 42%,#f5f7fb 100%) !important;
+      }
+
+      .container-fluid.px-0{
+        padding-left:0 !important;
+        padding-right:0 !important;
+      }
+
+      .form-page-top{
+        margin:-14px -14px 14px -14px;
+        padding:18px 16px 14px 16px;
+        background:
+          radial-gradient(circle at 8% 12%, rgba(59,130,246,.14), transparent 22%),
+          radial-gradient(circle at 92% 16%, rgba(168,85,247,.12), transparent 24%),
+          linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+        border-bottom-left-radius:28px;
+        border-bottom-right-radius:28px;
+        box-shadow:0 14px 28px rgba(15,23,42,.06);
+      }
+
+      .form-page-title{
+        font-size:1.35rem;
+      }
+
+      .form-page-subtitle{
+        font-size:.98rem;
+        line-height:1.55;
+        max-width:96%;
+      }
+
+      .back-btn-modern{
+        display:none;
+      }
+
+      .card-soft{
+        border-radius:30px;
+        padding:18px 14px !important;
+        box-shadow:0 16px 34px rgba(15,23,42,.08);
+      }
+
+      .section-soft{
+        border-radius:22px;
+        padding:14px;
+      }
+
+      .form-control,
+      .form-select,
+      textarea.form-control{
+        min-height:54px;
+        border-radius:18px !important;
+        font-size:16px;
+      }
+
+      .input-group{
+        border-radius:18px;
+      }
+
+      .input-group .form-control{
+        min-height:52px;
+        font-size:16px;
+      }
+
+      .input-group .btn{
+        min-width:52px;
+      }
+
+      .btn-app-primary,
+      .btn-app-outline,
+      .btn-app-light{
+        min-height:52px;
+        border-radius:18px;
+        font-size:.98rem;
+      }
+
+      .photo-action-row{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+      }
+
+      .photo-action-row .upload-pill{
+        grid-column:1 / -1;
+        justify-content:center;
+      }
+
+      .sticky-action-bar{
+        position:sticky;
+        bottom:76px;
+        border-radius:22px;
+      }
+
+      .sticky-action-grid{
+        grid-template-columns:1fr;
+      }
+
+      .mobile-hidden-label{
+        display:none;
+      }
+    }
+  </style>
+
+<div class="form-page-top">
+  <div class="w-100 w-md-auto">
+    <div class="form-title-row">
+      <a href="{{ route('prospects.index') }}" class="mobile-back-btn d-inline-flex d-md-none">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+
+      <div class="form-page-title">{{ $id ? 'Detail Prospek' : 'Input Prospek' }}</div>
     </div>
 
-    <a href="{{ route('prospects.index') }}" class="btn btn-light rounded-pill px-4">
-      <i class="bi bi-arrow-left me-1"></i> Kembali
-    </a>
+    <div class="form-page-subtitle">Isi data prospek nasabah dengan lengkap</div>
   </div>
+
+  <a href="{{ route('prospects.index') }}" class="back-btn-modern d-none d-md-inline-flex">
+    <i class="bi bi-arrow-left"></i> Kembali
+  </a>
+</div>
 
   @if ($errors->any())
     <div class="alert alert-danger rounded-4 shadow-sm">
@@ -26,266 +466,305 @@
     <div class="card-soft p-4 w-100">
       <div class="row g-3">
 
-        <div class="col-12 col-md-4">
-          <label class="form-label fw-semibold">Tanggal Prospek</label>
-          <div class="input-group">
-            <span class="input-group-text bg-white"><i class="bi bi-calendar-event"></i></span>
-            <input type="date" class="form-control" wire:model="tanggal_prospek" id="tanggal_prospek">
-          </div>
-          @error('tanggal_prospek')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
-
-        <div class="col-12 col-md-8">
-          <label class="form-label fw-semibold">Nama Calon Debitur</label>
-          <div class="input-group">
-            <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
-            <input class="form-control" wire:model="nama" placeholder="Nama calon debitur">
-          </div>
-          @error('nama')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
-
-        <div class="col-12 col-md-6">
-          <label class="form-label fw-semibold">No HP</label>
-          <div class="input-group">
-            <span class="input-group-text bg-white"><i class="bi bi-telephone"></i></span>
-
-            <input id="no_hp_input"
-                   class="form-control"
-                   type="text"
-                   inputmode="numeric"
-                   pattern="[0-9]*"
-                   wire:model.live="no_hp"
-                   oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-                   placeholder="08xxxx">
-
-            <button type="button"
-                    class="btn btn-outline-secondary"
-                    id="btnPickContact"
-                    title="Ambil dari kontak HP">
-              <i class="bi bi-person-lines-fill"></i>
-            </button>
-          </div>
-
-          <div class="text-muted small mt-1" id="contactHint">
-            Klik ikon kontak untuk ambil nomor dari kontak HP.
-          </div>
-
-          @error('no_hp')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
-
-        <div class="col-12 col-md-6">
-          <label class="form-label fw-semibold">NIK (opsional)</label>
-          <div class="input-group">
-            <span class="input-group-text bg-white"><i class="bi bi-person-vcard"></i></span>
-            <input class="form-control"
-                   type="text"
-                   inputmode="numeric"
-                   pattern="[0-9]*"
-                   wire:model.live="nik"
-                   oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-                   placeholder="boleh dikosongi">
-          </div>
-          @error('nik')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
-
         <div class="col-12">
-          <label class="form-label fw-semibold">Cabang</label>
-          <select class="form-select" wire:model="cabang_id">
-            <option value="">-- Pilih Cabang --</option>
-            @if(!empty($cabangOptions))
-              @foreach($cabangOptions as $c)
-                @php
-                  $kodeCabang = trim((string)($c['kode_cabang'] ?? ''));
-                @endphp
+          <div class="section-soft">
+            <div class="section-soft-title">Informasi Utama</div>
 
-                @if($kodeCabang >= '001' && $kodeCabang <= '028')
-                  <option value="{{ $c['id'] }}">{{ $c['text'] }}</option>
-                @endif
-              @endforeach
-            @endif
-          </select>
-          @error('cabang_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-          <div class="text-muted small mt-1">Pegawai bebas memilih cabang.</div>
-        </div>
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <label class="form-label fw-semibold">Tanggal Prospek</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white"><i class="bi bi-calendar-event"></i></span>
+                  <input type="date" class="form-control" wire:model="tanggal_prospek" id="tanggal_prospek">
+                </div>
+                @error('tanggal_prospek')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+              </div>
 
-        <div class="col-12 col-md-6">
-          <label class="form-label fw-semibold">Jenis Usaha</label>
-          <select class="form-select" wire:model="jenis_usaha">
-            <option value="">-- Pilih Jenis Usaha --</option>
-            @foreach($jenisUsahaOptions as $opt)
-              <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
-            @endforeach
-          </select>
-          @error('jenis_usaha')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
+              <div class="col-12 col-md-8">
+                <label class="form-label fw-semibold">Nama Calon Debitur</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                  <input class="form-control" wire:model="nama" placeholder="Nama calon debitur">
+                </div>
+                @error('nama')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+              </div>
 
-        <div class="col-12">
-          <label class="form-label fw-semibold">Keterangan Usaha</label>
-          <textarea class="form-control" rows="3" wire:model="keterangan_usaha"
-                    placeholder="Contoh: jualan mainan anak..."></textarea>
-          @error('keterangan_usaha')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">No HP</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white"><i class="bi bi-telephone"></i></span>
 
-        <div class="col-12 col-md-6">
-          <label class="form-label fw-semibold">Rekomendasi Produk</label>
-          <select class="form-select" wire:model="jenis_produk">
-            @foreach($produkOptions as $opt)
-              <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
-            @endforeach
-          </select>
-          @error('jenis_produk')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
+                  <input id="no_hp_input"
+                        class="form-control"
+                        type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        wire:model.live="no_hp"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                        placeholder="08xxxx">
 
-        <div class="col-12 col-md-6">
-          <label class="form-label fw-semibold">Lokasi</label>
+                  <button type="button"
+                          class="btn btn-outline-secondary"
+                          id="btnPickContact"
+                          title="Ambil dari kontak HP">
+                    <i class="bi bi-person-lines-fill"></i>
+                  </button>
+                </div>
 
-          <div class="row g-2">
-            <div class="col-12">
-              <div class="input-group">
-                <span class="input-group-text bg-white"><i class="bi bi-geo-alt"></i></span>
-                <input id="alamat_input"
-                       class="form-control"
-                       wire:model="alamat"
-                       placeholder="Alamat akan terisi dari lokasi saat ini atau titik peta..."
-                       readonly>
+                <div class="hint-soft mt-2" id="contactHint">
+                  Klik ikon kontak untuk ambil nomor dari kontak HP.
+                </div>
+
+                @error('no_hp')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">NIK (opsional)</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white"><i class="bi bi-person-vcard"></i></span>
+                  <input class="form-control"
+                        type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        wire:model.live="nik"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                        placeholder="boleh dikosongi">
+                </div>
+                @error('nik')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold">Cabang</label>
+                <select class="form-select" wire:model="cabang_id">
+                  <option value="">-- Pilih Cabang --</option>
+                  @if(!empty($cabangOptions))
+                    @foreach($cabangOptions as $c)
+                      @php
+                        $kodeCabang = trim((string)($c['kode_cabang'] ?? ''));
+                      @endphp
+
+                      @if($kodeCabang >= '001' && $kodeCabang <= '028')
+                        <option value="{{ $c['id'] }}">{{ $c['text'] }}</option>
+                      @endif
+                    @endforeach
+                  @endif
+                </select>
+                @error('cabang_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                <div class="hint-soft mt-2">Pegawai bebas memilih cabang.</div>
               </div>
             </div>
-
-            <div class="col-6 col-md-4">
-              <input id="lokasi_lat" class="form-control" wire:model="lokasi_lat" placeholder="Lat" readonly>
-            </div>
-
-            <div class="col-6 col-md-4">
-              <input id="lokasi_lng" class="form-control" wire:model="lokasi_lng" placeholder="Lng" readonly>
-            </div>
-
-            <div class="col-12 col-md-4 d-grid">
-              <button type="button" class="btn btn-primary" id="btnGetLoc">
-                <i class="bi bi-crosshair2 me-1"></i> Lokasi Saat Ini
-              </button>
-            </div>
-
-            <div class="col-12 d-grid">
-              <button type="button" class="btn btn-outline-primary" id="btnOpenMapPicker">
-                <i class="bi bi-map me-1"></i> Pilih Titik di Peta
-              </button>
-            </div>
           </div>
-
-          <div class="text-muted small mt-2" id="locHint">
-            Pilih <b>Lokasi Saat Ini</b> atau gunakan <b>Pilih Titik di Peta</b>.
-          </div>
-
-          @error('lokasi_lat')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-          @error('lokasi_lng')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
-
-        <div class="col-12 col-md-4">
-          <label class="form-label fw-semibold">Kab/Kota</label>
-          <div wire:ignore>
-            <select id="kabKotaSelect" class="form-select">
-              <option value="">-- Pilih Kab/Kota --</option>
-            </select>
-          </div>
-          <input type="hidden" id="kab_kota_hidden" wire:model.live="kab_kota">
-          <input type="hidden" id="kode_kab_kota_hidden" wire:model.live="kode_kab_kota">
-          @error('kab_kota')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
-
-        <div class="col-12 col-md-4">
-          <label class="form-label fw-semibold">Kecamatan</label>
-          <div wire:ignore>
-            <select id="kecamatanSelect" class="form-select" disabled>
-              <option value="">-- Pilih Kecamatan --</option>
-            </select>
-          </div>
-          <input type="hidden" id="kecamatan_hidden" wire:model.live="kecamatan">
-          <input type="hidden" id="kode_kecamatan_hidden" wire:model.live="kode_kecamatan">
-          @error('kecamatan')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-        </div>
-
-        <div class="col-12 col-md-4">
-          <label class="form-label fw-semibold">Desa</label>
-          <div wire:ignore>
-            <select id="desaSelect" class="form-select" disabled>
-              <option value="">-- Pilih Desa --</option>
-            </select>
-          </div>
-          <input type="hidden" id="desa_hidden" wire:model.live="desa">
-          <input type="hidden" id="kode_desa_hidden" wire:model.live="kode_desa">
-          <input type="hidden" id="kode_provinsi_hidden" wire:model.live="kode_provinsi" value="33">
-          @error('desa')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
         </div>
 
         <div class="col-12">
-          <label class="form-label fw-semibold">Dokumentasi (Foto)</label>
+          <div class="section-soft">
+            <div class="section-soft-title">Data Usaha & Produk</div>
 
-          <input id="lwPhotos" type="file" class="d-none" accept="image/*" multiple wire:model="photos">
-          <input id="cameraCaptureInput" type="file" class="d-none" accept="image/*" capture="environment">
-          <input id="galleryInput" type="file" class="d-none" accept="image/*" multiple>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">Jenis Usaha</label>
+                <select class="form-select" wire:model="jenis_usaha">
+                  <option value="">-- Pilih Jenis Usaha --</option>
+                  @foreach($jenisUsahaOptions as $opt)
+                    <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
+                  @endforeach
+                </select>
+                @error('jenis_usaha')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+              </div>
 
-          <div class="d-flex flex-wrap gap-2 align-items-center">
-            <button type="button" class="btn btn-primary rounded-pill px-4" id="btnOpenCamera">
-              <i class="bi bi-camera me-1"></i> Ambil Foto
-            </button>
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">Rekomendasi Produk</label>
+                <select class="form-select" wire:model="jenis_produk">
+                  @foreach($produkOptions as $opt)
+                    <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
+                  @endforeach
+                </select>
+                @error('jenis_produk')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+              </div>
 
-            <button type="button" class="btn btn-outline-primary rounded-pill px-4" id="btnOpenGallery">
-              <i class="bi bi-images me-1"></i> Pilih dari Galeri
-            </button>
-
-            <div class="text-muted small">
-              Maksimal 5MB per foto.
+              <div class="col-12">
+                <label class="form-label fw-semibold">Keterangan Usaha</label>
+                <textarea class="form-control" rows="3" wire:model="keterangan_usaha"
+                          placeholder="Contoh: jualan mainan anak..."></textarea>
+                @error('keterangan_usaha')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="small text-muted mt-2" wire:loading wire:target="photos">Mengunggah foto...</div>
-          @error('photos') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-          @error('photos.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+        <div class="col-12">
+          <div class="section-soft">
+            <div class="section-soft-title">Lokasi</div>
 
-          <div class="mt-3">
-            <div class="fw-semibold mb-2">Preview foto dipilih</div>
-            <div id="photoPreviewWrap" class="row g-2" wire:ignore></div>
-          </div>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">Alamat & Koordinat</label>
 
-          @if($id && isset($docs) && $docs->count())
-            <div class="mt-3">
-              <div class="fw-semibold mb-2">Foto tersimpan</div>
-              <div class="row g-2">
-                @foreach($docs as $doc)
-                  <div class="col-6 col-md-3">
-                    <div class="card-soft p-2 position-relative">
-                      <img src="{{ $doc->url }}" class="w-100"
-                           style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;"
-                           loading="lazy">
-                      <button type="button"
-                              class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2"
-                              wire:click="deleteDoc({{ $doc->id }})"
-                              onclick="return confirm('Hapus foto ini?')">
-                        <i class="bi bi-trash"></i>
-                      </button>
+                <div class="row g-2">
+                  <div class="col-12">
+                    <div class="input-group">
+                      <span class="input-group-text bg-white"><i class="bi bi-geo-alt"></i></span>
+                      <input id="alamat_input"
+                            class="form-control"
+                            wire:model="alamat"
+                            placeholder="Alamat akan terisi dari lokasi saat ini atau titik peta..."
+                            readonly>
                     </div>
                   </div>
-                @endforeach
+
+                  <div class="col-6 col-md-4">
+                    <input id="lokasi_lat" class="form-control" wire:model="lokasi_lat" placeholder="Lat" readonly>
+                  </div>
+
+                  <div class="col-6 col-md-4">
+                    <input id="lokasi_lng" class="form-control" wire:model="lokasi_lng" placeholder="Lng" readonly>
+                  </div>
+
+                  <div class="col-12 col-md-4 d-grid">
+                    <button type="button" class="btn btn-app-primary" id="btnGetLoc">
+                      <i class="bi bi-crosshair2 me-1"></i> Lokasi Saat Ini
+                    </button>
+                  </div>
+
+                  <div class="col-12 d-grid">
+                    <button type="button" class="btn btn-app-outline" id="btnOpenMapPicker">
+                      <i class="bi bi-map me-1"></i> Pilih Titik di Peta
+                    </button>
+                  </div>
+                </div>
+
+                <div class="hint-soft mt-2" id="locHint">
+                  Pilih <b>Lokasi Saat Ini</b> atau gunakan <b>Pilih Titik di Peta</b>.
+                </div>
+
+                @error('lokasi_lat')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                @error('lokasi_lng')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">Wilayah Administratif</label>
+
+                <div class="row g-3">
+                  <div class="col-12">
+                    <div wire:ignore>
+                      <select id="kabKotaSelect" class="form-select">
+                        <option value="">-- Pilih Kab/Kota --</option>
+                      </select>
+                    </div>
+                    <input type="hidden" id="kab_kota_hidden" wire:model.live="kab_kota">
+                    <input type="hidden" id="kode_kab_kota_hidden" wire:model.live="kode_kab_kota">
+                    @error('kab_kota')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                  </div>
+
+                  <div class="col-12">
+                    <div wire:ignore>
+                      <select id="kecamatanSelect" class="form-select" disabled>
+                        <option value="">-- Pilih Kecamatan --</option>
+                      </select>
+                    </div>
+                    <input type="hidden" id="kecamatan_hidden" wire:model.live="kecamatan">
+                    <input type="hidden" id="kode_kecamatan_hidden" wire:model.live="kode_kecamatan">
+                    @error('kecamatan')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                  </div>
+
+                  <div class="col-12">
+                    <div wire:ignore>
+                      <select id="desaSelect" class="form-select" disabled>
+                        <option value="">-- Pilih Desa --</option>
+                      </select>
+                    </div>
+                    <input type="hidden" id="desa_hidden" wire:model.live="desa">
+                    <input type="hidden" id="kode_desa_hidden" wire:model.live="kode_desa">
+                    <input type="hidden" id="kode_provinsi_hidden" wire:model.live="kode_provinsi" value="33">
+                    @error('desa')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                  </div>
+                </div>
               </div>
             </div>
-          @endif
+          </div>
         </div>
 
         <div class="col-12">
-          <label class="form-label fw-semibold">Catatan</label>
-          <textarea class="form-control" rows="3" wire:model="catatan"
-                    placeholder="Catatan tambahan..."></textarea>
-          @error('catatan')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+          <div class="section-soft">
+            <div class="section-soft-title">Dokumentasi</div>
+
+            <label class="form-label fw-semibold">Dokumentasi (Foto)</label>
+
+            <input id="lwPhotos" type="file" class="d-none" accept="image/*" multiple wire:model="photos">
+            <input id="cameraCaptureInput" type="file" class="d-none" accept="image/*" capture="environment">
+            <input id="galleryInput" type="file" class="d-none" accept="image/*" multiple>
+
+            <div class="photo-action-row">
+              <button type="button" class="btn btn-app-primary" id="btnOpenCamera">
+                <i class="bi bi-camera me-1"></i> Ambil Foto
+              </button>
+
+              <button type="button" class="btn btn-app-outline" id="btnOpenGallery">
+                <i class="bi bi-images me-1"></i> Pilih dari Galeri
+              </button>
+
+              <div class="upload-pill">
+                <i class="bi bi-info-circle"></i> Maksimal 5MB per foto
+              </div>
+            </div>
+
+            <div class="small text-muted mt-2" wire:loading wire:target="photos">Mengunggah foto...</div>
+            @error('photos') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+            @error('photos.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+
+            <div class="mt-3">
+              <div class="preview-title">Preview foto dipilih</div>
+              <div id="photoPreviewWrap" class="row g-2" wire:ignore></div>
+            </div>
+
+            @if($id && isset($docs) && $docs->count())
+              <div class="mt-3">
+                <div class="preview-title">Foto tersimpan</div>
+                <div class="row g-2">
+                  @foreach($docs as $doc)
+                    <div class="col-6 col-md-3">
+                      <div class="preview-card p-2 position-relative">
+                        <img src="{{ $doc->url }}" class="w-100"
+                            style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;"
+                            loading="lazy">
+                        <button type="button"
+                                class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2"
+                                wire:click="deleteDoc({{ $doc->id }})"
+                                onclick="return confirm('Hapus foto ini?')">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+              </div>
+            @endif
+          </div>
         </div>
 
-        <div class="col-12 d-flex flex-wrap gap-2 mt-2">
-          <button class="btn btn-primary rounded-pill px-4" wire:click.prevent="save">
-            <i class="bi bi-save me-1"></i> Simpan
-          </button>
+        <div class="col-12">
+          <div class="section-soft">
+            <div class="section-soft-title">Catatan Tambahan</div>
+            <label class="form-label fw-semibold mobile-hidden-label">Catatan</label>
+            <textarea class="form-control" rows="3" wire:model="catatan"
+                      placeholder="Catatan tambahan..."></textarea>
+            @error('catatan')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+          </div>
+        </div>
 
-          <a class="btn btn-light rounded-pill px-4" href="{{ route('prospects.index') }}">
-            Batal
-          </a>
+        <div class="col-12">
+          <div class="sticky-action-bar">
+            <div class="sticky-action-grid">
+              <button class="btn btn-app-primary" wire:click.prevent="save">
+                <i class="bi bi-save me-1"></i> Simpan
+              </button>
+
+              <a class="btn btn-app-light text-center text-decoration-none d-flex align-items-center justify-content-center"
+                href="{{ route('prospects.index') }}">
+                Batal
+              </a>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -417,13 +896,6 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <style>
-    #mapPicker .leaflet-container,
-    #mapPicker {
-      background: #f8fafc !important;
-    }
-  </style>
 
   <script>
   (function () {

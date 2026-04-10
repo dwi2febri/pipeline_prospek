@@ -361,7 +361,6 @@
       z-index: 7000;
     }
 
-    /* ===== SESSION EXPIRED MODAL ===== */
     .session-expired-modal .modal-content{
       border:0;
       border-radius:24px;
@@ -460,6 +459,7 @@
     $canAuditLog          = $isAdmin;
     $canMasterCabang      = $isAdmin;
     $canUsers             = $isAdmin;
+    $canKontenApp         = $isAdmin;
   @endphp
 
   <div class="app-shell" id="appShell">
@@ -520,7 +520,7 @@
           @endif
         </div>
 
-        @if($canMasterCabang || $canUsers)
+        @if($canMasterCabang || $canUsers || $canKontenApp)
           <div class="section-title">Admin</div>
           <div class="navwrap">
             @if($canMasterCabang)
@@ -532,6 +532,12 @@
             @if($canUsers)
               <a href="/users" class="navlink {{ request()->is('users*') ? 'active' : '' }}">
                 <i class="bi bi-person-gear"></i><span>Manajemen User</span>
+              </a>
+            @endif
+
+            @if($canKontenApp)
+              <a href="{{ route('contents.manager') }}" class="navlink {{ request()->routeIs('contents.manager') ? 'active' : '' }}">
+                <i class="bi bi-images"></i><span>Konten App</span>
               </a>
             @endif
           </div>
@@ -601,6 +607,12 @@
                   </a>
                 @endif
 
+                @if($canKontenApp)
+                  <a class="item" href="{{ route('contents.manager') }}">
+                    <i class="bi bi-images me-2"></i> Konten App
+                  </a>
+                @endif
+
                 <div class="px-3 py-2 border-top">
                   <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -655,6 +667,12 @@
                 @if($canProspects)
                   <a class="item" href="/prospects">
                     <i class="bi bi-grid me-2"></i> Prospek Saya
+                  </a>
+                @endif
+
+                @if($canKontenApp)
+                  <a class="item" href="{{ route('contents.manager') }}">
+                    <i class="bi bi-images me-2"></i> Konten App
                   </a>
                 @endif
 
@@ -724,6 +742,13 @@
         </a>
       @endif
 
+      @if($canKontenApp)
+        <a href="{{ route('contents.manager') }}" class="{{ request()->routeIs('contents.manager') ? 'active' : '' }}">
+          <div><i class="bi bi-images fs-5"></i></div>
+          Konten
+        </a>
+      @endif
+
       @if($canProfile)
         <a href="{{ route('profile.index') }}" class="{{ request()->is('profile') ? 'active' : '' }}">
           <div><i class="bi bi-person fs-5"></i></div>
@@ -741,7 +766,6 @@
     </div>
   </nav>
 
-  <!-- MODAL SESSION EXPIRED -->
   <div class="modal fade session-expired-modal" id="sessionExpiredModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
