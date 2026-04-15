@@ -6,9 +6,9 @@ use App\Models\Cabang;
 use App\Models\Prospect;
 use App\Models\ProspectNotification;
 use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Carbon;
 
 class Submissions extends Component
 {
@@ -26,6 +26,7 @@ class Submissions extends Component
     public ?int $detailId = null;
     public ?string $statusUpdate = null;
     public string $ambilStatus = '0';
+    public ?string $noRekening = null;
 
     public bool $canViewDetail = false;
     public bool $showTakenMessage = false;
@@ -49,12 +50,12 @@ class Submissions extends Component
         $role = $this->currentUserRole();
         $now = now();
 
-        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
+        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR', 'AO'], true)) {
             $this->filterBulan = (string) $now->month;
             $this->filterTahun = (string) $now->year;
         }
 
-        if (in_array($role, ['SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
+        if ($role === 'SUPERVISOR') {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
             $this->lockCabangFilter = true;
         }
@@ -94,6 +95,11 @@ class Submissions extends Component
         $this->resetPage();
     }
 
+    public function updatedNoRekening($value): void
+    {
+        $this->noRekening = preg_replace('/[^0-9]/', '', (string) $value);
+    }
+
     public function resetFilter(): void
     {
         $this->search = '';
@@ -109,7 +115,7 @@ class Submissions extends Component
         $role = $this->currentUserRole();
         $now = now();
 
-        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
+        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR', 'AO'], true)) {
             $this->filterBulan = (string) $now->month;
             $this->filterTahun = (string) $now->year;
         } else {
@@ -129,33 +135,44 @@ class Submissions extends Component
     {
         $u = auth()->user();
 
-        return strtoupper(trim((string) (
-            $u->job_position
-            ?? $u->job_posisition
-            ?? ''
-        )));
-    }
+        $value = '';
 
-    protected function getAllowedProdukByUser(): array
-    {
-        $role = $this->currentUserRole();
-        $jobPosition = $this->currentUserJobPosition();
-
-        if ($role === 'AO') {
-            if ($jobPosition === 'AO DANA') {
-                return ['TABUNGAN', 'DEPOSITO'];
-            }
-
-            if ($jobPosition === 'AO KREDIT') {
-                return ['KREDIT'];
-            }
-
-            if ($jobPosition === 'AO REMIDIAL' || $jobPosition === 'AO REMEDIAL') {
-                return ['ASET'];
-            }
+        if (isset($u->job_position)) {
+            $value = (string) $u->job_position;
+        } elseif (isset($u->job_posisition)) {
+            $value = (string) $u->job_posisition;
         }
 
-        return [];
+        return strtoupper(trim($value));
+    }
+
+    protected function normalizeJobPosition(?string $value): string
+    {
+        return strtoupper(trim((string) $value));
+    }
+
+    protected function getUserJobPositionValue($user): string
+    {
+        if (isset($user->job_position) && $user->job_position !== null) {
+            return (string) $user->job_position;
+        }
+
+        if (isset($user->job_posisition) && $user->job_posisition !== null) {
+            return (string) $user->job_posisition;
+        }
+
+        return '';
+    }
+
+    protected function normalizeDigits(?string $value): ?string
+    {
+        $v = preg_replace('/[^0-9]/', '', (string) $value);
+        return $v !== '' ? $v : null;
+    }
+
+    protected function hasNoRekeningColumn(): bool
+    {
+        return Schema::hasColumn('prospects', 'no_rekening');
     }
 
     protected function isAdminOrManagementRole(?string $role = null): bool
@@ -164,20 +181,19 @@ class Submissions extends Component
         return in_array($role, ['ADMIN', 'MANAJEMEN'], true);
     }
 
-    protected function isCabangRestrictedRole(?string $role = null): bool
+    protected function isSupervisorRole(?string $role = null): bool
     {
         $role = $role ?: $this->currentUserRole();
-
-        return in_array($role, [
-            'SUPERVISOR',
-            'AO',
-            'AO_KREDIT',
-            'AO_DANA',
-            'AO_REMEDIAL',
-        ], true);
+        return $role === 'SUPERVISOR';
     }
 
-    protected function canBypassTakenLock(?string $role = null): bool
+    protected function isAoViewerRole(?string $role = null): bool
+    {
+        $role = $role ?: $this->currentUserRole();
+        return $role === 'AO';
+    }
+
+    protected function canManageAssignment(?string $role = null): bool
     {
         $role = $role ?: $this->currentUserRole();
         return in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'], true);
@@ -202,6 +218,96 @@ class Submissions extends Component
         return $user->nama_lengkap ?: $user->name;
     }
 
+    protected function getAllowedProdukByUser(): array
+    {
+        $role = $this->currentUserRole();
+        $jobPosition = $this->currentUserJobPosition();
+
+        if ($role !== 'AO') {
+            return [];
+        }
+
+        if ($jobPosition === 'AO DANA') {
+            return ['TABUNGAN', 'DEPOSITO'];
+        }
+
+        if ($jobPosition === 'AO KREDIT') {
+            return ['KREDIT'];
+        }
+
+        if (in_array($jobPosition, ['AO REMIDIAL', 'AO REMEDIAL'], true)) {
+            return ['ASET'];
+        }
+
+        return [];
+    }
+
+    protected function getAssignmentJobPositionsByProduk(?string $jenisProduk): array
+    {
+        $jenisProduk = strtoupper(trim((string) $jenisProduk));
+
+        if (in_array($jenisProduk, ['TABUNGAN', 'DEPOSITO'], true)) {
+            return ['AO DANA'];
+        }
+
+        if ($jenisProduk === 'KREDIT') {
+            return ['AO KREDIT'];
+        }
+
+        if ($jenisProduk === 'ASET') {
+            return ['AO REMIDIAL', 'AO REMEDIAL'];
+        }
+
+        return [];
+    }
+
+    protected function getAssignableAoOptions(?string $jenisProduk, ?int $cabangId): array
+    {
+        $jobPositions = $this->getAssignmentJobPositionsByProduk($jenisProduk);
+
+        if (empty($jobPositions) || !$cabangId) {
+            return [];
+        }
+
+        $query = User::query()
+            ->where('aktif', 1)
+            ->where('cabang_id', (int) $cabangId)
+            ->where('role', 'AO')
+            ->orderBy('name');
+
+        $selects = ['name', 'nama_lengkap', 'role'];
+
+        if (Schema::hasColumn('users', 'job_position')) {
+            $selects[] = 'job_position';
+        }
+        if (Schema::hasColumn('users', 'job_posisition')) {
+            $selects[] = 'job_posisition';
+        }
+
+        $users = $query->get($selects);
+
+        return $users
+            ->filter(function ($u) use ($jobPositions) {
+                $job = $this->normalizeJobPosition($this->getUserJobPositionValue($u));
+                return in_array($job, $jobPositions, true);
+            })
+            ->map(function ($u) {
+                $job = trim($this->getUserJobPositionValue($u));
+                $kodePegawai = (string) ($u->name ?? '-');
+                $namaPegawai = (string) ($u->nama_lengkap ?: $u->name ?: '-');
+
+                return [
+                    'username'     => (string) $u->name,
+                    'nama_lengkap' => $namaPegawai,
+                    'job_position' => $job,
+                    'label'        => $job . ' - ' . $kodePegawai . ' - ' . $namaPegawai,
+                ];
+            })
+            ->unique('username')
+            ->values()
+            ->toArray();
+    }
+
     protected function baseQuery()
     {
         $u = auth()->user();
@@ -217,6 +323,7 @@ class Submissions extends Component
                 'cabang',
                 'creator',
                 'creator.cabang',
+                'documents',
             ])
             ->when(trim($this->search) !== '', function ($q) {
                 $s = '%' . trim($this->search) . '%';
@@ -226,6 +333,10 @@ class Submissions extends Component
                         ->orWhere('nik', 'like', $s)
                         ->orWhere('status', 'like', $s)
                         ->orWhere('diambil_oleh', 'like', $s);
+
+                    if ($this->hasNoRekeningColumn()) {
+                        $w->orWhere('no_rekening', 'like', $s);
+                    }
                 });
             })
             ->when($this->filterStatus !== null && $this->filterStatus !== '', function ($q) {
@@ -243,20 +354,65 @@ class Submissions extends Component
             ->when($this->filterTahun !== '', function ($q) {
                 $q->whereYear('tanggal_prospek', (int) $this->filterTahun);
             })
-            ->when(
-                $this->isCabangRestrictedRole($role) && !$this->filterCabang,
-                function ($q) use ($u) {
-                    $q->where('cabang_id', $u->cabang_id);
-                }
-            )
             ->when(!empty($allowedProduk), function ($q) use ($allowedProduk) {
                 $q->whereIn('jenis_produk', $allowedProduk);
+            })
+            ->when($this->isAoViewerRole($role), function ($q) use ($u) {
+                $q->where('diambil_oleh', (string) $u->name);
+            })
+            ->when($this->isSupervisorRole($role) && !$this->filterCabang, function ($q) use ($u) {
+                $q->where('cabang_id', $u->cabang_id);
             });
     }
 
     protected function esc($value): string
     {
         return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
+    }
+
+    public function assignProspect(int $prospectId, string $username): void
+    {
+        $role = $this->currentUserRole();
+
+        if (!$this->canManageAssignment($role)) {
+            return;
+        }
+
+        $username = trim($username);
+        if ($username === '') {
+            return;
+        }
+
+        $prospect = Prospect::findOrFail($prospectId);
+
+        if ($role === 'SUPERVISOR' && (int) $prospect->cabang_id !== (int) (auth()->user()->cabang_id ?? 0)) {
+            session()->flash('ok', 'Anda tidak berhak menugaskan prospek di luar cabang Anda.');
+            return;
+        }
+
+        $allowedOptions = collect($this->getAssignableAoOptions($prospect->jenis_produk, (int) $prospect->cabang_id))
+            ->pluck('username')
+            ->all();
+
+        if (!in_array($username, $allowedOptions, true)) {
+            session()->flash('ok', 'AO yang dipilih tidak sesuai dengan produk atau cabang prospek.');
+            return;
+        }
+
+        $prospect->is_diambil = 1;
+        $prospect->diambil_oleh = $username;
+
+        if ((string) $prospect->status === 'OPEN' || empty($prospect->status)) {
+            $prospect->status = 'FOLLOW UP';
+        }
+
+        $prospect->save();
+
+        $this->takenByUsername = $prospect->diambil_oleh;
+        $this->takenByFullName = $this->getNamaLengkapUserByUsername($prospect->diambil_oleh);
+
+        session()->flash('ok', 'Penugasan prospek berhasil diperbarui.');
+        $this->resetPage();
     }
 
     public function exportExcel()
@@ -275,7 +431,7 @@ class Submissions extends Component
         $html .= '<body>';
         $html .= '<table border="1">';
         $html .= '<tr>';
-        $html .= '<th colspan="22" style="font-weight:bold; font-size:16px;">DATA PROSPEK DIAJUKAN</th>';
+        $html .= '<th colspan="24" style="font-weight:bold; font-size:16px;">DATA PROSPEK DIAJUKAN</th>';
         $html .= '</tr>';
 
         $html .= '<tr>';
@@ -294,6 +450,7 @@ class Submissions extends Component
         $html .= '<th>Status Pengambilan</th>';
         $html .= '<th>Username Pengambil</th>';
         $html .= '<th>Nama Lengkap Pengambil</th>';
+        $html .= '<th>No Rekening</th>';
         $html .= '<th>Alamat</th>';
         $html .= '<th>Kab/Kota</th>';
         $html .= '<th>Kecamatan</th>';
@@ -326,6 +483,7 @@ class Submissions extends Component
             $html .= '<td>' . ((int)($p->is_diambil ?? 0) === 1 ? 'DIAMBIL' : 'BELUM') . '</td>';
             $html .= '<td>' . $this->esc($p->diambil_oleh) . '</td>';
             $html .= '<td>' . $this->esc($namaPengambil) . '</td>';
+            $html .= '<td style="mso-number-format:\'@\';">' . $this->esc($this->hasNoRekeningColumn() ? ($p->no_rekening ?? '') : '') . '</td>';
             $html .= '<td>' . $this->esc($p->alamat) . '</td>';
             $html .= '<td>' . $this->esc($p->kab_kota) . '</td>';
             $html .= '<td>' . $this->esc($p->kecamatan) . '</td>';
@@ -361,11 +519,17 @@ class Submissions extends Component
             return;
         }
 
+        if ($this->isAoViewerRole($role) && (string) $p->diambil_oleh !== (string) $u->name) {
+            session()->flash('ok', 'Anda hanya bisa melihat prospek yang ditugaskan ke Anda.');
+            return;
+        }
+
         $this->detailId = $p->id;
         $this->statusUpdate = in_array((string) $p->status, ['FOLLOW UP', 'CLOSING', 'REJECTED'], true)
             ? (string) $p->status
             : 'FOLLOW UP';
         $this->ambilStatus = (string) ((int) ($p->is_diambil ?? 0));
+        $this->noRekening = $this->hasNoRekeningColumn() ? ($p->no_rekening ?? null) : null;
         $this->canViewDetail = false;
         $this->showTakenMessage = false;
         $this->takenByUsername = $p->diambil_oleh;
@@ -379,20 +543,26 @@ class Submissions extends Component
             return;
         }
 
-        if ($this->isCabangRestrictedRole($role)) {
-            if ((int) $p->cabang_id !== (int) $u->cabang_id) {
+        if ($this->isSupervisorRole($role)) {
+            if ((int) $p->cabang_id !== (int) ($u->cabang_id ?? 0)) {
                 session()->flash('ok', 'Prospek tidak bisa dibuka karena bukan cabang Anda.');
                 return;
             }
+
+            $this->canViewDetail = true;
+            $this->dispatch('open-prospect-detail-modal');
+            return;
         }
 
-        if (!$this->canBypassTakenLock($role)) {
-            if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
-                $this->showTakenMessage = true;
-                $this->canViewDetail = false;
-                $this->dispatch('open-prospect-detail-modal');
+        if ($this->isAoViewerRole($role)) {
+            if ((string) $p->diambil_oleh !== (string) $u->name) {
+                session()->flash('ok', 'Prospek ini bukan penugasan Anda.');
                 return;
             }
+
+            $this->canViewDetail = true;
+            $this->dispatch('open-prospect-detail-modal');
+            return;
         }
 
         $this->canViewDetail = true;
@@ -404,6 +574,7 @@ class Submissions extends Component
         $this->detailId = null;
         $this->statusUpdate = null;
         $this->ambilStatus = '0';
+        $this->noRekening = null;
         $this->canViewDetail = false;
         $this->showTakenMessage = false;
         $this->takenByUsername = null;
@@ -421,20 +592,33 @@ class Submissions extends Component
 
     public function updateStatus(): void
     {
+        $role = $this->currentUserRole();
+
+        $allowedStatuses = $this->isAoViewerRole($role)
+            ? ['REJECTED', 'CLOSING']
+            : ['FOLLOW UP', 'REJECTED', 'CLOSING'];
+
         $this->validate([
-            'statusUpdate' => ['required', 'in:FOLLOW UP,REJECTED,CLOSING'],
+            'statusUpdate' => ['required', 'in:' . implode(',', $allowedStatuses)],
         ], [
             'statusUpdate.required' => 'Status wajib dipilih.',
-            'statusUpdate.in' => 'Status hanya boleh FOLLOW UP, REJECTED, atau CLOSING.',
+            'statusUpdate.in' => 'Status tidak valid.',
         ]);
+
+        if ($this->statusUpdate === 'CLOSING') {
+            $this->validate([
+                'noRekening' => ['required', 'regex:/^[0-9]+$/', 'max:50'],
+            ], [
+                'noRekening.required' => 'No. rekening wajib diisi saat status Closing.',
+                'noRekening.regex' => 'No. rekening hanya boleh angka.',
+            ]);
+        }
 
         if (!$this->detailId || !$this->canViewDetail || $this->hideActionForm) {
             return;
         }
 
         $u = auth()->user();
-        $role = $this->currentUserRole();
-
         $p = Prospect::findOrFail($this->detailId);
         $oldStatus = (string) $p->status;
         $newStatus = (string) $this->statusUpdate;
@@ -445,21 +629,26 @@ class Submissions extends Component
             return;
         }
 
-        if (!$this->isAdminOrManagementRole($role)) {
-            if ($this->isCabangRestrictedRole($role) && (int) $p->cabang_id !== (int) $u->cabang_id) {
-                session()->flash('ok', 'Anda tidak berhak mengubah status prospek ini.');
-                return;
-            }
+        if ($this->isAoViewerRole($role) && (string) $p->diambil_oleh !== (string) $u->name) {
+            session()->flash('ok', 'Anda tidak berhak mengubah status prospek ini.');
+            return;
+        }
 
-            if (!$this->canBypassTakenLock($role)) {
-                if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
-                    session()->flash('ok', 'Prospek ini sudah diambil user lain.');
-                    return;
-                }
-            }
+        if ($this->isSupervisorRole($role) && (int) $p->cabang_id !== (int) ($u->cabang_id ?? 0)) {
+            session()->flash('ok', 'Anda tidak berhak mengubah status prospek ini.');
+            return;
         }
 
         $p->status = $newStatus;
+
+        if ($this->hasNoRekeningColumn()) {
+            if ($newStatus === 'CLOSING') {
+                $p->no_rekening = $this->normalizeDigits($this->noRekening);
+            } elseif ($this->isAoViewerRole($role)) {
+                $p->no_rekening = null;
+            }
+        }
+
         $p->save();
 
         if (
@@ -506,30 +695,26 @@ class Submissions extends Component
             return;
         }
 
-        if (!$this->isAdminOrManagementRole($role)) {
-            if ($this->isCabangRestrictedRole($role) && (int) $p->cabang_id !== (int) $u->cabang_id) {
-                session()->flash('ok', 'Anda tidak berhak mengubah pengambilan prospek ini.');
-                return;
-            }
+        if ($this->isAoViewerRole($role) && (string) $p->diambil_oleh !== (string) $u->name) {
+            session()->flash('ok', 'Anda tidak berhak mengubah penugasan prospek ini.');
+            return;
+        }
 
-            if (!$this->canBypassTakenLock($role)) {
-                if ((int) $p->is_diambil === 1 && !empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
-                    session()->flash('ok', 'Prospek ini sudah diambil oleh ' . $p->diambil_oleh . '.');
-                    return;
-                }
-            }
+        if ($this->isSupervisorRole($role) && (int) $p->cabang_id !== (int) ($u->cabang_id ?? 0)) {
+            session()->flash('ok', 'Anda tidak berhak mengubah penugasan prospek ini.');
+            return;
         }
 
         if ($this->ambilStatus === '1') {
             $p->is_diambil = 1;
             $p->diambil_oleh = $u->name;
 
-            if ((string) $p->status !== 'CLOSING' && (string) $p->status !== 'REJECTED') {
+            if ((string) $p->status === 'OPEN' || empty($p->status)) {
                 $p->status = 'FOLLOW UP';
                 $this->statusUpdate = 'FOLLOW UP';
             }
         } else {
-            if (!$this->isAdminOrManagementRole($role)) {
+            if ($this->isAoViewerRole($role)) {
                 if (!empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
                     session()->flash('ok', 'Prospek ini tidak bisa dilepas karena bukan Anda yang mengambil.');
                     return;
@@ -570,6 +755,11 @@ class Submissions extends Component
             })
             ->toArray();
 
+        $assignmentMap = [];
+        foreach ($items as $p) {
+            $assignmentMap[$p->id] = $this->getAssignableAoOptions($p->jenis_produk, (int) $p->cabang_id);
+        }
+
         $detail = null;
         if ($this->detailId) {
             $detail = Prospect::with(['cabang', 'creator', 'creator.cabang', 'documents'])->find($this->detailId);
@@ -582,8 +772,8 @@ class Submissions extends Component
 
         $bulanOptions = collect(range(1, 12))->map(function ($b) {
             return [
-                'id' => (string) $b,
-                'label' => Carbon::create(null, $b, 1, 0, 0, 0)->translatedFormat('F'),
+                'id' => $b,
+                'label' => now()->copy()->month($b)->translatedFormat('F'),
             ];
         });
 
@@ -596,7 +786,8 @@ class Submissions extends Component
             'cabangOptions',
             'bulanOptions',
             'tahunOptions',
-            'namaPengambilMap'
+            'namaPengambilMap',
+            'assignmentMap'
         ))->layout('layouts.bootstrap');
     }
 }

@@ -1,8 +1,10 @@
 <div class="container-fluid px-0">
   <style>
     .detail-wrap{
-      max-width:1100px;
+      width:100%;
+      max-width:1400px;
       margin:0 auto;
+      padding:0 14px;
     }
 
     .back-link{
@@ -22,13 +24,15 @@
       background:#fff;
       box-shadow:0 18px 46px rgba(15,23,42,.10);
       margin-bottom:20px;
+      width:100%;
     }
 
     .detail-grid{
       display:grid;
-      grid-template-columns:420px minmax(0,1fr);
+      grid-template-columns:minmax(420px, 46%) minmax(480px, 54%);
       gap:0;
-      min-height:100%;
+      align-items:stretch;
+      min-height:420px;
     }
 
     .detail-media{
@@ -36,11 +40,13 @@
         radial-gradient(circle at 10% 20%, rgba(59,130,246,.14), transparent 22%),
         radial-gradient(circle at 90% 20%, rgba(139,92,246,.12), transparent 22%),
         linear-gradient(180deg,#f8fbff 0%,#eef5ff 100%);
-      min-height:340px;
+      min-height:420px;
+      height:100%;
       display:flex;
       align-items:center;
       justify-content:center;
       overflow:hidden;
+      position:relative;
     }
 
     .detail-media img{
@@ -56,7 +62,11 @@
     }
 
     .detail-body{
-      padding:28px;
+      padding:34px 34px 30px 34px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-width:0;
     }
 
     .detail-chip{
@@ -68,6 +78,8 @@
       font-size:.78rem;
       font-weight:800;
       margin-bottom:14px;
+      width:max-content;
+      max-width:100%;
     }
 
     .chip-produk{
@@ -81,19 +93,20 @@
     }
 
     .detail-title{
-      font-size:2rem;
+      font-size:clamp(2rem, 2.7vw, 3rem);
       font-weight:900;
-      line-height:1.15;
+      line-height:1.08;
       letter-spacing:-.03em;
       color:#0f172a;
-      margin-bottom:12px;
+      margin-bottom:14px;
+      word-break:break-word;
     }
 
     .detail-meta{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
-      margin-bottom:16px;
+      margin-bottom:18px;
     }
 
     .meta-pill{
@@ -107,13 +120,16 @@
       color:#334155;
       font-size:.82rem;
       font-weight:700;
+      white-space:nowrap;
     }
 
     .detail-content{
       color:#334155;
-      font-size:1rem;
-      line-height:1.9;
+      font-size:1.04rem;
+      line-height:1.95;
       white-space:pre-line;
+      word-break:break-word;
+      max-width:100%;
     }
 
     .related-card{
@@ -122,6 +138,7 @@
       background:#fff;
       box-shadow:0 14px 34px rgba(15,23,42,.08);
       padding:18px;
+      width:100%;
     }
 
     .related-title{
@@ -137,20 +154,27 @@
       padding:12px;
       height:100%;
       background:#fff;
+      transition:all .18s ease;
+    }
+
+    .mini-item:hover{
+      transform:translateY(-2px);
+      box-shadow:0 16px 28px rgba(15,23,42,.06);
     }
 
     .mini-thumb{
       width:100%;
-      height:160px;
+      height:190px;
       object-fit:cover;
       border-radius:14px;
       background:#f8fafc;
       margin-bottom:10px;
+      display:block;
     }
 
     .mini-thumb-empty{
       width:100%;
-      height:160px;
+      height:190px;
       border-radius:14px;
       background:#f8fafc;
       color:#94a3b8;
@@ -176,6 +200,7 @@
       color:#0f172a;
       line-height:1.35;
       min-height:44px;
+      word-break:break-word;
     }
 
     .mini-link{
@@ -188,32 +213,77 @@
       margin-top:8px;
     }
 
+    @media (max-width: 1399.98px){
+      .detail-wrap{
+        max-width:1240px;
+      }
+    }
+
+    @media (max-width: 1199.98px){
+      .detail-wrap{
+        max-width:100%;
+        padding:0 10px;
+      }
+
+      .detail-grid{
+        grid-template-columns:minmax(360px, 44%) minmax(0, 56%);
+        min-height:380px;
+      }
+
+      .detail-media{
+        min-height:380px;
+      }
+
+      .detail-body{
+        padding:26px;
+      }
+    }
+
     @media (max-width: 991.98px){
       .detail-grid{
         grid-template-columns:1fr;
       }
+
       .detail-media{
-        min-height:260px;
+        min-height:300px;
+      }
+
+      .detail-body{
+        padding:22px;
+      }
+
+      .detail-title{
+        font-size:1.9rem;
       }
     }
 
     @media (max-width: 767.98px){
       .detail-wrap{
         max-width:100%;
+        padding:0;
       }
+
       .detail-card{
         border-radius:24px;
       }
+
+      .detail-media{
+        min-height:240px;
+      }
+
       .detail-body{
         padding:18px;
       }
+
       .detail-title{
         font-size:1.55rem;
       }
+
       .detail-content{
         font-size:.95rem;
         line-height:1.8;
       }
+
       .mini-thumb,
       .mini-thumb-empty{
         height:140px;

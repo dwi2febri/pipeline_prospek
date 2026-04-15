@@ -18,7 +18,7 @@ class ProspectRecap extends Component
 
     public string $activeTab = 'kc';
 
-    public ?int $filterCabang = null;
+    public $filterCabang = '';
     public string $filterBulan = '';
     public string $filterTahun = '';
     public string $search = '';
@@ -28,6 +28,9 @@ class ProspectRecap extends Component
 
     public string $sortFieldKc = 'kode_cabang';
     public string $sortDirectionKc = 'asc';
+
+    public string $sortFieldPengaju = 'total_pengajuan';
+    public string $sortDirectionPengaju = 'desc';
 
     public bool $lockCabangFilter = false;
 
@@ -45,6 +48,15 @@ class ProspectRecap extends Component
         'sortDirectionPegawai' => ['except' => 'desc'],
         'sortFieldKc' => ['except' => 'kode_cabang'],
         'sortDirectionKc' => ['except' => 'asc'],
+        'sortFieldPengaju' => ['except' => 'total_pengajuan'],
+        'sortDirectionPengaju' => ['except' => 'desc'],
+    ];
+
+    protected array $korwilRanges = [
+        '100' => [1, 7],
+        '200' => [8, 14],
+        '300' => [15, 21],
+        '400' => [22, 28],
     ];
 
     public function mount(): void
@@ -58,14 +70,14 @@ class ProspectRecap extends Component
         $role = $this->getRoleUserLogin();
 
         if ($role === 'SUPERVISOR') {
-            $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
+            $this->filterCabang = (string) (auth()->user()->cabang_id ?? '');
             $this->lockCabangFilter = true;
         }
     }
 
     public function setActiveTab(string $tab): void
     {
-        if (!in_array($tab, ['kc', 'pegawai'], true)) {
+        if (!in_array($tab, ['kc', 'pegawai', 'pengaju'], true)) {
             return;
         }
 
@@ -81,7 +93,7 @@ class ProspectRecap extends Component
     public function updatingFilterCabang(): void
     {
         if ($this->getRoleUserLogin() === 'SUPERVISOR') {
-            $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
+            $this->filterCabang = (string) (auth()->user()->cabang_id ?? '');
         }
 
         $this->resetPage();
@@ -112,13 +124,91 @@ class ProspectRecap extends Component
         return strtoupper(trim((string) (auth()->user()->role ?? '')));
     }
 
-    protected function getLockedCabangId(): ?int
+    protected function getSelectedCabang(): ?Cabang
     {
+        $id = trim((string) $this->filterCabang);
+
         if ($this->getRoleUserLogin() === 'SUPERVISOR') {
-            return (int) (auth()->user()->cabang_id ?? 0);
+            $id = (string) (auth()->user()->cabang_id ?? '');
         }
 
-        return $this->filterCabang ?: null;
+        if ($id === '' || !is_numeric($id)) {
+            return null;
+        }
+
+        return Cabang::query()->find((int) $id);
+    }
+
+    protected function getCabangFilterMeta(): array
+    {
+        $selected = $this->getSelectedCabang();
+
+        if (!$selected) {
+            return [
+                'type' => 'all',
+                'id' => null,
+                'kode' => null,
+                'range' => null,
+            ];
+        }
+
+        $kode = trim((string) $selected->kode_cabang);
+
+        if (isset($this->korwilRanges[$kode])) {
+            return [
+                'type' => 'korwil',
+                'id' => (int) $selected->id,
+                'kode' => $kode,
+                'range' => $this->korwilRanges[$kode],
+            ];
+        }
+
+        return [
+            'type' => 'cabang',
+            'id' => (int) $selected->id,
+            'kode' => $kode,
+            'range' => null,
+        ];
+    }
+
+    protected function applyCabangFilterToCabangQuery($query, string $alias = 'cabangs')
+    {
+        $meta = $this->getCabangFilterMeta();
+
+        if ($meta['type'] === 'all') {
+            return $query;
+        }
+
+        if ($meta['type'] === 'korwil' && is_array($meta['range'])) {
+            [$start, $end] = $meta['range'];
+
+            return $query->whereRaw(
+                "CAST({$alias}.kode_cabang AS UNSIGNED) BETWEEN ? AND ?",
+                [$start, $end]
+            );
+        }
+
+        return $query->where("{$alias}.id", $meta['id']);
+    }
+
+    protected function applyCabangFilterToUserCabangQuery($query, string $alias = 'cabangs')
+    {
+        $meta = $this->getCabangFilterMeta();
+
+        if ($meta['type'] === 'all') {
+            return $query;
+        }
+
+        if ($meta['type'] === 'korwil' && is_array($meta['range'])) {
+            [$start, $end] = $meta['range'];
+
+            return $query->whereRaw(
+                "CAST({$alias}.kode_cabang AS UNSIGNED) BETWEEN ? AND ?",
+                [$start, $end]
+            );
+        }
+
+        return $query->where("users.cabang_id", $meta['id']);
     }
 
     public function sortBy(string $field): void
@@ -143,6 +233,29 @@ class ProspectRecap extends Component
             } else {
                 $this->sortFieldKc = $field;
                 $this->sortDirectionKc = in_array($field, ['total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'], true)
+                    ? 'desc'
+                    : 'asc';
+            }
+        } elseif ($this->activeTab === 'pengaju') {
+            $allowed = [
+                'kode_cabang',
+                'nama_cabang',
+                'total_pengajuan',
+                'total_open',
+                'total_follow_up',
+                'total_closing',
+                'total_rejected',
+            ];
+
+            if (!in_array($field, $allowed, true)) {
+                return;
+            }
+
+            if ($this->sortFieldPengaju === $field) {
+                $this->sortDirectionPengaju = $this->sortDirectionPengaju === 'asc' ? 'desc' : 'asc';
+            } else {
+                $this->sortFieldPengaju = $field;
+                $this->sortDirectionPengaju = in_array($field, ['total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'], true)
                     ? 'desc'
                     : 'asc';
             }
@@ -181,9 +294,8 @@ class ProspectRecap extends Component
     {
         $bulan = (int) ($this->filterBulan ?: now()->month);
         $tahun = (int) ($this->filterTahun ?: now()->year);
-        $cabangId = $this->getLockedCabangId();
 
-        return User::query()
+        $query = User::query()
             ->leftJoin('cabangs', 'cabangs.id', '=', 'users.cabang_id')
             ->leftJoin('prospects', function ($join) use ($bulan, $tahun) {
                 $join->on('prospects.input_by', '=', 'users.id')
@@ -192,9 +304,6 @@ class ProspectRecap extends Component
                     ->whereNull('prospects.deleted_at');
             })
             ->whereIn('users.role', ['PEGAWAI', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'])
-            ->when($cabangId, function ($q) use ($cabangId) {
-                $q->where('users.cabang_id', $cabangId);
-            })
             ->when(trim($this->search) !== '', function ($q) {
                 $s = '%' . trim($this->search) . '%';
                 $q->where(function ($w) use ($s) {
@@ -205,7 +314,11 @@ class ProspectRecap extends Component
                         ->orWhere('cabangs.nama_cabang', 'like', $s)
                         ->orWhere('cabangs.kode_cabang', 'like', $s);
                 });
-            })
+            });
+
+        $query = $this->applyCabangFilterToUserCabangQuery($query, 'cabangs');
+
+        return $query
             ->groupBy(
                 'users.id',
                 'users.name',
@@ -237,9 +350,8 @@ class ProspectRecap extends Component
     {
         $bulan = (int) ($this->filterBulan ?: now()->month);
         $tahun = (int) ($this->filterTahun ?: now()->year);
-        $cabangId = $this->getLockedCabangId();
 
-        return Cabang::query()
+        $query = Cabang::query()
             ->leftJoin('prospects', function ($join) use ($bulan, $tahun) {
                 $join->on('prospects.cabang_id', '=', 'cabangs.id')
                     ->whereMonth('prospects.tanggal_prospek', $bulan)
@@ -248,8 +360,50 @@ class ProspectRecap extends Component
             })
             ->where('cabangs.aktif', 1)
             ->whereRaw("CAST(cabangs.kode_cabang AS UNSIGNED) BETWEEN 1 AND 28")
-            ->when($cabangId, function ($q) use ($cabangId) {
-                $q->where('cabangs.id', $cabangId);
+            ->when(trim($this->search) !== '', function ($q) {
+                $s = '%' . trim($this->search) . '%';
+                $q->where(function ($w) use ($s) {
+                    $w->where('cabangs.kode_cabang', 'like', $s)
+                        ->orWhere('cabangs.nama_cabang', 'like', $s);
+                });
+            });
+
+        $query = $this->applyCabangFilterToCabangQuery($query, 'cabangs');
+
+        return $query
+            ->groupBy('cabangs.id', 'cabangs.kode_cabang', 'cabangs.nama_cabang')
+            ->select([
+                'cabangs.id',
+                'cabangs.kode_cabang',
+                'cabangs.nama_cabang',
+                DB::raw('COUNT(prospects.id) as total_pengajuan'),
+                DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as total_open"),
+                DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as total_follow_up"),
+                DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as total_closing"),
+                DB::raw("SUM(CASE WHEN prospects.status = 'REJECTED' THEN 1 ELSE 0 END) as total_rejected"),
+            ]);
+    }
+
+    protected function getPengajuBaseQuery()
+    {
+        $bulan = (int) ($this->filterBulan ?: now()->month);
+        $tahun = (int) ($this->filterTahun ?: now()->year);
+
+        $query = Cabang::query()
+            ->leftJoin('users', function ($join) {
+                $join->on('users.cabang_id', '=', 'cabangs.id')
+                    ->whereIn('users.role', ['PEGAWAI', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL']);
+            })
+            ->leftJoin('prospects', function ($join) use ($bulan, $tahun) {
+                $join->on('prospects.input_by', '=', 'users.id')
+                    ->whereMonth('prospects.tanggal_prospek', $bulan)
+                    ->whereYear('prospects.tanggal_prospek', $tahun)
+                    ->whereNull('prospects.deleted_at');
+            })
+            ->where('cabangs.aktif', 1)
+            ->where(function ($q) {
+                $q->where('cabangs.kode_cabang', '000')
+                  ->orWhereRaw("CAST(cabangs.kode_cabang AS UNSIGNED) BETWEEN 1 AND 28");
             })
             ->when(trim($this->search) !== '', function ($q) {
                 $s = '%' . trim($this->search) . '%';
@@ -257,7 +411,11 @@ class ProspectRecap extends Component
                     $w->where('cabangs.kode_cabang', 'like', $s)
                         ->orWhere('cabangs.nama_cabang', 'like', $s);
                 });
-            })
+            });
+
+        $query = $this->applyCabangFilterToCabangQuery($query, 'cabangs');
+
+        return $query
             ->groupBy('cabangs.id', 'cabangs.kode_cabang', 'cabangs.nama_cabang')
             ->select([
                 'cabangs.id',
@@ -312,6 +470,54 @@ class ProspectRecap extends Component
             ]);
     }
 
+    protected function getKcOrderField(): string
+    {
+        $allowed = [
+            'kode_cabang',
+            'nama_cabang',
+            'total_pengajuan',
+            'total_open',
+            'total_follow_up',
+            'total_closing',
+            'total_rejected',
+        ];
+
+        return in_array($this->sortFieldKc, $allowed, true) ? $this->sortFieldKc : 'kode_cabang';
+    }
+
+    protected function getPengajuOrderField(): string
+    {
+        $allowed = [
+            'kode_cabang',
+            'nama_cabang',
+            'total_pengajuan',
+            'total_open',
+            'total_follow_up',
+            'total_closing',
+            'total_rejected',
+        ];
+
+        return in_array($this->sortFieldPengaju, $allowed, true) ? $this->sortFieldPengaju : 'total_pengajuan';
+    }
+
+    protected function getPegawaiOrderField(): string
+    {
+        $allowed = [
+            'name',
+            'nama_lengkap',
+            'role',
+            'job_position',
+            'kode_cabang',
+            'total_pengajuan',
+            'total_open',
+            'total_follow_up',
+            'total_closing',
+            'total_rejected',
+        ];
+
+        return in_array($this->sortFieldPegawai, $allowed, true) ? $this->sortFieldPegawai : 'total_pengajuan';
+    }
+
     public function exportExcel()
     {
         $bulanNama = Carbon::createFromDate(
@@ -322,7 +528,7 @@ class ProspectRecap extends Component
 
         if ($this->activeTab === 'kc') {
             $rows = $this->getKcBaseQuery()
-                ->orderBy($this->sortFieldKc, $this->sortDirectionKc)
+                ->orderBy($this->getKcOrderField(), $this->sortDirectionKc)
                 ->orderByRaw("CAST(cabangs.kode_cabang AS UNSIGNED) ASC")
                 ->get();
 
@@ -363,9 +569,53 @@ class ProspectRecap extends Component
             ]);
         }
 
+        if ($this->activeTab === 'pengaju') {
+            $rows = $this->getPengajuBaseQuery()
+                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
+                ->orderBy($this->getPengajuOrderField(), $this->sortDirectionPengaju)
+                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC")
+                ->get();
+
+            $filename = 'rekap_pengaju_per_cabang_' . $this->filterTahun . '_' . str_pad($this->filterBulan, 2, '0', STR_PAD_LEFT) . '.xls';
+
+            return response()->streamDownload(function () use ($rows, $bulanNama) {
+                echo '<html><head><meta charset="UTF-8"></head><body>';
+                echo '<table border="1">';
+                echo '<tr><th colspan="8" style="font-weight:bold;">Rekap Pengaju Per Cabang Bulan ' . e($bulanNama) . ' ' . e($this->filterTahun) . '</th></tr>';
+                echo '<tr>';
+                echo '<th>No</th>';
+                echo '<th>Kode Cabang</th>';
+                echo '<th>Nama Cabang</th>';
+                echo '<th>Jumlah Pengaju</th>';
+                echo '<th>Open</th>';
+                echo '<th>Follow Up</th>';
+                echo '<th>Closing</th>';
+                echo '<th>Rejected</th>';
+                echo '</tr>';
+
+                foreach ($rows as $i => $row) {
+                    echo '<tr>';
+                    echo '<td>' . ($i + 1) . '</td>';
+                    echo '<td>' . e($row->kode_cabang) . '</td>';
+                    echo '<td>' . e($row->nama_cabang) . '</td>';
+                    echo '<td>' . (int) $row->total_pengajuan . '</td>';
+                    echo '<td>' . (int) $row->total_open . '</td>';
+                    echo '<td>' . (int) $row->total_follow_up . '</td>';
+                    echo '<td>' . (int) $row->total_closing . '</td>';
+                    echo '<td>' . (int) $row->total_rejected . '</td>';
+                    echo '</tr>';
+                }
+
+                echo '</table>';
+                echo '</body></html>';
+            }, $filename, [
+                'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            ]);
+        }
+
         $rows = $this->getPegawaiBaseQuery()
-            ->orderBy($this->sortFieldPegawai, $this->sortDirectionPegawai)
-            ->orderBy('users.name', 'asc')
+            ->orderBy($this->getPegawaiOrderField(), $this->sortDirectionPegawai)
+            ->orderBy('users.id', 'desc')
             ->get();
 
         $filename = 'rekap_prospek_per_pegawai_' . $this->filterTahun . '_' . str_pad($this->filterBulan, 2, '0', STR_PAD_LEFT) . '.xls';
@@ -380,7 +630,8 @@ class ProspectRecap extends Component
             echo '<th>Nama Lengkap</th>';
             echo '<th>Role</th>';
             echo '<th>Jabatan</th>';
-            echo '<th>Cabang</th>';
+            echo '<th>Kode Cabang</th>';
+            echo '<th>Nama Cabang</th>';
             echo '<th>Jumlah Pengajuan</th>';
             echo '<th>Open</th>';
             echo '<th>Follow Up</th>';
@@ -392,10 +643,11 @@ class ProspectRecap extends Component
                 echo '<tr>';
                 echo '<td>' . ($i + 1) . '</td>';
                 echo '<td>' . e($row->name) . '</td>';
-                echo '<td>' . e($row->nama_lengkap ?: '-') . '</td>';
-                echo '<td>' . e($row->role ?: '-') . '</td>';
-                echo '<td>' . e($row->job_position ?: '-') . '</td>';
-                echo '<td>' . e(($row->kode_cabang ?: '-') . ' - ' . ($row->nama_cabang ?: '-')) . '</td>';
+                echo '<td>' . e($row->nama_lengkap) . '</td>';
+                echo '<td>' . e($row->role) . '</td>';
+                echo '<td>' . e($row->job_position) . '</td>';
+                echo '<td>' . e($row->kode_cabang) . '</td>';
+                echo '<td>' . e($row->nama_cabang) . '</td>';
                 echo '<td>' . (int) $row->total_pengajuan . '</td>';
                 echo '<td>' . (int) $row->total_open . '</td>';
                 echo '<td>' . (int) $row->total_follow_up . '</td>';
@@ -413,57 +665,84 @@ class ProspectRecap extends Component
 
     public function render()
     {
-        if ($this->getRoleUserLogin() === 'SUPERVISOR') {
-            $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
-            $this->lockCabangFilter = true;
-        }
+        $bulanOptions = collect(range(1, 12))->map(function ($b) {
+            return [
+                'id' => $b,
+                'label' => Carbon::create()->month($b)->translatedFormat('F'),
+            ];
+        });
+
+        $tahunNow = (int) now()->year;
+        $tahunOptions = collect(range($tahunNow - 3, $tahunNow + 1));
 
         $cabangs = Cabang::query()
             ->where('aktif', 1)
-            ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28")
-            ->when($this->getRoleUserLogin() === 'SUPERVISOR', function ($q) {
-                $q->where('id', (int) (auth()->user()->cabang_id ?? 0));
+            ->where(function ($q) {
+                $q->where('kode_cabang', '000')
+                  ->orWhereIn('kode_cabang', ['100', '200', '300', '400'])
+                  ->orWhereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28");
             })
-            ->orderByRaw("CAST(kode_cabang AS UNSIGNED) ASC")
+            ->orderByRaw("
+                CASE
+                    WHEN kode_cabang = '000' THEN 0
+                    WHEN CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28 THEN 1
+                    WHEN kode_cabang IN ('100','200','300','400') THEN 2
+                    ELSE 3
+                END ASC
+            ")
+            ->orderByRaw("
+                CASE
+                    WHEN kode_cabang = '000' THEN -1
+                    ELSE CAST(kode_cabang AS UNSIGNED)
+                END ASC
+            ")
             ->get(['id', 'kode_cabang', 'nama_cabang']);
 
         if ($this->activeTab === 'kc') {
             $items = $this->getKcBaseQuery()
-                ->orderBy($this->sortFieldKc, $this->sortDirectionKc)
+                ->orderBy($this->getKcOrderField(), $this->sortDirectionKc)
                 ->orderByRaw("CAST(cabangs.kode_cabang AS UNSIGNED) ASC")
-                ->paginate(15);
+                ->paginate(10);
+        } elseif ($this->activeTab === 'pengaju') {
+            $items = $this->getPengajuBaseQuery()
+                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
+                ->orderBy($this->getPengajuOrderField(), $this->sortDirectionPengaju)
+                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC")
+                ->paginate(10);
         } else {
             $items = $this->getPegawaiBaseQuery()
-                ->orderBy($this->sortFieldPegawai, $this->sortDirectionPegawai)
-                ->orderBy('users.name', 'asc')
-                ->paginate(15);
+                ->orderBy($this->getPegawaiOrderField(), $this->sortDirectionPegawai)
+                ->orderBy('users.id', 'desc')
+                ->paginate(10);
         }
 
-        $detailPegawaiUser = $this->detailPegawaiId
-            ? User::query()->find($this->detailPegawaiId)
-            : null;
+        $detailPegawai = null;
+        $detailItems = collect();
 
-        $detailItems = $this->detailPegawaiId
-            ? $this->getDetailPegawaiQuery()->get()
-            : collect();
+        if ($this->detailPegawaiId) {
+            $detailPegawai = User::query()
+                ->leftJoin('cabangs', 'cabangs.id', '=', 'users.cabang_id')
+                ->where('users.id', $this->detailPegawaiId)
+                ->select([
+                    'users.id',
+                    'users.name',
+                    'users.nama_lengkap',
+                    'users.role',
+                    'users.job_position',
+                    'cabangs.kode_cabang',
+                    'cabangs.nama_cabang',
+                ])
+                ->first();
 
-        $bulanOptions = collect(range(1, 12))->map(function ($b) {
-            return [
-                'id' => $b,
-                'label' => Carbon::createFromDate(now()->year, $b, 1)->translatedFormat('F'),
-            ];
-        });
-
-        $tahunSekarang = (int) now()->year;
-        $tahunOptions = collect(range($tahunSekarang - 3, $tahunSekarang + 1));
+            $detailItems = $this->getDetailPegawaiQuery()->get();
+        }
 
         return view('livewire.reports.prospect-recap', [
-            'cabangs' => $cabangs,
             'items' => $items,
+            'cabangs' => $cabangs,
             'bulanOptions' => $bulanOptions,
             'tahunOptions' => $tahunOptions,
-            'activeTab' => $this->activeTab,
-            'detailPegawaiUser' => $detailPegawaiUser,
+            'detailPegawai' => $detailPegawai,
             'detailItems' => $detailItems,
         ])->layout('layouts.bootstrap');
     }

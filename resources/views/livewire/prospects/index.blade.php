@@ -68,12 +68,13 @@
       width:100%;
       text-align:left;
       position:relative;
-      padding:16px;
+      padding:16px 16px 14px 16px;
       overflow:hidden;
-      border-radius:20px;
-      box-shadow:0 12px 28px rgba(15,23,42,.10);
-      min-height:104px;
+      border-radius:28px;
+      box-shadow:0 12px 28px rgba(15,23,42,.08);
+      min-height:128px;
       transition:all .18s ease;
+      color:#fff;
     }
 
     .summary-btn:hover{
@@ -81,23 +82,24 @@
     }
 
     .summary-label{
-      font-size:.92rem;
+      font-size:1rem;
       font-weight:800;
-      opacity:.95;
+      opacity:.96;
     }
 
     .summary-value{
-      font-size:2.2rem;
+      font-size:2.95rem;
       font-weight:900;
       line-height:1;
-      margin-top:6px;
+      margin-top:10px;
+      letter-spacing:-.04em;
     }
 
     .summary-icon{
       position:absolute;
-      right:14px;
-      bottom:10px;
-      font-size:42px;
+      right:18px;
+      bottom:14px;
+      font-size:58px;
       opacity:.18;
     }
 
@@ -145,53 +147,70 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      min-height:34px;
-      padding:7px 14px;
+      min-height:35px;
+      padding:7px 15px;
       border-radius:999px;
       font-weight:800;
-      font-size:.78rem;
+      font-size:.79rem;
       letter-spacing:.01em;
-      box-shadow:0 8px 20px rgba(15,23,42,.08);
-      border:1px solid transparent;
       white-space:nowrap;
+      border:1px solid transparent;
     }
 
+    /* STATUS BADGES - SESUAI WARNA KARTU */
     .status-open{
-      background:linear-gradient(135deg,#dbeafe 0%,#93c5fd 100%);
-      color:#1e3a8a;
-    }
-    .status-follow{
-      background:linear-gradient(135deg,#fde68a 0%,#fbbf24 100%);
-      color:#78350f;
-    }
-    .status-rejected{
-      background:linear-gradient(135deg,#fda4af 0%,#ef4444 100%);
-      color:#fff;
-    }
-    .status-closing{
-      background:linear-gradient(135deg,#86efac 0%,#22c55e 100%);
-      color:#14532d;
+      background:linear-gradient(135deg,#f7c8c8 0%,#efadad 100%);
+      color:#ffffff;
+      box-shadow:0 10px 22px rgba(239,173,173,.25);
     }
 
+    .status-follow{
+      background:linear-gradient(135deg,#17b07d 0%,#10a36f 100%);
+      color:#ffffff;
+      box-shadow:0 10px 22px rgba(16,163,111,.22);
+    }
+
+    .status-rejected{
+      background:linear-gradient(135deg,#f34f74 0%,#eb2e5c 100%);
+      color:#ffffff;
+      box-shadow:0 10px 22px rgba(235,46,92,.22);
+    }
+
+    .status-closing{
+      background:linear-gradient(135deg,#5b97f6 0%,#2f6fe6 100%);
+      color:#ffffff;
+      box-shadow:0 10px 22px rgba(47,111,230,.22);
+    }
+
+    /* PRODUK BADGES - TONE SELARAS */
     .produk-kredit{
-      background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);
+      background:linear-gradient(135deg,#5b97f6 0%,#2f6fe6 100%);
       color:#fff;
+      box-shadow:0 10px 22px rgba(47,111,230,.18);
     }
+
     .produk-tabungan{
-      background:linear-gradient(135deg,#22c55e 0%,#15803d 100%);
+      background:linear-gradient(135deg,#f59a00 0%,#ea8b00 100%);
       color:#fff;
+      box-shadow:0 10px 22px rgba(234,139,0,.18);
     }
+
     .produk-deposito{
-      background:linear-gradient(135deg,#facc15 0%,#eab308 100%);
-      color:#3b2f00;
-    }
-    .produk-aset{
-      background:linear-gradient(135deg,#374151 0%,#111827 100%);
+      background:linear-gradient(135deg,#17b07d 0%,#10a36f 100%);
       color:#fff;
+      box-shadow:0 10px 22px rgba(16,163,111,.18);
     }
+
+    .produk-aset{
+      background:linear-gradient(135deg,#f34f74 0%,#eb2e5c 100%);
+      color:#fff;
+      box-shadow:0 10px 22px rgba(235,46,92,.18);
+    }
+
     .produk-default{
-      background:linear-gradient(135deg,#e5e7eb 0%,#cbd5e1 100%);
+      background:linear-gradient(135deg,#cfd8e6 0%,#b6c2d5 100%);
       color:#334155;
+      box-shadow:0 10px 22px rgba(148,163,184,.18);
     }
 
     .action-btn-modern{
@@ -264,9 +283,9 @@
       display:inline-flex;
       align-items:center;
       gap:6px;
-      background:#eff6ff;
-      color:#1d4ed8;
-      border:1px solid #dbeafe;
+      background:linear-gradient(135deg,#f8f0ff 0%,#e6edff 100%);
+      color:#3558e8;
+      border:1px solid #dbe4ff;
       border-radius:999px;
       font-size:.7rem;
       font-weight:800;
@@ -302,7 +321,7 @@
     }
 
     .catalog-link{
-      color:#fb923c;
+      color:#3558e8;
       text-decoration:none;
       font-weight:800;
       font-size:.88rem;
@@ -352,7 +371,7 @@
     .tips-kategori{
       font-size:.72rem;
       font-weight:800;
-      color:#2563eb;
+      color:#3558e8;
       margin-bottom:8px;
       text-transform:uppercase;
       letter-spacing:.04em;
@@ -382,7 +401,7 @@
       display:inline-flex;
       align-items:center;
       gap:6px;
-      color:#f97316;
+      color:#3558e8;
       text-decoration:none;
       font-weight:800;
       font-size:.84rem;
@@ -411,7 +430,7 @@
     .desktop-summary-row{
       display:grid;
       grid-template-columns:repeat(5, minmax(0, 1fr));
-      gap:14px;
+      gap:18px;
     }
 
     .mobile-summary-total{
@@ -439,6 +458,54 @@
       display:none;
     }
 
+    .flyer-media{
+      position:absolute;
+      inset:0;
+      z-index:1;
+    }
+
+    .flyer-media img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .flyer-overlay{
+      position:absolute;
+      inset:0;
+      z-index:2;
+      background:
+        linear-gradient(135deg, rgba(15,23,42,.40) 0%, rgba(37,99,235,.24) 42%, rgba(0,0,0,.08) 100%);
+    }
+
+    .flyer-card > *:not(.flyer-media):not(.flyer-overlay){
+      position:relative;
+      z-index:3;
+    }
+
+    @media (min-width: 768px){
+      .mobile-scroll-row{
+        overflow-x:visible;
+        flex-wrap:wrap;
+        display:grid;
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+        gap:16px;
+      }
+
+      .catalog-card,
+      .tips-card{
+        min-width:0;
+        max-width:none;
+        width:100%;
+        flex:auto;
+      }
+
+      .tips-card{
+        min-height:100%;
+      }
+    }
+
     @media (max-width: 1199.98px){
       .desktop-summary-row{
         grid-template-columns:repeat(5, minmax(0, 1fr));
@@ -456,12 +523,25 @@
     }
 
     @media (max-width: 767.98px){
+      html, body{
+        background:linear-gradient(180deg,#f8fbff 0%, #f3f6fb 48%, #eef2f8 100%) !important;
+      }
+
       body{
+        position:relative;
+        min-height:100vh;
+      }
+
+      body::before{
+        content:"";
+        position:fixed;
+        inset:0;
+        z-index:-1;
         background:
-          radial-gradient(circle at 8% 8%, rgba(37,99,235,.16), transparent 24%),
-          radial-gradient(circle at 92% 10%, rgba(139,92,246,.16), transparent 26%),
-          radial-gradient(circle at 18% 82%, rgba(251,146,60,.12), transparent 20%),
-          linear-gradient(180deg,#eef5ff 0%,#f7f9ff 42%,#f5f7fb 100%) !important;
+          radial-gradient(circle at top right, rgba(59,130,246,.08), transparent 28%),
+          radial-gradient(circle at top left, rgba(168,85,247,.06), transparent 22%),
+          linear-gradient(180deg,#f8fbff 0%, #f3f6fb 48%, #eef2f8 100%);
+        pointer-events:none;
       }
 
       .page-topbar{
@@ -476,6 +556,7 @@
       .container-fluid.px-0{
         padding-left:0 !important;
         padding-right:0 !important;
+        background:transparent !important;
       }
 
       .mobile-flyer-wrap{
@@ -486,8 +567,7 @@
       .flyer-shell{
         border-radius:28px;
         overflow:hidden;
-        background:
-          linear-gradient(180deg,#ffffff 0%,#f9fbff 100%);
+        background:linear-gradient(180deg,#ffffff 0%,#f9fbff 100%);
         box-shadow:0 18px 36px rgba(15,23,42,.10);
         border:1px solid rgba(255,255,255,.85);
       }
@@ -507,24 +587,15 @@
       }
 
       .flyer-card.bg-1{
-        background:
-          radial-gradient(circle at 85% 18%, rgba(255,255,255,.18), transparent 18%),
-          radial-gradient(circle at 15% 88%, rgba(255,255,255,.12), transparent 22%),
-          linear-gradient(135deg,#5b6cff 0%,#4169ff 45%,#00b8ff 100%);
+        background:linear-gradient(135deg,#5b6cff 0%,#4169ff 45%,#00b8ff 100%);
       }
 
       .flyer-card.bg-2{
-        background:
-          radial-gradient(circle at 84% 18%, rgba(255,255,255,.18), transparent 18%),
-          radial-gradient(circle at 14% 84%, rgba(255,255,255,.12), transparent 20%),
-          linear-gradient(135deg,#8b5cf6 0%,#d946ef 52%,#fb7185 100%);
+        background:linear-gradient(135deg,#8b5cf6 0%,#d946ef 52%,#fb7185 100%);
       }
 
       .flyer-card.bg-3{
-        background:
-          radial-gradient(circle at 82% 18%, rgba(255,255,255,.18), transparent 18%),
-          radial-gradient(circle at 16% 84%, rgba(255,255,255,.12), transparent 20%),
-          linear-gradient(135deg,#0ea5e9 0%,#2563eb 40%,#4f46e5 100%);
+        background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 40%,#4f46e5 100%);
       }
 
       .flyer-badge{
@@ -607,12 +678,9 @@
         border-radius:30px;
         margin:0 0 18px 0;
         padding:18px 16px 18px 16px;
-        background:
-          radial-gradient(circle at 10% 12%, rgba(59,130,246,.16), transparent 24%),
-          radial-gradient(circle at 88% 18%, rgba(168,85,247,.14), transparent 22%),
-          linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+        background:linear-gradient(180deg,#ffffff 0%, #f8fbff 52%, #f3f7fd 100%);
         box-shadow:0 18px 36px rgba(15,23,42,.08);
-        border:1px solid rgba(255,255,255,.75);
+        border:1px solid rgba(255,255,255,.85);
         position:relative;
         overflow:hidden;
       }
@@ -620,36 +688,30 @@
       .glass-head::before{
         content:"";
         position:absolute;
-        top:-20px;
-        right:-20px;
-        width:100px;
-        height:100px;
-        border-radius:999px;
-        background:radial-gradient(circle, rgba(59,130,246,.12) 0%, rgba(59,130,246,0) 70%);
+        inset:0;
+        background:
+          radial-gradient(circle at top right, rgba(59,130,246,.08), transparent 24%),
+          radial-gradient(circle at top left, rgba(168,85,247,.06), transparent 18%);
         pointer-events:none;
       }
 
       .glass-head::after{
-        content:"";
-        position:absolute;
-        left:-18px;
-        bottom:-18px;
-        width:92px;
-        height:92px;
-        border-radius:999px;
-        background:radial-gradient(circle, rgba(249,115,22,.10) 0%, rgba(249,115,22,0) 72%);
-        pointer-events:none;
+        display:none;
       }
 
       .app-title{
         font-size:1.42rem;
         margin-bottom:2px;
+        position:relative;
+        z-index:1;
       }
 
       .app-subtitle{
         font-size:.98rem;
         line-height:1.65;
         max-width:95%;
+        position:relative;
+        z-index:1;
       }
 
       .summary-btn{
@@ -659,6 +721,8 @@
         box-shadow:
           0 16px 30px rgba(15,23,42,.11),
           inset 0 1px 0 rgba(255,255,255,.16);
+        position:relative;
+        z-index:1;
       }
 
       .summary-value{
@@ -672,18 +736,26 @@
         opacity:.20;
       }
 
+      .mobile-summary-total{
+        margin-bottom:14px;
+      }
+
       .mobile-summary-total .summary-btn{
         min-height:138px;
+      }
+
+      .mobile-summary-grid{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:14px;
       }
 
       .filter-card-modern{
         border-radius:28px;
         padding:16px 14px;
-        background:
-          radial-gradient(circle at 10% 10%, rgba(59,130,246,.08), transparent 24%),
-          radial-gradient(circle at 92% 88%, rgba(249,115,22,.08), transparent 26%),
-          linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+        background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
         box-shadow:0 16px 28px rgba(15,23,42,.07);
+        border:1px solid rgba(255,255,255,.85);
       }
 
       .filter-card-modern .input-group,
@@ -720,13 +792,12 @@
         width:86px;
         height:86px;
         border-radius:999px;
-        background:radial-gradient(circle, rgba(59,130,246,.10) 0%, rgba(59,130,246,0) 70%);
+        background:radial-gradient(circle, rgba(59,130,246,.08) 0%, rgba(59,130,246,0) 70%);
         pointer-events:none;
       }
 
       .catalog-visual{
         background:
-          radial-gradient(circle at 22% 22%, rgba(59,130,246,.16), transparent 20%),
           linear-gradient(135deg, rgba(29,78,216,.08), rgba(37,99,235,.02)),
           repeating-linear-gradient(135deg, #1e40af 0 2px, transparent 2px 22px),
           repeating-linear-gradient(45deg, #2563eb 0 2px, transparent 2px 22px);
@@ -758,7 +829,6 @@
         background:
           radial-gradient(circle at 18% 24%, rgba(251,146,60,.24), transparent 18%),
           radial-gradient(circle at 70% 30%, rgba(37,99,235,.20), transparent 18%),
-          radial-gradient(circle at 50% 80%, rgba(139,92,246,.14), transparent 20%),
           linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);
       }
 
@@ -809,9 +879,7 @@
 
       .empty-mini-card{
         border-radius:24px;
-        background:
-          radial-gradient(circle at 85% 15%, rgba(59,130,246,.08), transparent 22%),
-          linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+        background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
       }
 
       .mobile-fab-add{
@@ -843,11 +911,11 @@
 
   @php
     $summaryCards = [
-      ['key'=>'ALL', 'count_key'=>'TOTAL', 'label'=>'Total', 'bg'=>'linear-gradient(135deg,#f59e0b 0%,#d97706 100%)', 'icon'=>'bi-collection'],
-      ['key'=>'OPEN', 'count_key'=>'OPEN', 'label'=>'Open', 'bg'=>'linear-gradient(135deg,#60a5fa 0%,#2563eb 100%)', 'icon'=>'bi-folder2-open'],
-      ['key'=>'FOLLOW UP', 'count_key'=>'FOLLOW UP', 'label'=>'Follow Up', 'bg'=>'linear-gradient(135deg,#facc15 0%,#eab308 100%)', 'icon'=>'bi-arrow-repeat'],
-      ['key'=>'REJECTED', 'count_key'=>'REJECTED', 'label'=>'Rejected', 'bg'=>'linear-gradient(135deg,#fb7185 0%,#ef4444 100%)', 'icon'=>'bi-x-circle'],
-      ['key'=>'CLOSING', 'count_key'=>'CLOSING', 'label'=>'Closing', 'bg'=>'linear-gradient(135deg,#22c55e 0%,#16a34a 100%)', 'icon'=>'bi-check2-circle'],
+      ['key'=>'ALL', 'count_key'=>'TOTAL', 'label'=>'Total Pengajuan', 'bg'=>'linear-gradient(135deg,#f39a00 0%,#ea8c00 100%)', 'icon'=>'bi-collection'],
+      ['key'=>'OPEN', 'count_key'=>'OPEN', 'label'=>'Open', 'bg'=>'linear-gradient(135deg,#f6c0c0 0%,#efaaaa 100%)', 'icon'=>'bi-folder2-open'],
+      ['key'=>'FOLLOW UP', 'count_key'=>'FOLLOW UP', 'label'=>'Follow Up', 'bg'=>'linear-gradient(135deg,#17b07d 0%,#10a36f 100%)', 'icon'=>'bi-arrow-repeat'],
+      ['key'=>'REJECTED', 'count_key'=>'REJECTED', 'label'=>'Rejected', 'bg'=>'linear-gradient(135deg,#f34f74 0%,#eb2e5c 100%)', 'icon'=>'bi-x-circle'],
+      ['key'=>'CLOSING', 'count_key'=>'CLOSING', 'label'=>'Closing', 'bg'=>'linear-gradient(135deg,#5b97f6 0%,#2f6fe6 100%)', 'icon'=>'bi-check2-circle'],
     ];
 
     $mobileTop = $summaryCards[0];
@@ -869,15 +937,40 @@
           'link'  => $kp->detail_url ?? '#',
           'icon'  => $i === 0 ? 'bi-stars' : ($i === 1 ? 'bi-rocket-takeoff' : 'bi-gem'),
           'bg'    => 'bg-' . (($i % 3) + 1),
+          'image' => $kp->gambar_url ?? null,
         ];
       }
     }
 
     if (empty($flyers)) {
       $flyers = [
-        ['badge'=>'Produk Unggulan','title'=>'Jelajahi Katalog Produk','desc'=>'Temukan produk yang sesuai untuk kebutuhan nasabah dan percepat follow up harian.','link'=>route('prospects.create'),'icon'=>'bi-stars','bg'=>'bg-1'],
-        ['badge'=>'Tips Cepat','title'=>'Bangun Prospek Lebih Efektif','desc'=>'Gunakan data prospek, dokumentasi, dan follow up yang rapi agar peluang closing semakin besar.','link'=>route('prospects.create'),'icon'=>'bi-lightning-charge','bg'=>'bg-2'],
-        ['badge'=>'Mulai Sekarang','title'=>'Tambah Prospek Baru','desc'=>'Input prospek baru langsung dari aplikasi dan pantau perkembangannya dengan lebih mudah.','link'=>route('prospects.create'),'icon'=>'bi-plus-circle','bg'=>'bg-3'],
+        [
+          'badge'=>'Produk Unggulan',
+          'title'=>'Jelajahi Katalog Produk',
+          'desc'=>'Temukan produk yang sesuai untuk kebutuhan nasabah dan percepat follow up harian.',
+          'link'=>route('prospects.create'),
+          'icon'=>'bi-stars',
+          'bg'=>'bg-1',
+          'image'=>null,
+        ],
+        [
+          'badge'=>'Tips Cepat',
+          'title'=>'Bangun Prospek Lebih Efektif',
+          'desc'=>'Gunakan data prospek, dokumentasi, dan follow up yang rapi agar peluang closing semakin besar.',
+          'link'=>route('prospects.create'),
+          'icon'=>'bi-lightning-charge',
+          'bg'=>'bg-2',
+          'image'=>null,
+        ],
+        [
+          'badge'=>'Mulai Sekarang',
+          'title'=>'Tambah Prospek Baru',
+          'desc'=>'Input prospek baru langsung dari aplikasi dan pantau perkembangannya dengan lebih mudah.',
+          'link'=>route('prospects.create'),
+          'icon'=>'bi-plus-circle',
+          'bg'=>'bg-3',
+          'image'=>null,
+        ],
       ];
     }
   @endphp
@@ -903,7 +996,7 @@
                     data-bs-slide-to="{{ $i }}"
                     class="{{ $i === 0 ? 'active' : '' }}"
                     aria-current="{{ $i === 0 ? 'true' : 'false' }}"
-                    aria-label="Slide {{ $i+1 }}"></button>
+                    aria-label="Slide {{ $i + 1 }}"></button>
           @endforeach
         </div>
 
@@ -911,20 +1004,32 @@
           @foreach($flyers as $i => $flyer)
             <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
               <div class="flyer-card {{ $flyer['bg'] }}">
+                @if(!empty($flyer['image']))
+                  <div class="flyer-media">
+                    <img src="{{ $flyer['image'] }}" alt="{{ $flyer['title'] }}">
+                  </div>
+                  <div class="flyer-overlay"></div>
+                @endif
+
                 <div class="flyer-badge">
                   <i class="bi {{ $flyer['icon'] }}"></i> {{ $flyer['badge'] }}
                 </div>
 
                 <div class="flyer-title">{{ $flyer['title'] }}</div>
-                <div class="flyer-desc">{{ $flyer['desc'] }}</div>
+
+                <div class="flyer-desc">
+                  {{ \Illuminate\Support\Str::limit($flyer['desc'], 95) }}
+                </div>
 
                 <a href="{{ $flyer['link'] }}" class="flyer-btn">
                   Lihat Sekarang <i class="bi bi-arrow-right"></i>
                 </a>
 
-                <div class="flyer-illustration">
-                  <i class="bi {{ $flyer['icon'] }}"></i>
-                </div>
+                @if(empty($flyer['image']))
+                  <div class="flyer-illustration">
+                    <i class="bi {{ $flyer['icon'] }}"></i>
+                  </div>
+                @endif
               </div>
             </div>
           @endforeach
@@ -939,11 +1044,10 @@
         @foreach($summaryCards as $c)
           <button
             type="button"
-            class="summary-btn"
             wire:click="setStatus('{{ $c['key'] }}')"
+            class="summary-btn"
             style="
               background:{!! $c['bg'] !!};
-              color:#fff;
               border:{{ $status === $c['key'] ? '2px solid #111827' : '0' }};
             "
           >
@@ -955,17 +1059,13 @@
       </div>
     </div>
 
-    <div class="d-block d-md-none">
+    <div class="d-md-none">
       <div class="mobile-summary-total">
         <button
           type="button"
-          class="summary-btn"
           wire:click="setStatus('{{ $mobileTop['key'] }}')"
-          style="
-            background:{!! $mobileTop['bg'] !!};
-            color:#fff;
-            border:{{ $status === $mobileTop['key'] ? '2px solid #111827' : '0' }};
-          "
+          class="summary-btn"
+          style="background:{!! $mobileTop['bg'] !!}; border:{{ $status === $mobileTop['key'] ? '3px solid #111827' : '0' }};"
         >
           <div class="summary-label">{{ $mobileTop['label'] }}</div>
           <div class="summary-value">{{ $summary[$mobileTop['count_key']] ?? 0 }}</div>
@@ -977,13 +1077,9 @@
         @foreach($mobileBottom as $c)
           <button
             type="button"
-            class="summary-btn"
             wire:click="setStatus('{{ $c['key'] }}')"
-            style="
-              background:{!! $c['bg'] !!};
-              color:#fff;
-              border:{{ $status === $c['key'] ? '2px solid #111827' : '0' }};
-            "
+            class="summary-btn"
+            style="background:{!! $c['bg'] !!}; border:{{ $status === $c['key'] ? '3px solid #111827' : '0' }};"
           >
             <div class="summary-label">{{ $c['label'] }}</div>
             <div class="summary-value">{{ $summary[$c['count_key']] ?? 0 }}</div>
@@ -995,138 +1091,33 @@
   </div>
 
   <div class="filter-card-modern">
-    <div class="d-none d-md-block">
-      <div class="desktop-filter-row">
+    <div class="desktop-filter-row">
+      <div>
         <div class="input-group">
-          <span class="input-group-text bg-white border-0"><i class="bi bi-search"></i></span>
+          <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search"></i></span>
           <input
             class="form-control border-0 shadow-none"
             placeholder="Cari nama / no hp / nik / alamat..."
             wire:model.live.debounce.400ms="search"
           >
         </div>
+      </div>
 
-        <select class="form-select border-0 shadow-none" wire:model.live="periode">
+      <div>
+        <select class="form-select" wire:model.live="periode">
           <option value="hari_ini">Hari ini</option>
           <option value="bulan_ini">Bulan ini</option>
           <option value="semua">Semua</option>
         </select>
+      </div>
 
-        <div class="text-end">
-          <span class="badge bg-dark rounded-pill px-3 py-2">
-            Status: {{ $status === 'ALL' ? 'TOTAL' : $status }}
-          </span>
-        </div>
+      <div class="text-md-end">
+        <span class="badge bg-dark rounded-pill px-3 py-2">
+          Status:
+          {{ $status === 'ALL' ? 'TOTAL' : $status }}
+        </span>
       </div>
     </div>
-
-    <div class="d-block d-md-none">
-      <div class="row g-2 align-items-center">
-        <div class="col-12">
-          <div class="input-group">
-            <span class="input-group-text bg-white border-0"><i class="bi bi-search"></i></span>
-            <input
-              class="form-control border-0 shadow-none"
-              placeholder="Cari nama / no hp / nik / alamat..."
-              wire:model.live.debounce.400ms="search"
-            >
-          </div>
-        </div>
-
-        <div class="col-7">
-          <select class="form-select border-0 shadow-none" wire:model.live="periode">
-            <option value="hari_ini">Hari ini</option>
-            <option value="bulan_ini">Bulan ini</option>
-            <option value="semua">Semua</option>
-          </select>
-        </div>
-
-        <div class="col-5 text-end">
-          <span class="badge bg-dark rounded-pill px-3 py-2">
-            {{ $status === 'ALL' ? 'TOTAL' : $status }}
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-shell">
-    <div class="section-title-modern">Katalog Produk</div>
-
-    @if(isset($katalogProduk) && $katalogProduk->count())
-      <div class="mobile-scroll-row">
-        @foreach($katalogProduk as $kp)
-          <div class="catalog-card">
-            <div class="catalog-top">
-              @if(!empty($kp->gambar_url))
-                <div class="catalog-visual catalog-image">
-                  <img src="{{ $kp->gambar_url }}" alt="{{ $kp->judul }}">
-                </div>
-              @else
-                <div class="catalog-visual"></div>
-              @endif
-
-              <div class="catalog-body">
-                @if(!empty($kp->badge))
-                  <div class="catalog-badge">
-                    <i class="bi bi-stars"></i> {{ $kp->badge }}
-                  </div>
-                @endif
-
-                <div class="catalog-title">{{ $kp->judul }}</div>
-                <div class="catalog-desc">{{ $kp->deskripsi ?: '-' }}</div>
-              </div>
-            </div>
-
-            <div class="catalog-footer">
-              <a href="{{ $kp->detail_url ?? '#' }}" class="catalog-link">
-                Lihat lebih banyak <i class="bi bi-chevron-right"></i>
-              </a>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    @else
-      <div class="empty-mini-card">
-        Belum ada konten katalog produk.
-      </div>
-    @endif
-  </div>
-
-  <div class="section-shell">
-    <div class="section-title-modern">Tips &amp; Trik</div>
-
-    @if(isset($tipsTrik) && $tipsTrik->count())
-      <div class="mobile-scroll-row">
-        @foreach($tipsTrik as $tip)
-          <div class="tips-card">
-            <div class="tips-image">
-              @if(!empty($tip->gambar_url))
-                <img src="{{ $tip->gambar_url }}" alt="{{ $tip->judul }}">
-              @else
-                <div class="tips-icon-placeholder">
-                  <i class="bi bi-lightbulb"></i>
-                </div>
-              @endif
-            </div>
-            <div class="tips-body">
-              @if(!empty($tip->kategori))
-                <div class="tips-kategori">{{ $tip->kategori }}</div>
-              @endif
-              <div class="tips-title">{{ $tip->judul }}</div>
-              <div class="tips-desc">{{ $tip->deskripsi ?: '-' }}</div>
-              <a href="{{ $tip->detail_url ?? '#' }}" class="tips-link">
-                Baca tips <i class="bi bi-arrow-right-short"></i>
-              </a>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    @else
-      <div class="empty-mini-card">
-        Belum ada konten tips &amp; trik.
-      </div>
-    @endif
   </div>
 
   <div class="section-shell">
@@ -1155,27 +1146,41 @@
             </div>
 
             <div class="prospect-meta">
-              <div><i class="bi bi-telephone me-1"></i> {{ $p->no_hp ?: '-' }} &nbsp;•&nbsp; <i class="bi bi-person-vcard me-1"></i> {{ $p->nik ?: '-' }}</div>
-              <div><i class="bi bi-calendar-event me-1"></i> {{ \Illuminate\Support\Carbon::parse($p->tanggal_prospek)->format('d/m/Y') }} &nbsp;•&nbsp; <i class="bi bi-building me-1"></i> {{ $p->cabang->nama_cabang ?? '-' }}</div>
+              <div>
+                <i class="bi bi-telephone me-1"></i> {{ $p->no_hp ?: '-' }}
+                &nbsp;•&nbsp;
+                <i class="bi bi-person-vcard me-1"></i> {{ $p->nik ?: '-' }}
+              </div>
+
+              <div>
+                <i class="bi bi-calendar-event me-1"></i>
+                {{ \Illuminate\Support\Carbon::parse($p->tanggal_prospek)->format('d/m/Y') }}
+                &nbsp;•&nbsp;
+                <i class="bi bi-building me-1"></i>
+                {{ $p->cabang->nama_cabang ?? '-' }}
+              </div>
+
               @if($p->alamat)
-                <div><i class="bi bi-geo-alt me-1"></i> {{ $p->alamat }}</div>
+                <div>
+                  <i class="bi bi-geo-alt me-1"></i> {{ $p->alamat }}
+                </div>
               @endif
-            </div>
 
-            <div class="d-flex flex-wrap gap-2 mt-3">
-              <span class="badge-soft {{ $produkClass }}">
-                {{ $p->jenis_produk ?: '-' }}
-              </span>
+              <div class="mt-2 d-flex flex-wrap gap-2">
+                <span class="badge-soft {{ $produkClass }}">
+                  {{ $p->jenis_produk ?: '-' }}
+                </span>
 
-              @if((int)($p->is_diambil ?? 0) === 1)
-                <span class="badge-soft" style="background:#111827;color:#fff;">
-                  Diambil
-                </span>
-              @else
-                <span class="badge-soft" style="background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;box-shadow:none;">
-                  Belum Diambil
-                </span>
-              @endif
+                @if((int)($p->is_diambil ?? 0) === 1)
+                  <span class="badge-soft" style="background:#111827;color:#fff;">
+                    Diambil
+                  </span>
+                @else
+                  <span class="badge-soft" style="background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;">
+                    Belum Diambil
+                  </span>
+                @endif
+              </div>
             </div>
           </div>
 
@@ -1205,6 +1210,86 @@
     <div class="mt-3">
       {{ $items->links() }}
     </div>
+  </div>
+
+  <div class="section-shell">
+    <div class="section-title-modern">Katalog Produk</div>
+
+    @if(isset($katalogProduk) && $katalogProduk->count())
+      <div class="mobile-scroll-row">
+        @foreach($katalogProduk as $kp)
+          <div class="catalog-card">
+            <div class="catalog-top">
+              <div class="catalog-visual {{ !empty($kp->gambar_url) ? 'catalog-image' : '' }}">
+                @if(!empty($kp->gambar_url))
+                  <img src="{{ $kp->gambar_url }}" alt="{{ $kp->judul }}">
+                @endif
+              </div>
+
+              <div class="catalog-body">
+                @if(!empty($kp->badge))
+                  <div class="catalog-badge">
+                    <i class="bi bi-stars"></i> {{ $kp->badge }}
+                  </div>
+                @endif
+
+                <div class="catalog-title">{{ $kp->judul }}</div>
+                <div class="catalog-desc">{{ $kp->deskripsi ?: '-' }}</div>
+              </div>
+            </div>
+
+            <div class="catalog-footer">
+              <a href="{{ $kp->detail_url ?? '#' }}" class="catalog-link">
+                Lihat lebih banyak <i class="bi bi-chevron-right"></i>
+              </a>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    @else
+      <div class="empty-mini-card">
+        Belum ada konten katalog produk.
+      </div>
+    @endif
+  </div>
+
+  <div class="section-shell">
+    <div class="section-title-modern">Tips & Trik</div>
+
+    @if(isset($tipsTrik) && $tipsTrik->count())
+      <div class="mobile-scroll-row">
+        @foreach($tipsTrik as $tip)
+          <div class="tips-card">
+            <div class="tips-image">
+              @if(!empty($tip->gambar_url))
+                <img src="{{ $tip->gambar_url }}" alt="{{ $tip->judul }}">
+              @else
+                <div class="tips-icon-placeholder">
+                  <i class="bi bi-lightbulb"></i>
+                </div>
+              @endif
+            </div>
+
+            <div class="tips-body">
+              @if(!empty($tip->kategori))
+                <div class="tips-kategori">{{ $tip->kategori }}</div>
+              @endif
+
+              <div class="tips-title">{{ $tip->judul }}</div>
+              <div class="tips-desc">{{ $tip->deskripsi ?: '-' }}</div>
+
+              <a href="{{ $tip->detail_url ?? '#' }}" class="tips-link">
+                Baca tips <i class="bi bi-arrow-right-short"></i>
+              </a>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    @else
+      <div class="empty-mini-card">
+        Belum ada konten tips & trik.
+      </div>
+    @endif
   </div>
 
   <a href="{{ route('prospects.create') }}" class="mobile-fab-add d-md-none" aria-label="Tambah Prospek">

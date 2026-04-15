@@ -293,7 +293,75 @@
       border-top:1px dashed #e5e7eb;
       margin:2px 0 0 0;
     }
+
+    .assignment-wrap{
+      min-width:260px;
+    }
+
+    .assignment-label{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:.72rem;
+      font-weight:800;
+      color:#64748b;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      margin-bottom:8px;
+    }
+
+    .assignment-box{
+      border:1px solid #dbe7f3;
+      border-radius:16px;
+      background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+      padding:10px;
+      box-shadow:0 8px 20px rgba(15,23,42,.05);
+    }
+
+    .assignment-select{
+      min-width:240px;
+      border-radius:12px;
+      border:1px solid #cfddee;
+      font-weight:700;
+      color:#1f2937;
+      background-color:#fff;
+    }
+
+    .assignment-current{
+      margin-top:8px;
+      padding:8px 10px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px dashed #d7e1ec;
+    }
+
+    .assignment-current-code{
+      font-size:.88rem;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.2;
+    }
+
+    .assignment-current-name{
+      font-size:.82rem;
+      color:#64748b;
+      margin-top:2px;
+      line-height:1.35;
+    }
+
+    .assignment-empty{
+      font-size:.84rem;
+      color:#94a3b8;
+      font-weight:700;
+      padding:6px 2px 0;
+    }
   </style>
+
+  @php
+    $loggedRole = strtoupper(trim((string)(auth()->user()->role ?? '')));
+    $canManageAssignment = in_array($loggedRole, ['ADMIN','MANAJEMEN','SUPERVISOR']);
+    $isAoRole = $loggedRole === 'AO';
+  @endphp
 
   @if(session('ok'))
     <div class="alert alert-success rounded-4 shadow-sm">
@@ -332,7 +400,7 @@
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
           <input class="form-control"
                  style="border-left:0"
-                 placeholder="Cari nama / no hp / nik / status..."
+                 placeholder="Cari nama / no hp / nik / status / no rekening..."
                  wire:model.live.debounce.300ms="search">
         </div>
       </div>
@@ -368,25 +436,25 @@
         </select>
       </div>
 
-        @if(in_array(strtoupper(trim((string)(auth()->user()->role ?? ''))), ['ADMIN','MANAJEMEN','SUPERVISOR','AO','AO_KREDIT','AO_DANA','AO_REMEDIAL']))
+      @if(in_array($loggedRole, ['ADMIN','MANAJEMEN','SUPERVISOR','AO']))
         <div class="col-6 col-md-1">
-            <label class="form-label small text-muted">Bulan</label>
-            <select class="form-select" wire:model.live="filterBulan">
+          <label class="form-label small text-muted">Bulan</label>
+          <select class="form-select" wire:model.live="filterBulan">
             @foreach($bulanOptions as $b)
-                <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
+              <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
             @endforeach
-            </select>
+          </select>
         </div>
 
         <div class="col-6 col-md-1">
-            <label class="form-label small text-muted">Tahun</label>
-            <select class="form-select" wire:model.live="filterTahun">
+          <label class="form-label small text-muted">Tahun</label>
+          <select class="form-select" wire:model.live="filterTahun">
             @foreach($tahunOptions as $t)
-                <option value="{{ $t }}">{{ $t }}</option>
+              <option value="{{ $t }}">{{ $t }}</option>
             @endforeach
-            </select>
+          </select>
         </div>
-        @endif
+      @endif
 
       <div class="col-12 col-md-2">
         <label class="form-label small text-muted d-block">&nbsp;</label>
@@ -407,12 +475,13 @@
         <thead>
           <tr>
             <th style="min-width:140px;">Tanggal</th>
-            <th style="min-width:240px;">Prospek</th>
+            <th style="min-width:220px;">Prospek</th>
             <th style="min-width:220px;">Pengaju</th>
-            <th style="min-width:220px;">Cabang</th>
-            <th style="min-width:170px;">Rekomendasi Produk</th>
+            <th style="min-width:180px;">Cabang</th>
+            <th style="min-width:160px;">Rekomendasi Produk</th>
             <th style="min-width:140px;">Status</th>
-            <th style="min-width:180px;">Penugasan</th>
+            <th style="min-width:180px;">No Rekening</th>
+            <th style="min-width:280px;">Penugasan</th>
             <th style="width:120px;" class="text-end">Aksi</th>
           </tr>
         </thead>
@@ -429,12 +498,16 @@
               elseif($p->jenis_produk === 'DEPOSITO') $produkClass = 'badge-produk-deposito';
               elseif($p->jenis_produk === 'ASET') $produkClass = 'badge-produk-aset';
 
-              $pengambilanClass = ((int)($p->is_diambil ?? 0) === 1) ? 'badge-pengambilan-yes' : 'badge-pengambilan-no';
               $cabangPengaju = optional($p->creator->cabang)->kode_cabang
                 ? optional($p->creator->cabang)->kode_cabang . ' - ' . optional($p->creator->cabang)->nama_cabang
                 : '-';
+
+              $namaPengambilLengkap = $namaPengambilMap[$p->diambil_oleh] ?? null;
+              $assignmentOptions = $assignmentMap[$p->id] ?? [];
             @endphp
-            <tr class="row-hover-modern">
+
+            <tr class="row-hover-modern"
+                wire:key="prospect-row-{{ $p->id }}-{{ md5((string)($p->diambil_oleh ?? '')) }}-{{ md5((string)($p->status ?? '')) }}">
               <td class="small fw-semibold text-slate-700">
                 {{ \Illuminate\Support\Carbon::parse($p->tanggal_prospek)->format('d/m/Y') }}
               </td>
@@ -472,21 +545,63 @@
                 </span>
               </td>
 
-                <td class="small">
-                @if((int)($p->is_diambil ?? 0) === 1)
-                    @php
-                    $namaPengambilLengkap = $namaPengambilMap[$p->diambil_oleh] ?? null;
-                    @endphp
-                    <div class="fw-bold text-dark">
-                    {{ $p->diambil_oleh ?: '-' }}
+              <td class="small">
+                <div class="fw-semibold text-dark">{{ $p->no_rekening ?? '-' }}</div>
+              </td>
+
+              <td class="small">
+                <div class="assignment-wrap">
+                  @if($canManageAssignment)
+                    <div class="assignment-label">
+                      <i class="bi bi-person-check"></i> Pilih AO Penugasan
                     </div>
-                    <div class="text-muted">
-                    {{ $namaPengambilLengkap ?: '-' }}
+
+                    <div class="assignment-box">
+                      <select class="form-select form-select-sm assignment-select"
+                              wire:key="assignment-select-{{ $p->id }}-{{ md5((string)($p->diambil_oleh ?? '')) }}"
+                              wire:change="assignProspect({{ $p->id }}, $event.target.value)">
+                        <option value="">-- Pilih AO --</option>
+                        @foreach($assignmentOptions as $ao)
+                          <option value="{{ $ao['username'] }}" @selected((string)$p->diambil_oleh === (string)$ao['username'])>
+                            {{ $ao['label'] }}
+                          </option>
+                        @endforeach
+                      </select>
+
+                      @if((int)($p->is_diambil ?? 0) === 1)
+                        <div class="assignment-current">
+                          <div class="assignment-current-code">
+                            {{ $p->diambil_oleh ?: '-' }}
+                          </div>
+                          <div class="assignment-current-name">
+                            {{ $namaPengambilLengkap ?: '-' }}
+                          </div>
+                        </div>
+                      @else
+                        <div class="assignment-empty">
+                          Belum ada AO yang ditugaskan.
+                        </div>
+                      @endif
                     </div>
-                @else
-                    -
-                @endif
-                </td>
+                  @else
+                    @if((int)($p->is_diambil ?? 0) === 1)
+                      <div class="assignment-box">
+                        <div class="assignment-label mb-2">
+                          <i class="bi bi-person-badge"></i> AO Penugasan
+                        </div>
+                        <div class="assignment-current-code">
+                          {{ $p->diambil_oleh ?: '-' }}
+                        </div>
+                        <div class="assignment-current-name">
+                          {{ $namaPengambilLengkap ?: '-' }}
+                        </div>
+                      </div>
+                    @else
+                      <div class="assignment-empty">-</div>
+                    @endif
+                  @endif
+                </div>
+              </td>
 
               <td class="text-end">
                 <button type="button"
@@ -498,7 +613,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="8" class="text-center text-muted p-5">
+              <td colspan="9" class="text-center text-muted p-5">
                 Belum ada pengajuan prospek dari pegawai / AO.
               </td>
             </tr>
@@ -521,13 +636,16 @@
         elseif($p->jenis_produk === 'DEPOSITO') $produkClass = 'badge-produk-deposito';
         elseif($p->jenis_produk === 'ASET') $produkClass = 'badge-produk-aset';
 
-        $pengambilanClass = ((int)($p->is_diambil ?? 0) === 1) ? 'badge-pengambilan-yes' : 'badge-pengambilan-no';
         $cabangPengaju = optional($p->creator->cabang)->kode_cabang
           ? optional($p->creator->cabang)->kode_cabang . ' - ' . optional($p->creator->cabang)->nama_cabang
           : '-';
+
+        $namaPengambilLengkap = $namaPengambilMap[$p->diambil_oleh] ?? null;
+        $assignmentOptions = $assignmentMap[$p->id] ?? [];
       @endphp
 
-      <div class="mobile-prospect-card p-3 mb-2">
+      <div class="mobile-prospect-card p-3 mb-2"
+           wire:key="mobile-prospect-{{ $p->id }}-{{ md5((string)($p->diambil_oleh ?? '')) }}-{{ md5((string)($p->status ?? '')) }}">
         <div class="d-flex align-items-start justify-content-between gap-2">
           <div class="fw-bold fs-6">{{ $p->nama }}</div>
           <div class="text-muted small">
@@ -555,7 +673,7 @@
         </div>
 
         <div class="text-muted small mt-1">
-          <i class="bi bi-shop"></i> {{ $cabangPengaju }}
+          <i class="bi bi-credit-card-2-front"></i> No Rekening: {{ $p->no_rekening ?? '-' }}
         </div>
 
         <div class="divider-soft my-3"></div>
@@ -568,22 +686,43 @@
           <span class="badge-modern {{ $statusClass }}">
             {{ $p->status ?: '-' }}
           </span>
+        </div>
 
-            @if((int)($p->is_diambil ?? 0) === 1)
-            @php
-                $namaPengambilLengkap = $namaPengambilMap[$p->diambil_oleh] ?? null;
-            @endphp
-            <div class="w-100">
-                <div class="fw-bold text-dark">
-                {{ $p->diambil_oleh ?: '-' }}
+        <div class="mt-3">
+          <div class="text-muted small mb-1">Penugasan</div>
+
+          @if($canManageAssignment)
+            <div class="assignment-box">
+              <select class="form-select form-select-sm"
+                      wire:key="mobile-assignment-select-{{ $p->id }}-{{ md5((string)($p->diambil_oleh ?? '')) }}"
+                      wire:change="assignProspect({{ $p->id }}, $event.target.value)">
+                <option value="">-- Pilih AO --</option>
+                @foreach($assignmentOptions as $ao)
+                  <option value="{{ $ao['username'] }}" @selected((string)$p->diambil_oleh === (string)$ao['username'])>
+                    {{ $ao['label'] }}
+                  </option>
+                @endforeach
+              </select>
+
+              @if((int)($p->is_diambil ?? 0) === 1)
+                <div class="assignment-current mt-2">
+                  <div class="assignment-current-code">{{ $p->diambil_oleh ?: '-' }}</div>
+                  <div class="assignment-current-name">{{ $namaPengambilLengkap ?: '-' }}</div>
                 </div>
-                <div class="text-muted small">
-                {{ $namaPengambilLengkap ?: '-' }}
-                </div>
+              @else
+                <div class="assignment-empty mt-2">Belum ada AO yang ditugaskan.</div>
+              @endif
             </div>
-            @else
-            <div class="w-100">-</div>
-            @endif
+          @else
+            <div class="small">
+              @if((int)($p->is_diambil ?? 0) === 1)
+                <div class="assignment-current-code">{{ $p->diambil_oleh ?: '-' }}</div>
+                <div class="text-muted">{{ $namaPengambilLengkap ?: '-' }}</div>
+              @else
+                -
+              @endif
+            </div>
+          @endif
         </div>
 
         <div class="mt-3">
@@ -736,6 +875,11 @@
                     </div>
 
                     <div class="detail-item">
+                      <span class="detail-label">No Rekening</span>
+                      <div class="detail-value-soft">{{ $detail->no_rekening ?: '-' }}</div>
+                    </div>
+
+                    <div class="detail-item">
                       <span class="detail-label">Jenis Usaha</span>
                       <div class="detail-value-soft">{{ $detail->jenis_usaha ?: '-' }}</div>
                     </div>
@@ -829,12 +973,15 @@
                     <div class="detail-section-title">Titik Lokasi</div>
 
                     @if(!empty($detail->lokasi_lat) && !empty($detail->lokasi_lng))
-                      <div id="detailProspectMap"
-                           data-lat="{{ $detail->lokasi_lat }}"
-                           data-lng="{{ $detail->lokasi_lng }}"
-                           data-title="{{ $detail->nama }}"
-                           data-alamat="{{ $detail->alamat }}"
-                           style="height:320px;border-radius:18px;overflow:hidden;border:1px solid #e5e7eb;"></div>
+                      <div wire:key="detail-map-wrap-{{ $detail->id ?? 'x' }}">
+                        <div wire:ignore
+                             id="detailProspectMap"
+                             data-lat="{{ $detail->lokasi_lat }}"
+                             data-lng="{{ $detail->lokasi_lng }}"
+                             data-title="{{ $detail->nama }}"
+                             data-alamat="{{ $detail->alamat }}"
+                             style="height:320px;border-radius:18px;overflow:hidden;border:1px solid #e5e7eb;"></div>
+                      </div>
                     @else
                       <div class="text-muted">Koordinat lokasi belum tersedia.</div>
                     @endif
@@ -883,34 +1030,36 @@
                 </div>
 
                 @if(!$hideActionForm)
-                  <div class="col-12 col-lg-6">
-                    <div class="modal-action-card h-100">
-                      <div class="detail-section-title">Status Pengambilan</div>
+                  @if(!$isAoRole)
+                    <div class="col-12 col-lg-6">
+                      <div class="modal-action-card h-100">
+                        <div class="detail-section-title">Status Pengambilan</div>
 
-                      <div class="row g-2 align-items-end">
-                        <div class="col-12">
-                          <label class="form-label small text-muted">Diambil / Tidak Diambil</label>
-                          <select class="form-select" wire:model.live="ambilStatus">
-                            <option value="0">TIDAK DIAMBIL</option>
-                            <option value="1">DIAMBIL</option>
-                          </select>
-                        </div>
+                        <div class="row g-2 align-items-end">
+                          <div class="col-12">
+                            <label class="form-label small text-muted">Diambil / Tidak Diambil</label>
+                            <select class="form-select" wire:model.live="ambilStatus">
+                              <option value="0">TIDAK DIAMBIL</option>
+                              <option value="1">DIAMBIL</option>
+                            </select>
+                          </div>
 
-                        <div class="col-12">
-                          <button type="button"
-                                  class="btn btn-dark w-100 rounded-pill"
-                                  wire:click="updateAmbilStatus"
-                                  wire:loading.attr="disabled"
-                                  wire:target="updateAmbilStatus">
-                            <span wire:loading.remove wire:target="updateAmbilStatus">Simpan Pengambilan</span>
-                            <span wire:loading wire:target="updateAmbilStatus">Menyimpan...</span>
-                          </button>
+                          <div class="col-12">
+                            <button type="button"
+                                    class="btn btn-dark w-100 rounded-pill"
+                                    wire:click="updateAmbilStatus"
+                                    wire:loading.attr="disabled"
+                                    wire:target="updateAmbilStatus">
+                              <span wire:loading.remove wire:target="updateAmbilStatus">Simpan Pengambilan</span>
+                              <span wire:loading wire:target="updateAmbilStatus">Menyimpan...</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  @endif
 
-                  <div class="col-12 col-lg-6">
+                  <div class="col-12 col-lg-{{ $isAoRole ? '12' : '6' }}">
                     <div class="modal-action-card h-100">
                       <div class="detail-section-title">Update Status</div>
 
@@ -919,7 +1068,11 @@
                           <label class="form-label small text-muted">Pilih Status</label>
                           <select class="form-select" wire:model.live="statusUpdate">
                             <option value="">-- Pilih Status --</option>
-                            <option value="FOLLOW UP">FOLLOW UP</option>
+
+                            @if(!$isAoRole)
+                              <option value="FOLLOW UP">FOLLOW UP</option>
+                            @endif
+
                             <option value="CLOSING">CLOSING</option>
                             <option value="REJECTED">REJECTED</option>
                           </select>
@@ -927,6 +1080,21 @@
                             <div class="text-danger small mt-1">{{ $message }}</div>
                           @enderror
                         </div>
+
+                        @if($statusUpdate === 'CLOSING')
+                          <div class="col-12">
+                            <label class="form-label small text-muted">No. Rekening</label>
+                            <input type="text"
+                                   class="form-control"
+                                   wire:model.live="noRekening"
+                                   inputmode="numeric"
+                                   placeholder="Masukkan nomor rekening"
+                                   oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                            @error('noRekening')
+                              <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                          </div>
+                        @endif
 
                         <div class="col-12">
                           <button type="button"
@@ -966,8 +1134,17 @@
 <script>
 document.addEventListener('livewire:init', function () {
     let detailMapInstance = null;
+    let lastMapSignature = null;
 
-    function renderDetailMap() {
+    function destroyDetailMap() {
+        if (detailMapInstance) {
+            detailMapInstance.remove();
+            detailMapInstance = null;
+        }
+        lastMapSignature = null;
+    }
+
+    function renderDetailMap(force = false) {
         const mapEl = document.getElementById('detailProspectMap');
         if (!mapEl || typeof L === 'undefined') return;
 
@@ -978,10 +1155,18 @@ document.addEventListener('livewire:init', function () {
 
         if (isNaN(lat) || isNaN(lng)) return;
 
-        if (detailMapInstance) {
-            detailMapInstance.remove();
-            detailMapInstance = null;
+        const currentSignature = [lat, lng, title, alamat].join('|');
+
+        if (detailMapInstance && !force && lastMapSignature === currentSignature) {
+            setTimeout(function () {
+                if (detailMapInstance) {
+                    detailMapInstance.invalidateSize();
+                }
+            }, 200);
+            return;
         }
+
+        destroyDetailMap();
 
         detailMapInstance = L.map(mapEl).setView([lat, lng], 15);
 
@@ -992,6 +1177,8 @@ document.addEventListener('livewire:init', function () {
         L.marker([lat, lng]).addTo(detailMapInstance)
             .bindPopup('<b>' + title + '</b><br>' + alamat)
             .openPopup();
+
+        lastMapSignature = currentSignature;
 
         setTimeout(function () {
             if (detailMapInstance) {
@@ -1013,15 +1200,14 @@ document.addEventListener('livewire:init', function () {
             modalEl.dataset.boundHidden = '1';
 
             modalEl.addEventListener('hidden.bs.modal', function () {
-                if (detailMapInstance) {
-                    detailMapInstance.remove();
-                    detailMapInstance = null;
-                }
+                destroyDetailMap();
                 Livewire.dispatch('forceCloseProspectDetailModal');
             });
 
             modalEl.addEventListener('shown.bs.modal', function () {
-                setTimeout(renderDetailMap, 250);
+                setTimeout(function () {
+                    renderDetailMap(true);
+                }, 250);
             });
         }
 
@@ -1039,7 +1225,9 @@ document.addEventListener('livewire:init', function () {
 
                 instance.show();
 
-                setTimeout(renderDetailMap, 350);
+                setTimeout(function () {
+                    renderDetailMap(true);
+                }, 350);
             });
         }
     }
@@ -1052,7 +1240,7 @@ document.addEventListener('livewire:init', function () {
         setTimeout(function () {
             const modalEl = document.getElementById('prospectDetailModal');
             if (modalEl && modalEl.classList.contains('show')) {
-                renderDetailMap();
+                renderDetailMap(false);
             }
         }, 200);
     });

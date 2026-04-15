@@ -331,7 +331,7 @@
 
                     <a href="{{ $row->detail_url }}"
                        class="btn btn-outline-secondary btn-sm btn-detail">
-                      Lihat lebih banyak
+                      Lihat
                     </a>
                   </div>
                 </td>
