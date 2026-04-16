@@ -128,52 +128,6 @@
       text-align:center;
       color:#64748b;
     }
-
-    .modal-backdrop-custom{
-      position:fixed;
-      inset:0;
-      background:rgba(15,23,42,.45);
-      z-index:1050;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-    }
-    .modal-panel-custom{
-      width:100%;
-      max-width:980px;
-      max-height:calc(100vh - 32px);
-      overflow:auto;
-      border-radius:26px;
-      background:#fff;
-      box-shadow:0 30px 90px rgba(15,23,42,.28);
-    }
-    .modal-head-custom{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      padding:20px 22px;
-      border-bottom:1px solid #eef2f7;
-      background:linear-gradient(135deg,#f8fbff 0%,#eef2ff 100%);
-    }
-    .modal-close-btn{
-      border:0;
-      background:transparent;
-      font-size:1.8rem;
-      line-height:1;
-      color:#64748b;
-    }
-    .modal-body-custom{
-      padding:22px;
-    }
-    .modal-foot-custom{
-      display:flex;
-      justify-content:flex-end;
-      gap:10px;
-      padding:18px 22px 22px;
-      border-top:1px solid #eef2f7;
-    }
     .form-label{
       font-weight:800;
       color:#0f172a;
@@ -210,27 +164,30 @@
       margin:auto;
     }
 
+    .content-modal .modal-content{
+      border:0;
+      border-radius:26px;
+      overflow:hidden;
+      box-shadow:0 30px 90px rgba(15,23,42,.28);
+    }
+    .content-modal .modal-header{
+      padding:20px 22px;
+      border-bottom:1px solid #eef2f7;
+      background:linear-gradient(135deg,#f8fbff 0%,#eef2ff 100%);
+    }
+    .content-modal .modal-body{
+      padding:22px;
+    }
+    .content-modal .modal-footer{
+      padding:18px 22px 22px;
+      border-top:1px solid #eef2f7;
+    }
+
     @media (max-width: 767.98px){
       .content-title{
         font-size:1.35rem;
       }
       .btn-add-content{
-        width:100%;
-      }
-      .modal-panel-custom{
-        max-width:100%;
-        border-radius:22px;
-      }
-      .modal-head-custom,
-      .modal-body-custom,
-      .modal-foot-custom{
-        padding-left:16px;
-        padding-right:16px;
-      }
-      .modal-foot-custom{
-        flex-wrap:wrap;
-      }
-      .modal-foot-custom .btn{
         width:100%;
       }
     }
@@ -285,7 +242,7 @@
             @endphp
 
             @forelse($rows as $row)
-              <tr>
+              <tr wire:key="content-row-{{ $tab }}-{{ $row->id }}">
                 <td>
                   @if($row->gambar_url)
                     <img src="{{ $row->gambar_url }}" class="thumb-mini" alt="{{ $row->judul }}">
@@ -349,19 +306,19 @@
     </div>
   </div>
 
-  @if($showModal)
-    <div class="modal-backdrop-custom" wire:key="content-modal">
-      <div class="modal-panel-custom" @click.stop>
-        <div class="modal-head-custom">
+  <div wire:ignore.self class="modal fade content-modal" id="contentManagerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
           <div>
             <div class="fw-bold fs-3 mb-1">{{ $editingId ? 'Edit Konten' : 'Tambah Konten' }}</div>
             <div class="text-muted">{{ $tab === 'produk' ? 'Katalog Produk' : 'Tips & Trick' }}</div>
           </div>
 
-          <button type="button" class="modal-close-btn" wire:click="closeModal">&times;</button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <div class="modal-body-custom">
+        <div class="modal-body">
           <div class="row g-4">
             <div class="col-12 col-lg-7">
               <div class="mb-3">
@@ -436,8 +393,8 @@
           </div>
         </div>
 
-        <div class="modal-foot-custom">
-          <button type="button" class="btn btn-light rounded-pill px-4" wire:click="closeModal">
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
             Batal
           </button>
 
@@ -448,10 +405,42 @@
         </div>
       </div>
     </div>
-  @endif
+  </div>
 
   <script>
     document.addEventListener('livewire:init', function () {
+      let contentModal = null;
+
+      function getContentModal() {
+        const el = document.getElementById('contentManagerModal');
+        if (!el || typeof bootstrap === 'undefined') return null;
+
+        contentModal = bootstrap.Modal.getOrCreateInstance(el, {
+          backdrop: 'static',
+          keyboard: true
+        });
+
+        if (!el.dataset.boundModal) {
+          el.dataset.boundModal = '1';
+
+          el.addEventListener('hidden.bs.modal', function () {
+            Livewire.dispatch('forceCloseContentModal');
+          });
+        }
+
+        return contentModal;
+      }
+
+      Livewire.on('open-content-modal', function () {
+        const modal = getContentModal();
+        if (modal) modal.show();
+      });
+
+      Livewire.on('close-content-modal', function () {
+        const modal = getContentModal();
+        if (modal) modal.hide();
+      });
+
       Livewire.on('swal', function (data) {
         if (Array.isArray(data)) data = data[0];
 

@@ -13,7 +13,6 @@ class Manager extends Component
     use WithFileUploads;
 
     public string $tab = 'produk';
-    public bool $showModal = false;
     public ?int $editingId = null;
 
     public string $judul = '';
@@ -29,6 +28,7 @@ class Manager extends Component
 
     protected $listeners = [
         'deleteConfirmed' => 'delete',
+        'forceCloseContentModal' => 'forceCloseContentModal',
     ];
 
     public function mount(): void
@@ -88,7 +88,6 @@ class Manager extends Component
         }
 
         $this->tab = $tab;
-        $this->closeModal();
         $this->resetForm();
         $this->resetValidation();
     }
@@ -97,12 +96,18 @@ class Manager extends Component
     {
         $this->resetForm();
         $this->resetValidation();
-        $this->showModal = true;
+        $this->dispatch('open-content-modal');
     }
 
     public function closeModal(): void
     {
-        $this->showModal = false;
+        $this->dispatch('close-content-modal');
+    }
+
+    public function forceCloseContentModal(): void
+    {
+        $this->resetForm();
+        $this->resetValidation();
     }
 
     public function resetForm(): void
@@ -173,7 +178,11 @@ class Manager extends Component
             $row = DB::table($table)->where('id', $this->editingId)->first();
 
             if (!$row) {
-                $this->dispatch('swal', icon: 'error', title: 'Gagal', text: 'Data tidak ditemukan.');
+                $this->dispatch('swal', [
+                    'icon' => 'error',
+                    'title' => 'Gagal',
+                    'text' => 'Data tidak ditemukan.',
+                ]);
                 return;
             }
 
@@ -204,11 +213,15 @@ class Manager extends Component
 
             DB::table($table)->where('id', $this->editingId)->update($payload);
 
-            $this->closeModal();
+            $this->dispatch('close-content-modal');
             $this->resetForm();
             $this->resetValidation();
 
-            $this->dispatch('swal', icon: 'success', title: 'Berhasil', text: 'Konten berhasil diperbarui.');
+            $this->dispatch('swal', [
+                'icon' => 'success',
+                'title' => 'Berhasil',
+                'text' => 'Konten berhasil diperbarui.',
+            ]);
             return;
         }
 
@@ -240,11 +253,15 @@ class Manager extends Component
 
         DB::table($table)->insert($payload);
 
-        $this->closeModal();
+        $this->dispatch('close-content-modal');
         $this->resetForm();
         $this->resetValidation();
 
-        $this->dispatch('swal', icon: 'success', title: 'Berhasil', text: 'Konten berhasil ditambahkan.');
+        $this->dispatch('swal', [
+            'icon' => 'success',
+            'title' => 'Berhasil',
+            'text' => 'Konten berhasil ditambahkan.',
+        ]);
     }
 
     public function edit(string $tab, int $id): void
@@ -258,7 +275,11 @@ class Manager extends Component
         $row = DB::table($table)->where('id', $id)->first();
 
         if (!$row) {
-            $this->dispatch('swal', icon: 'error', title: 'Gagal', text: 'Data tidak ditemukan.');
+            $this->dispatch('swal', [
+                'icon' => 'error',
+                'title' => 'Gagal',
+                'text' => 'Data tidak ditemukan.',
+            ]);
             return;
         }
 
@@ -274,18 +295,17 @@ class Manager extends Component
         $this->existingGambar = !empty($row->gambar) ? Storage::url($row->gambar) : null;
 
         $this->resetValidation();
-        $this->showModal = true;
+        $this->dispatch('open-content-modal');
     }
 
     public function askDelete(string $tab, int $id): void
     {
-        $this->dispatch(
-            'askDelete',
-            tab: $tab,
-            id: $id,
-            title: 'Hapus konten ini?',
-            text: 'Data yang dihapus tidak bisa dikembalikan.'
-        );
+        $this->dispatch('askDelete', [
+            'tab' => $tab,
+            'id' => $id,
+            'title' => 'Hapus konten ini?',
+            'text' => 'Data yang dihapus tidak bisa dikembalikan.',
+        ]);
     }
 
     public function delete($payload): void
@@ -301,7 +321,11 @@ class Manager extends Component
         $row = DB::table($table)->where('id', $id)->first();
 
         if (!$row) {
-            $this->dispatch('swal', icon: 'error', title: 'Gagal', text: 'Data tidak ditemukan.');
+            $this->dispatch('swal', [
+                'icon' => 'error',
+                'title' => 'Gagal',
+                'text' => 'Data tidak ditemukan.',
+            ]);
             return;
         }
 
@@ -313,10 +337,14 @@ class Manager extends Component
 
         if ($this->editingId === $id) {
             $this->resetForm();
-            $this->closeModal();
+            $this->dispatch('close-content-modal');
         }
 
-        $this->dispatch('swal', icon: 'success', title: 'Berhasil', text: 'Data berhasil dihapus.');
+        $this->dispatch('swal', [
+            'icon' => 'success',
+            'title' => 'Berhasil',
+            'text' => 'Data berhasil dihapus.',
+        ]);
     }
 
     public function render()

@@ -30,7 +30,28 @@ class Show extends Component
         if ($role === 'ADMIN') {
             $this->backUrl = route('contents.index');
         } else {
-            $this->backUrl = route('prospects.index');
+            $currentUrl = url()->current();
+            $referer = request()->headers->get('referer');
+            $fallbackUrl = route('prospects.index');
+
+            $isRefererContentDetail = false;
+
+            if (!empty($referer)) {
+                $parsedRefererPath = parse_url($referer, PHP_URL_PATH) ?: '';
+                $isRefererContentDetail = preg_match('#^/contents/(produk|tips)/[^/]+$#', $parsedRefererPath) === 1;
+            }
+
+            if (
+                !empty($referer) &&
+                $referer !== $currentUrl &&
+                !$isRefererContentDetail &&
+                !str_contains($referer, '/login')
+            ) {
+                session(['contents_back_url' => $referer]);
+                $this->backUrl = $referer;
+            } else {
+                $this->backUrl = session('contents_back_url', $fallbackUrl);
+            }
         }
 
         $table = $jenis === 'produk' ? 'katalog_produk' : 'tips_trik';
