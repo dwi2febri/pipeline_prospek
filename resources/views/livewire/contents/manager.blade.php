@@ -318,51 +318,51 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <div class="modal-body">
+        <div class="modal-body" wire:key="content-modal-form-{{ $tab }}-{{ $editingId ?: 'new' }}">
           <div class="row g-4">
             <div class="col-12 col-lg-7">
               <div class="mb-3">
                 <label class="form-label">Judul</label>
-                <input type="text" class="form-control" wire:model.defer="judul" placeholder="Masukkan judul">
+                <input type="text" class="form-control" wire:model.live="judul" placeholder="Masukkan judul">
                 @error('judul') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
               </div>
 
               <div class="mb-3">
                 <label class="form-label">Slug</label>
-                <input type="text" class="form-control" wire:model.defer="slug" placeholder="Otomatis jika dikosongi">
+                <input type="text" class="form-control" wire:model.live="slug" placeholder="Otomatis jika dikosongi">
                 @error('slug') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
               </div>
 
               @if($tab === 'produk')
                 <div class="mb-3">
                   <label class="form-label">Badge</label>
-                  <input type="text" class="form-control" wire:model.defer="badge" placeholder="Contoh: Produk Unggulan">
+                  <input type="text" class="form-control" wire:model.live="badge" placeholder="Contoh: Produk Unggulan">
                   @error('badge') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                 </div>
               @else
                 <div class="mb-3">
                   <label class="form-label">Kategori</label>
-                  <input type="text" class="form-control" wire:model.defer="kategori" placeholder="Contoh: Marketing">
+                  <input type="text" class="form-control" wire:model.live="kategori" placeholder="Contoh: Marketing">
                   @error('kategori') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                 </div>
               @endif
 
               <div class="mb-3">
                 <label class="form-label">Deskripsi / Isi Konten</label>
-                <textarea class="form-control" wire:model.defer="deskripsi" placeholder="Masukkan isi konten di sini"></textarea>
+                <textarea class="form-control" wire:model.live="deskripsi" placeholder="Masukkan isi konten di sini"></textarea>
                 @error('deskripsi') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
               </div>
 
               <div class="row g-3">
                 <div class="col-6">
                   <label class="form-label">Urutan</label>
-                  <input type="number" class="form-control" wire:model.defer="urutan" min="1">
+                  <input type="number" class="form-control" wire:model.live="urutan" min="1">
                   @error('urutan') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="col-6">
                   <label class="form-label">Status</label>
-                  <select class="form-select" wire:model.defer="aktif">
+                  <select class="form-select" wire:model.live="aktif">
                     <option value="1">Aktif</option>
                     <option value="0">Nonaktif</option>
                   </select>
@@ -432,8 +432,10 @@
       }
 
       Livewire.on('open-content-modal', function () {
-        const modal = getContentModal();
-        if (modal) modal.show();
+        setTimeout(function () {
+          const modal = getContentModal();
+          if (modal) modal.show();
+        }, 120);
       });
 
       Livewire.on('close-content-modal', function () {
