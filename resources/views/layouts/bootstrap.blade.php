@@ -460,6 +460,7 @@
     $canMasterCabang      = $isAdmin;
     $canUsers             = $isAdmin;
     $canKontenApp         = $isAdmin;
+    $canSimulasiKredit    = auth()->check();
   @endphp
 
   <div class="app-shell" id="appShell">
@@ -498,6 +499,12 @@
           @if($canProspectsDiajukan)
             <a href="/prospects-diajukan" class="navlink {{ request()->is('prospects-diajukan') ? 'active' : '' }}">
               <i class="bi bi-send-check"></i><span>Prospek Diajukan</span>
+            </a>
+          @endif
+
+          @if($canSimulasiKredit)
+            <a href="{{ route('simulasi-kredit.index') }}" class="navlink {{ request()->is('simulasi-kredit') ? 'active' : '' }}">
+              <i class="bi bi-calculator"></i><span>Simulasi Kredit</span>
             </a>
           @endif
 
@@ -607,6 +614,12 @@
                   </a>
                 @endif
 
+                @if($canSimulasiKredit)
+                  <a class="item" href="{{ route('simulasi-kredit.index') }}">
+                    <i class="bi bi-calculator me-2"></i> Simulasi Kredit
+                  </a>
+                @endif
+
                 @if($canKontenApp)
                   <a class="item" href="{{ route('contents.manager') }}">
                     <i class="bi bi-images me-2"></i> Konten App
@@ -670,6 +683,12 @@
                   </a>
                 @endif
 
+                @if($canSimulasiKredit)
+                  <a class="item" href="{{ route('simulasi-kredit.index') }}">
+                    <i class="bi bi-calculator me-2"></i> Simulasi Kredit
+                  </a>
+                @endif
+
                 @if($canKontenApp)
                   <a class="item" href="{{ route('contents.manager') }}">
                     <i class="bi bi-images me-2"></i> Konten App
@@ -725,6 +744,13 @@
         <a href="/prospects-diajukan" class="{{ request()->is('prospects-diajukan') ? 'active' : '' }}">
           <div><i class="bi bi-send-check fs-5"></i></div>
           Diajukan
+        </a>
+      @endif
+
+      @if($canSimulasiKredit)
+        <a href="{{ route('simulasi-kredit.index') }}" class="{{ request()->is('simulasi-kredit') ? 'active' : '' }}">
+          <div><i class="bi bi-calculator fs-5"></i></div>
+          Simulasi
         </a>
       @endif
 

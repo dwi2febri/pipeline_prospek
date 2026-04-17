@@ -1,6 +1,39 @@
-<div class="container-fluid px-0">
+<div class="container-fluid px-0 android-app-shell">
 
   <style>
+    .android-app-shell{
+      position:relative;
+      padding-bottom:92px;
+    }
+
+    .android-app-shell::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-3;
+      background:
+        radial-gradient(circle at top left, rgba(34,197,246,.10), transparent 22%),
+        radial-gradient(circle at top right, rgba(99,102,241,.10), transparent 24%),
+        linear-gradient(180deg,#f5fbff 0%,#eef4fb 45%,#eaf1f8 100%);
+      pointer-events:none;
+    }
+
+    .android-app-shell::after{
+      content:"";
+      position:fixed;
+      left:-8%;
+      right:-8%;
+      top:74px;
+      height:260px;
+      z-index:-2;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(37,99,235,.10), transparent 22%),
+        radial-gradient(circle at 78% 16%, rgba(14,165,233,.08), transparent 18%),
+        radial-gradient(circle at 50% 85%, rgba(249,115,22,.08), transparent 18%);
+      filter:blur(18px);
+      pointer-events:none;
+    }
+
     .app-page-head{
       margin-bottom:14px;
     }
@@ -14,32 +47,35 @@
     }
 
     .app-title{
-      font-size:1.55rem;
+      font-size:1.72rem;
       font-weight:900;
       color:#0f172a;
-      letter-spacing:-.02em;
-      line-height:1.1;
+      letter-spacing:-.03em;
+      line-height:1.06;
     }
 
     .app-subtitle{
       color:#64748b;
-      font-size:.92rem;
-      margin-top:4px;
+      font-size:.98rem;
+      margin-top:6px;
+      line-height:1.65;
+      max-width:760px;
     }
 
     .section-title-modern{
-      font-size:1.2rem;
+      font-size:1.18rem;
       font-weight:900;
       color:#111827;
-      margin-bottom:12px;
+      margin-bottom:14px;
       letter-spacing:-.02em;
+      padding-left:2px;
     }
 
     .card-soft{
-      border:0;
-      border-radius:22px;
-      background:#fff;
-      box-shadow:0 12px 32px rgba(15,23,42,.08);
+      border:1px solid rgba(255,255,255,.85);
+      border-radius:28px;
+      background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+      box-shadow:0 16px 34px rgba(15,23,42,.08);
     }
 
     .btn-add-modern{
@@ -47,12 +83,12 @@
       align-items:center;
       gap:8px;
       border-radius:999px;
-      padding:11px 18px;
+      padding:12px 18px;
       font-weight:800;
       text-decoration:none;
       color:#fff;
-      background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);
-      box-shadow:0 14px 30px rgba(37,99,235,.28);
+      background:linear-gradient(135deg,#14b8a6 0%,#06b6d4 100%);
+      box-shadow:0 16px 28px rgba(6,182,212,.24);
       border:0;
       white-space:nowrap;
       transition:all .18s ease;
@@ -63,16 +99,47 @@
       transform:translateY(-1px);
     }
 
+    .glass-head{
+      border-radius:30px;
+      background:
+        radial-gradient(circle at top right, rgba(59,130,246,.14), transparent 26%),
+        linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+      border:1px solid rgba(255,255,255,.88);
+      box-shadow:0 18px 36px rgba(15,23,42,.07);
+      padding:16px;
+      margin-bottom:18px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .glass-head::after{
+      content:"";
+      position:absolute;
+      width:150px;
+      height:150px;
+      right:-54px;
+      top:-54px;
+      border-radius:999px;
+      background:rgba(59,130,246,.06);
+      pointer-events:none;
+    }
+
+    .desktop-summary-row{
+      display:grid;
+      grid-template-columns:repeat(5, minmax(0, 1fr));
+      gap:16px;
+    }
+
     .summary-btn{
       border:0;
       width:100%;
       text-align:left;
       position:relative;
-      padding:16px 16px 14px 16px;
+      padding:18px 18px 16px 18px;
       overflow:hidden;
       border-radius:28px;
-      box-shadow:0 12px 28px rgba(15,23,42,.08);
-      min-height:128px;
+      box-shadow:0 14px 28px rgba(15,23,42,.08);
+      min-height:132px;
       transition:all .18s ease;
       color:#fff;
     }
@@ -84,139 +151,211 @@
     .summary-label{
       font-size:1rem;
       font-weight:800;
-      opacity:.96;
+      opacity:.98;
     }
 
     .summary-value{
-      font-size:2.95rem;
+      font-size:3rem;
       font-weight:900;
       line-height:1;
-      margin-top:10px;
+      margin-top:12px;
       letter-spacing:-.04em;
     }
 
     .summary-icon{
       position:absolute;
       right:18px;
-      bottom:14px;
+      bottom:12px;
       font-size:58px;
-      opacity:.18;
+      opacity:.16;
     }
 
     .filter-card-modern{
-      border:1px solid #edf2f7;
-      border-radius:22px;
-      padding:14px;
+      border:1px solid rgba(255,255,255,.88);
+      border-radius:28px;
+      padding:15px;
       background:linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%);
-      box-shadow:0 10px 28px rgba(15,23,42,.05);
+      box-shadow:0 14px 28px rgba(15,23,42,.05);
+    }
+
+    .filter-card-modern .input-group{
+      border-radius:18px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .filter-card-modern .form-control,
+    .filter-card-modern .form-select,
+    .filter-card-modern .input-group-text{
+      min-height:48px;
+      border-color:#e6edf7 !important;
+      background:#fff !important;
+      box-shadow:none !important;
     }
 
     .prospect-list-title{
       font-weight:900;
-      font-size:1.05rem;
+      font-size:1.06rem;
       color:#111827;
-      margin-bottom:12px;
+      margin-bottom:14px;
+      letter-spacing:-.02em;
     }
 
     .prospect-modern-card{
       border:1px solid #edf2f7;
-      border-radius:22px;
-      background:#fff;
-      box-shadow:0 10px 24px rgba(15,23,42,.05);
+      border-radius:26px;
+      background:linear-gradient(180deg,#ffffff 0%,#fcfdff 100%);
+      box-shadow:0 12px 24px rgba(15,23,42,.05);
       padding:16px;
       margin-bottom:12px;
       position:relative;
       overflow:hidden;
     }
 
+    .prospect-modern-card::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:0;
+      bottom:0;
+      width:6px;
+      background:linear-gradient(180deg,#06b6d4 0%,#3b82f6 45%,#8b5cf6 100%);
+    }
+
+    .prospect-modern-card::after{
+      content:"";
+      position:absolute;
+      right:-22px;
+      bottom:-22px;
+      width:90px;
+      height:90px;
+      border-radius:999px;
+      background:radial-gradient(circle, rgba(59,130,246,.08) 0%, rgba(59,130,246,0) 72%);
+      pointer-events:none;
+    }
+
     .prospect-name{
       font-weight:900;
       color:#0f172a;
-      font-size:1rem;
+      font-size:1.02rem;
       line-height:1.2;
     }
 
     .prospect-meta{
       color:#64748b;
-      font-size:.85rem;
+      font-size:.86rem;
       margin-top:6px;
-      line-height:1.6;
+      line-height:1.65;
     }
 
     .badge-soft{
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      min-height:35px;
+      min-height:36px;
       padding:7px 15px;
       border-radius:999px;
       font-weight:800;
-      font-size:.79rem;
+      font-size:.78rem;
       letter-spacing:.01em;
       white-space:nowrap;
       border:1px solid transparent;
     }
 
-    /* STATUS BADGES - SESUAI WARNA KARTU */
+    /* WARNA STATUS DISAMAKAN DENGAN KOTAK SUMMARY ATAS */
     .status-open{
-      background:linear-gradient(135deg,#f7c8c8 0%,#efadad 100%);
-      color:#ffffff;
-      box-shadow:0 10px 22px rgba(239,173,173,.25);
+      background:linear-gradient(135deg,#f6c0c0 0%,#efaaaa 100%);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(239,170,170,.22);
     }
 
     .status-follow{
       background:linear-gradient(135deg,#17b07d 0%,#10a36f 100%);
-      color:#ffffff;
-      box-shadow:0 10px 22px rgba(16,163,111,.22);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(16,163,111,.20);
     }
 
     .status-rejected{
       background:linear-gradient(135deg,#f34f74 0%,#eb2e5c 100%);
-      color:#ffffff;
-      box-shadow:0 10px 22px rgba(235,46,92,.22);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(235,46,92,.20);
     }
 
     .status-closing{
       background:linear-gradient(135deg,#5b97f6 0%,#2f6fe6 100%);
-      color:#ffffff;
-      box-shadow:0 10px 22px rgba(47,111,230,.22);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(47,111,230,.20);
     }
 
-    /* PRODUK BADGES - TONE SELARAS */
     .produk-kredit{
-      background:linear-gradient(135deg,#5b97f6 0%,#2f6fe6 100%);
+      background:linear-gradient(135deg,#60a5fa 0%,#3b82f6 100%);
       color:#fff;
-      box-shadow:0 10px 22px rgba(47,111,230,.18);
+      box-shadow:0 10px 20px rgba(59,130,246,.16);
     }
 
     .produk-tabungan{
-      background:linear-gradient(135deg,#f59a00 0%,#ea8b00 100%);
+      background:linear-gradient(135deg,#14b8a6 0%,#10b981 100%);
       color:#fff;
-      box-shadow:0 10px 22px rgba(234,139,0,.18);
+      box-shadow:0 10px 20px rgba(16,185,129,.16);
     }
 
     .produk-deposito{
-      background:linear-gradient(135deg,#17b07d 0%,#10a36f 100%);
+      background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);
       color:#fff;
-      box-shadow:0 10px 22px rgba(16,163,111,.18);
+      box-shadow:0 10px 20px rgba(34,197,94,.16);
     }
 
     .produk-aset{
-      background:linear-gradient(135deg,#f34f74 0%,#eb2e5c 100%);
+      background:linear-gradient(135deg,#f59e0b 0%,#f97316 100%);
       color:#fff;
-      box-shadow:0 10px 22px rgba(235,46,92,.18);
+      box-shadow:0 10px 20px rgba(249,115,22,.16);
     }
 
     .produk-default{
-      background:linear-gradient(135deg,#cfd8e6 0%,#b6c2d5 100%);
+      background:linear-gradient(135deg,#cbd5e1 0%,#94a3b8 100%);
       color:#334155;
-      box-shadow:0 10px 22px rgba(148,163,184,.18);
+      box-shadow:0 10px 20px rgba(148,163,184,.18);
+    }
+
+    .open-age-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:34px;
+      padding:6px 13px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:.76rem;
+      letter-spacing:.01em;
+      white-space:nowrap;
+      border:1px solid transparent;
+      box-shadow:0 10px 20px rgba(15,23,42,.08);
+    }
+
+    .open-age-green{
+      background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(34,197,94,.18);
+    }
+
+    .open-age-yellow{
+      background:linear-gradient(135deg,#facc15 0%,#eab308 100%);
+      color:#3b2f00;
+      box-shadow:0 10px 20px rgba(234,179,8,.18);
+    }
+
+    .open-age-red{
+      background:linear-gradient(135deg,#fb7185 0%,#ef4444 100%);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(239,68,68,.18);
     }
 
     .action-btn-modern{
       border-radius:999px;
       font-weight:800;
-      padding:.55rem 1rem;
+      padding:.6rem 1rem;
+      min-height:42px;
+      box-shadow:none !important;
     }
 
     .section-shell{
@@ -237,30 +376,42 @@
     }
 
     .catalog-card{
-      min-width:290px;
-      max-width:290px;
+      min-width:294px;
+      max-width:294px;
       background:#fff;
-      border-radius:20px;
+      border-radius:26px;
       overflow:hidden;
       border:1px solid #edf2f7;
-      box-shadow:0 12px 28px rgba(15,23,42,.08);
+      box-shadow:0 14px 28px rgba(15,23,42,.08);
       scroll-snap-align:start;
-      flex:0 0 290px;
+      flex:0 0 294px;
       position:relative;
+    }
+
+    .catalog-card::after{
+      content:"";
+      position:absolute;
+      right:-22px;
+      top:-22px;
+      width:90px;
+      height:90px;
+      border-radius:999px;
+      background:radial-gradient(circle, rgba(59,130,246,.08) 0%, rgba(59,130,246,0) 70%);
+      pointer-events:none;
     }
 
     .catalog-top{
       display:flex;
-      min-height:128px;
+      min-height:132px;
     }
 
     .catalog-visual{
-      width:92px;
-      flex:0 0 92px;
+      width:94px;
+      flex:0 0 94px;
       background:
-        linear-gradient(135deg, rgba(29,78,216,.08), rgba(37,99,235,.02)),
-        repeating-linear-gradient(135deg, #1e3a8a 0 2px, transparent 2px 22px),
-        repeating-linear-gradient(45deg, #1d4ed8 0 2px, transparent 2px 22px);
+        linear-gradient(135deg, rgba(20,184,166,.10), rgba(37,99,235,.04)),
+        repeating-linear-gradient(135deg, #14b8a6 0 2px, transparent 2px 22px),
+        repeating-linear-gradient(45deg, #0ea5e9 0 2px, transparent 2px 22px);
       background-color:#f8fbff;
       border-right:1px solid #e5eefb;
       position:relative;
@@ -283,8 +434,8 @@
       display:inline-flex;
       align-items:center;
       gap:6px;
-      background:linear-gradient(135deg,#f8f0ff 0%,#e6edff 100%);
-      color:#3558e8;
+      background:linear-gradient(135deg,#e0f2fe 0%,#dbeafe 100%);
+      color:#0f52d6;
       border:1px solid #dbe4ff;
       border-radius:999px;
       font-size:.7rem;
@@ -294,7 +445,7 @@
     }
 
     .catalog-title{
-      font-size:1.28rem;
+      font-size:1.22rem;
       font-weight:900;
       color:#111827;
       line-height:1.15;
@@ -305,7 +456,7 @@
     .catalog-desc{
       color:#374151;
       font-size:.9rem;
-      line-height:1.35;
+      line-height:1.38;
       display:-webkit-box;
       -webkit-line-clamp:3;
       -webkit-box-orient:vertical;
@@ -321,29 +472,39 @@
     }
 
     .catalog-link{
-      color:#3558e8;
+      color:#0f52d6;
       text-decoration:none;
       font-weight:800;
       font-size:.88rem;
     }
 
     .tips-card{
-      min-width:210px;
-      max-width:210px;
+      min-width:220px;
+      max-width:220px;
       background:#fff;
-      border-radius:18px;
+      border-radius:24px;
       overflow:hidden;
       border:1px solid #edf2f7;
-      box-shadow:0 12px 28px rgba(15,23,42,.08);
+      box-shadow:0 14px 26px rgba(15,23,42,.08);
       scroll-snap-align:start;
-      flex:0 0 210px;
+      flex:0 0 220px;
       position:relative;
     }
 
+    .tips-card::before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:4px;
+      background:linear-gradient(90deg,#14b8a6 0%,#3b82f6 50%,#8b5cf6 100%);
+    }
+
     .tips-image{
-      height:110px;
+      height:112px;
       background:
-        radial-gradient(circle at 18% 24%, rgba(251,146,60,.22), transparent 18%),
+        radial-gradient(circle at 18% 24%, rgba(20,184,166,.22), transparent 18%),
         radial-gradient(circle at 70% 30%, rgba(37,99,235,.18), transparent 18%),
         linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);
       display:flex;
@@ -371,7 +532,7 @@
     .tips-kategori{
       font-size:.72rem;
       font-weight:800;
-      color:#3558e8;
+      color:#0f52d6;
       margin-bottom:8px;
       text-transform:uppercase;
       letter-spacing:.04em;
@@ -389,7 +550,7 @@
     .tips-desc{
       color:#4b5563;
       font-size:.84rem;
-      line-height:1.35;
+      line-height:1.42;
       display:-webkit-box;
       -webkit-line-clamp:3;
       -webkit-box-orient:vertical;
@@ -401,7 +562,7 @@
       display:inline-flex;
       align-items:center;
       gap:6px;
-      color:#3558e8;
+      color:#0f52d6;
       text-decoration:none;
       font-weight:800;
       font-size:.84rem;
@@ -410,50 +571,13 @@
 
     .empty-mini-card{
       border:1px dashed #dbe3ee;
-      border-radius:18px;
+      border-radius:24px;
       padding:18px;
       color:#64748b;
-      background:#fff;
+      background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
     }
 
-    .glass-head{
-      border-radius:24px;
-      background:
-        radial-gradient(circle at top right, rgba(59,130,246,.14), transparent 26%),
-        linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
-      border:1px solid #edf2f7;
-      box-shadow:0 14px 36px rgba(15,23,42,.06);
-      padding:16px;
-      margin-bottom:16px;
-    }
-
-    .desktop-summary-row{
-      display:grid;
-      grid-template-columns:repeat(5, minmax(0, 1fr));
-      gap:18px;
-    }
-
-    .mobile-summary-total{
-      margin-bottom:12px;
-    }
-
-    .mobile-summary-grid{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:12px;
-    }
-
-    .desktop-filter-row{
-      display:grid;
-      grid-template-columns:minmax(0, 1.2fr) 220px 180px;
-      gap:12px;
-      align-items:center;
-    }
-
-    .mobile-flyer-wrap{
-      display:none;
-    }
-
+    .mobile-flyer-wrap,
     .mobile-fab-add{
       display:none;
     }
@@ -475,8 +599,7 @@
       position:absolute;
       inset:0;
       z-index:2;
-      background:
-        linear-gradient(135deg, rgba(15,23,42,.40) 0%, rgba(37,99,235,.24) 42%, rgba(0,0,0,.08) 100%);
+      background:linear-gradient(135deg, rgba(15,23,42,.42) 0%, rgba(37,99,235,.24) 42%, rgba(0,0,0,.08) 100%);
     }
 
     .flyer-card > *:not(.flyer-media):not(.flyer-overlay){
@@ -500,48 +623,11 @@
         width:100%;
         flex:auto;
       }
-
-      .tips-card{
-        min-height:100%;
-      }
-    }
-
-    @media (max-width: 1199.98px){
-      .desktop-summary-row{
-        grid-template-columns:repeat(5, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 991.98px){
-      .desktop-summary-row{
-        grid-template-columns:repeat(5, minmax(0, 1fr));
-      }
-
-      .desktop-filter-row{
-        grid-template-columns:1fr;
-      }
     }
 
     @media (max-width: 767.98px){
       html, body{
-        background:linear-gradient(180deg,#f8fbff 0%, #f3f6fb 48%, #eef2f8 100%) !important;
-      }
-
-      body{
-        position:relative;
-        min-height:100vh;
-      }
-
-      body::before{
-        content:"";
-        position:fixed;
-        inset:0;
-        z-index:-1;
-        background:
-          radial-gradient(circle at top right, rgba(59,130,246,.08), transparent 28%),
-          radial-gradient(circle at top left, rgba(168,85,247,.06), transparent 22%),
-          linear-gradient(180deg,#f8fbff 0%, #f3f6fb 48%, #eef2f8 100%);
-        pointer-events:none;
+        background:linear-gradient(180deg,#f5fbff 0%, #eef4fb 48%, #eaf1f8 100%) !important;
       }
 
       .page-topbar{
@@ -553,23 +639,17 @@
         display:none !important;
       }
 
-      .container-fluid.px-0{
-        padding-left:0 !important;
-        padding-right:0 !important;
-        background:transparent !important;
-      }
-
       .mobile-flyer-wrap{
         display:block;
-        margin:-6px 0 16px 0;
+        margin:-4px 0 16px 0;
       }
 
       .flyer-shell{
-        border-radius:28px;
+        border-radius:30px;
         overflow:hidden;
         background:linear-gradient(180deg,#ffffff 0%,#f9fbff 100%);
         box-shadow:0 18px 36px rgba(15,23,42,.10);
-        border:1px solid rgba(255,255,255,.85);
+        border:1px solid rgba(255,255,255,.88);
       }
 
       .flyer-shell .carousel-item{
@@ -579,7 +659,7 @@
       .flyer-card{
         position:relative;
         overflow:hidden;
-        min-height:180px;
+        min-height:186px;
         border-radius:28px;
         padding:18px 16px;
         color:#fff;
@@ -587,15 +667,15 @@
       }
 
       .flyer-card.bg-1{
-        background:linear-gradient(135deg,#5b6cff 0%,#4169ff 45%,#00b8ff 100%);
+        background:linear-gradient(135deg,#14b8a6 0%,#06b6d4 45%,#3b82f6 100%);
       }
 
       .flyer-card.bg-2{
-        background:linear-gradient(135deg,#8b5cf6 0%,#d946ef 52%,#fb7185 100%);
+        background:linear-gradient(135deg,#8b5cf6 0%,#6366f1 52%,#06b6d4 100%);
       }
 
       .flyer-card.bg-3{
-        background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 40%,#4f46e5 100%);
+        background:linear-gradient(135deg,#0ea5e9 0%,#14b8a6 40%,#22c55e 100%);
       }
 
       .flyer-badge{
@@ -613,7 +693,7 @@
 
       .flyer-title{
         margin-top:12px;
-        font-size:1.18rem;
+        font-size:1.16rem;
         font-weight:900;
         line-height:1.25;
         letter-spacing:-.02em;
@@ -636,7 +716,7 @@
         padding:10px 14px;
         border-radius:999px;
         background:#fff;
-        color:#1d4ed8;
+        color:#0f52d6;
         text-decoration:none;
         font-weight:800;
         font-size:.84rem;
@@ -671,69 +751,16 @@
 
       .flyer-shell .carousel-indicators .active{
         width:22px;
-        background:#2563eb;
+        background:#14b8a6;
       }
 
       .glass-head{
-        border-radius:30px;
-        margin:0 0 18px 0;
-        padding:18px 16px 18px 16px;
-        background:linear-gradient(180deg,#ffffff 0%, #f8fbff 52%, #f3f7fd 100%);
-        box-shadow:0 18px 36px rgba(15,23,42,.08);
-        border:1px solid rgba(255,255,255,.85);
-        position:relative;
-        overflow:hidden;
-      }
-
-      .glass-head::before{
-        content:"";
-        position:absolute;
-        inset:0;
-        background:
-          radial-gradient(circle at top right, rgba(59,130,246,.08), transparent 24%),
-          radial-gradient(circle at top left, rgba(168,85,247,.06), transparent 18%);
-        pointer-events:none;
-      }
-
-      .glass-head::after{
-        display:none;
-      }
-
-      .app-title{
-        font-size:1.42rem;
-        margin-bottom:2px;
-        position:relative;
-        z-index:1;
-      }
-
-      .app-subtitle{
-        font-size:.98rem;
-        line-height:1.65;
-        max-width:95%;
-        position:relative;
-        z-index:1;
-      }
-
-      .summary-btn{
-        min-height:124px;
         padding:18px 16px;
-        border-radius:24px;
-        box-shadow:
-          0 16px 30px rgba(15,23,42,.11),
-          inset 0 1px 0 rgba(255,255,255,.16);
-        position:relative;
-        z-index:1;
+        border-radius:30px;
       }
 
-      .summary-value{
-        font-size:3rem;
-      }
-
-      .summary-icon{
-        font-size:52px;
-        right:14px;
-        bottom:12px;
-        opacity:.20;
+      .desktop-summary-row{
+        display:none;
       }
 
       .mobile-summary-total{
@@ -750,136 +777,46 @@
         gap:14px;
       }
 
+      .summary-btn{
+        min-height:126px;
+        border-radius:26px;
+        box-shadow:
+          0 16px 30px rgba(15,23,42,.11),
+          inset 0 1px 0 rgba(255,255,255,.16);
+      }
+
+      .summary-value{
+        font-size:3rem;
+      }
+
+      .summary-icon{
+        right:14px;
+        bottom:12px;
+        font-size:52px;
+        opacity:.18;
+      }
+
       .filter-card-modern{
         border-radius:28px;
         padding:16px 14px;
-        background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
         box-shadow:0 16px 28px rgba(15,23,42,.07);
-        border:1px solid rgba(255,255,255,.85);
-      }
-
-      .filter-card-modern .input-group,
-      .filter-card-modern select,
-      .filter-card-modern input{
-        border-radius:18px !important;
-      }
-
-      .filter-card-modern .input-group{
-        background:#f8fbff;
-        border:1px solid #eef2ff;
-        padding:2px;
-      }
-
-      .filter-card-modern .form-control,
-      .filter-card-modern .form-select,
-      .filter-card-modern .input-group-text{
-        background:transparent !important;
       }
 
       .catalog-card{
         min-width:306px;
         max-width:306px;
         flex:0 0 306px;
-        border-radius:24px;
-        box-shadow:0 16px 30px rgba(15,23,42,.08);
-      }
-
-      .catalog-card::after{
-        content:"";
-        position:absolute;
-        right:-20px;
-        top:-20px;
-        width:86px;
-        height:86px;
-        border-radius:999px;
-        background:radial-gradient(circle, rgba(59,130,246,.08) 0%, rgba(59,130,246,0) 70%);
-        pointer-events:none;
-      }
-
-      .catalog-visual{
-        background:
-          linear-gradient(135deg, rgba(29,78,216,.08), rgba(37,99,235,.02)),
-          repeating-linear-gradient(135deg, #1e40af 0 2px, transparent 2px 22px),
-          repeating-linear-gradient(45deg, #2563eb 0 2px, transparent 2px 22px);
-      }
-
-      .catalog-badge{
-        background:linear-gradient(135deg,#eef2ff 0%,#dbeafe 100%);
       }
 
       .tips-card{
         min-width:226px;
         max-width:226px;
         flex:0 0 226px;
-        border-radius:24px;
-        box-shadow:0 16px 28px rgba(15,23,42,.08);
-      }
-
-      .tips-card::before{
-        content:"";
-        position:absolute;
-        top:0;
-        left:0;
-        right:0;
-        height:4px;
-        background:linear-gradient(90deg,#3b82f6 0%,#8b5cf6 50%,#f97316 100%);
-      }
-
-      .tips-image{
-        background:
-          radial-gradient(circle at 18% 24%, rgba(251,146,60,.24), transparent 18%),
-          radial-gradient(circle at 70% 30%, rgba(37,99,235,.20), transparent 18%),
-          linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);
       }
 
       .prospect-modern-card{
-        border-radius:24px;
+        border-radius:26px;
         padding:15px;
-        box-shadow:0 14px 26px rgba(15,23,42,.06);
-        background:linear-gradient(180deg,#ffffff 0%,#fcfdff 100%);
-      }
-
-      .prospect-modern-card::before{
-        content:"";
-        position:absolute;
-        top:0;
-        left:0;
-        width:6px;
-        height:100%;
-        background:linear-gradient(180deg,#3b82f6 0%,#8b5cf6 45%,#f97316 100%);
-        opacity:.9;
-      }
-
-      .prospect-modern-card::after{
-        content:"";
-        position:absolute;
-        right:-18px;
-        bottom:-18px;
-        width:86px;
-        height:86px;
-        border-radius:999px;
-        background:radial-gradient(circle, rgba(59,130,246,.08) 0%, rgba(59,130,246,0) 72%);
-        pointer-events:none;
-      }
-
-      .prospect-name{
-        font-size:1.03rem;
-      }
-
-      .prospect-meta{
-        font-size:.86rem;
-        line-height:1.65;
-      }
-
-      .section-title-modern{
-        font-size:1.24rem;
-        margin-bottom:14px;
-        padding-left:2px;
-      }
-
-      .empty-mini-card{
-        border-radius:24px;
-        background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
       }
 
       .mobile-fab-add{
@@ -895,8 +832,8 @@
         justify-content:center;
         color:#fff;
         text-decoration:none;
-        background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%);
-        box-shadow:0 18px 30px rgba(37,99,235,.32);
+        background:linear-gradient(135deg,#14b8a6 0%,#3b82f6 100%);
+        box-shadow:0 18px 30px rgba(37,99,235,.28);
       }
 
       .mobile-fab-add i{
@@ -1133,6 +1070,21 @@
         elseif($p->status === 'CLOSING') $statusClass = 'status-closing';
 
         $produkClass = $this->getProdukClass($p->jenis_produk);
+
+        $openDays = null;
+        $openAgeClass = 'open-age-green';
+
+        if (strtoupper((string) $p->status) === 'OPEN' && !empty($p->tanggal_prospek)) {
+          $openDays = \Illuminate\Support\Carbon::parse($p->tanggal_prospek)->startOfDay()->diffInDays(now()->startOfDay());
+
+          if ($openDays <= 7) {
+            $openAgeClass = 'open-age-green';
+          } elseif ($openDays <= 14) {
+            $openAgeClass = 'open-age-yellow';
+          } else {
+            $openAgeClass = 'open-age-red';
+          }
+        }
       @endphp
 
       <div class="prospect-modern-card" wire:key="prospect-card-{{ $p->id }}">
@@ -1140,9 +1092,18 @@
           <div class="flex-grow-1">
             <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
               <div class="prospect-name">{{ $p->nama }}</div>
-              <span class="badge-soft {{ $statusClass }}">
-                {{ $p->status ?: '-' }}
-              </span>
+              <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="badge-soft {{ $statusClass }}">
+                  {{ $p->status ?: '-' }}
+                </span>
+
+                @if(!is_null($openDays))
+                  <span class="open-age-badge {{ $openAgeClass }}">
+                    <i class="bi bi-clock-history"></i>
+                    {{ $openDays }} hari open
+                  </span>
+                @endif
+              </div>
             </div>
 
             <div class="prospect-meta">

@@ -24,6 +24,7 @@ use App\Http\Controllers\AuditLogExportController;
 use App\Livewire\Reports\ProspectRecap as ProspectRecapReport;
 use App\Livewire\Contents\Manager as ContentManager;
 use App\Livewire\Contents\Show as ContentShow;
+use App\Livewire\SimulasiKredit\Index as SimulasiKreditIndex;
 
 // Homepage
 Route::get('/', function () {
@@ -132,6 +133,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/prospects-diajukan', ProspectsSubmissions::class)
         ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL')
         ->name('prospects.submissions');
+
+    // ===== SIMULASI KREDIT =====
+    Route::get('/simulasi-kredit', SimulasiKreditIndex::class)
+        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->name('simulasi-kredit.index');
 
     // ===== RECYCLE BIN =====
     Route::get('/recycle-bin/prospects', ProspectsRecycle::class)
