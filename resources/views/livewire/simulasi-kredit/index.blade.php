@@ -81,11 +81,19 @@
 
             <div class="col-12">
               <label class="form-label fw-semibold">Plafon Kredit</label>
-              <input type="text"
-                     class="form-control"
-                     wire:model.live="plafon"
-                     inputmode="numeric"
-                     placeholder="Masukkan plafon, contoh 50000000">
+
+              <input type="hidden" id="plafon_hidden" wire:model.live="plafon">
+
+              <input
+                type="text"
+                class="form-control"
+                id="plafon_display"
+                inputmode="numeric"
+                placeholder="Rp. 0"
+                autocomplete="off"
+                value="{{ $plafon ? 'Rp. ' . number_format((float)$plafon, 0, ',', '.') : '' }}"
+              >
+
               <div class="small text-muted mt-1">
                 Min {{ 'Rp ' . number_format($plafonMinProduk, 0, ',', '.') }}
                 •
@@ -95,18 +103,14 @@
 
             <div class="col-12">
               <label class="form-label fw-semibold">Jangka Waktu</label>
-              <select class="form-select" wire:model.live="jangka_waktu">
+              <select class="form-select"
+                      wire:key="tenor-{{ $produk }}"
+                      wire:model.live="jangka_waktu">
                 <option value="">-- Pilih Jangka Waktu --</option>
                 @foreach($tenorOptions as $tenor)
                   <option value="{{ $tenor['id'] }}">{{ $tenor['label'] }}</option>
                 @endforeach
               </select>
-            </div>
-
-            <div class="col-12 d-grid">
-              <button type="button" class="btn btn-primary rounded-pill py-2" wire:click="hitung">
-                Hitung Simulasi
-              </button>
             </div>
 
             @if($catatan)
@@ -192,4 +196,39 @@
       </div>
     </div>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      function formatRupiah(angka) {
+        angka = (angka || '').toString().replace(/\D/g, '');
+        if (!angka) return '';
+        return 'Rp. ' + new Intl.NumberFormat('id-ID').format(angka);
+      }
+
+      function initPlafonInput() {
+        const display = document.getElementById('plafon_display');
+        const hidden  = document.getElementById('plafon_hidden');
+
+        if (!display || !hidden) return;
+
+        display.addEventListener('input', function () {
+          const raw = this.value.replace(/\D/g, '');
+          this.value = formatRupiah(raw);
+          hidden.value = raw;
+          hidden.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        display.addEventListener('blur', function () {
+          const raw = this.value.replace(/\D/g, '');
+          this.value = formatRupiah(raw);
+        });
+      }
+
+      initPlafonInput();
+
+      document.addEventListener('livewire:navigated', function () {
+        initPlafonInput();
+      });
+    });
+  </script>
 </div>

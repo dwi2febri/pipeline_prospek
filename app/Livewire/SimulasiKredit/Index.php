@@ -36,6 +36,9 @@ class Index extends Component
     {
         $this->produkOptions = $this->getProdukConfig();
         $this->refreshTenorOptions();
+        $this->produk = 'KMB';
+        $this->plafon = '';
+        $this->jangka_waktu = '';
         $this->hitung();
     }
 
@@ -378,7 +381,7 @@ class Index extends Component
         $this->resetHasil();
 
         $plafon = (float) preg_replace('/[^0-9]/', '', (string) $this->plafon);
-        $tenor = (int) $this->jangka_waktu;
+        $tenor  = (int) $this->jangka_waktu;
         $produk = $this->findProduk($this->produk);
 
         if (!$produk || $plafon <= 0 || $tenor <= 0) {
@@ -435,11 +438,6 @@ class Index extends Component
         if (!empty($rule['catatan'])) {
             $this->catatan = trim(($this->catatan ? $this->catatan . ' ' : '') . $rule['catatan']);
         }
-    }
-
-    protected function formatRupiah(float $value): string
-    {
-        return 'Rp ' . number_format($value, 0, ',', '.');
     }
 
     public function render()
