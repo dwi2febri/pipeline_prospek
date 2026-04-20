@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProspectController;
@@ -16,6 +17,33 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
 
+        // ===== SAVE FCM TOKEN =====
+        Route::post('/me/fcm-token', function (Request $request) {
+            $request->validate([
+                'token' => ['required', 'string'],
+            ]);
+
+            $user = $request->user();
+            $user->fcm_token = $request->token;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'FCM token berhasil disimpan.',
+            ]);
+        });
+
+        Route::delete('/me/fcm-token', function (Request $request) {
+            $user = $request->user();
+            $user->fcm_token = null;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'FCM token berhasil dihapus.',
+            ]);
+        });
+
         // ===== PROSPECTS =====
         Route::get('/prospects/summary', [ProspectController::class, 'summary']);
         Route::get('/prospects', [ProspectController::class, 'index']);
@@ -27,7 +55,7 @@ Route::prefix('v1')->group(function () {
 
         // ===== PROSPECT DOCUMENTS (FOTO) =====
         Route::get('/prospects/{id}/documents', [ProspectDocumentController::class, 'index']);
-        Route::post('/prospects/{id}/documents', [ProspectDocumentController::class, 'store']); // multipart
+        Route::post('/prospects/{id}/documents', [ProspectDocumentController::class, 'store']);
         Route::delete('/prospect-documents/{docId}', [ProspectDocumentController::class, 'destroy']);
 
         // ===== CABANGS =====
@@ -36,9 +64,9 @@ Route::prefix('v1')->group(function () {
         Route::put('/cabangs/{id}', [CabangController::class, 'update']);
         Route::patch('/cabangs/{id}/toggle', [CabangController::class, 'toggle']);
         Route::get('/cabangs/template', [CabangController::class, 'downloadTemplate']);
-        Route::post('/cabangs/import', [CabangController::class, 'import']); // multipart csv
+        Route::post('/cabangs/import', [CabangController::class, 'import']);
 
-        // ===== USERS (ADMIN only enforced inside controller) =====
+        // ===== USERS =====
         Route::get('/users', [UserController::class, 'index']);
         Route::post('/users', [UserController::class, 'store']);
         Route::put('/users/{id}', [UserController::class, 'update']);

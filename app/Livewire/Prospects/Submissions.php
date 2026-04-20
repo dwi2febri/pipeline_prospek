@@ -6,6 +6,7 @@ use App\Models\Cabang;
 use App\Models\Prospect;
 use App\Models\ProspectNotification;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -275,7 +276,7 @@ class Submissions extends Component
             ->where('role', 'AO')
             ->orderBy('name');
 
-        $selects = ['id', 'name', 'nama_lengkap', 'role'];
+        $selects = ['id', 'name', 'nama_lengkap', 'role', 'fcm_token'];
 
         if (Schema::hasColumn('users', 'job_position')) {
             $selects[] = 'job_position';
@@ -381,7 +382,7 @@ class Submissions extends Component
 
         $ao = User::query()
             ->where('name', $usernameAo)
-            ->first(['id', 'name', 'nama_lengkap']);
+            ->first(['id', 'name', 'nama_lengkap', 'fcm_token']);
 
         if (!$ao) {
             return;
@@ -402,6 +403,124 @@ class Submissions extends Component
             'status'      => 'ditugaskan',
             'read_at'     => null,
         ]);
+
+        $this->kirimPushFcmPenugasanAo($ao, $prospect);
+    }
+
+    protected function base64UrlEncode(string $data): string
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    protected function getFirebaseServiceAccount(): ?array
+    {
+        $path = storage_path('app/firebase/service-account.json');
+
+        if (!file_exists($path)) {
+            return null;
+        }
+
+        $json = json_decode(file_get_contents($path), true);
+
+        return is_array($json) ? $json : null;
+    }
+
+    protected function getGoogleAccessToken(): ?string
+    {
+        $serviceAccount = $this->getFirebaseServiceAccount();
+
+        if (!$serviceAccount || empty($serviceAccount['client_email']) || empty($serviceAccount['private_key'])) {
+            return null;
+        }
+
+        $now = time();
+
+        $header = [
+            'alg' => 'RS256',
+            'typ' => 'JWT',
+        ];
+
+        $claimSet = [
+            'iss'   => $serviceAccount['client_email'],
+            'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+            'aud'   => 'https://oauth2.googleapis.com/token',
+            'exp'   => $now + 3600,
+            'iat'   => $now,
+        ];
+
+        $base64Header = $this->base64UrlEncode(json_encode($header));
+        $base64Claim  = $this->base64UrlEncode(json_encode($claimSet));
+        $unsignedJwt  = $base64Header . '.' . $base64Claim;
+
+        $signature = '';
+        $ok = openssl_sign($unsignedJwt, $signature, $serviceAccount['private_key'], 'SHA256');
+
+        if (!$ok) {
+            return null;
+        }
+
+        $jwt = $unsignedJwt . '.' . $this->base64UrlEncode($signature);
+
+        $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'assertion'  => $jwt,
+        ]);
+
+        if (!$response->successful()) {
+            return null;
+        }
+
+        return $response->json('access_token');
+    }
+
+    protected function kirimPushFcmPenugasanAo(User $ao, Prospect $prospect): void
+    {
+        if (empty($ao->fcm_token)) {
+            return;
+        }
+
+        $serviceAccount = $this->getFirebaseServiceAccount();
+        if (!$serviceAccount || empty($serviceAccount['project_id'])) {
+            return;
+        }
+
+        $accessToken = $this->getGoogleAccessToken();
+        if (!$accessToken) {
+            return;
+        }
+
+        $url = 'https://fcm.googleapis.com/v1/projects/' . $serviceAccount['project_id'] . '/messages:send';
+
+        $payload = [
+            'message' => [
+                'token' => $ao->fcm_token,
+                'notification' => [
+                    'title' => 'Prospek Ditugaskan',
+                    'body'  => 'Anda ditugaskan untuk menindaklanjuti prospek: ' . ($prospect->nama ?? '-') . '.',
+                ],
+                'data' => [
+                    'type' => 'prospect_assignment',
+                    'prospect_id' => (string) $prospect->id,
+                    'title' => 'Prospek Ditugaskan',
+                    'message' => 'Anda ditugaskan untuk menindaklanjuti prospek: ' . ($prospect->nama ?? '-') . '.',
+                ],
+                'android' => [
+                    'priority' => 'high',
+                    'notification' => [
+                        'channel_id' => 'eprospek_channel',
+                        'sound' => 'default',
+                    ],
+                ],
+            ],
+        ];
+
+        try {
+            Http::withToken($accessToken)
+                ->acceptJson()
+                ->post($url, $payload);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     public function assignProspect(int $prospectId, string $username): void
