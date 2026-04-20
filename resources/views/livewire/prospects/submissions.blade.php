@@ -850,11 +850,26 @@
                         <div class="detail-value">{{ $detail->no_hp ?: '-' }}</div>
 
                         @if(!empty($detail->no_hp) && !empty($waNumber))
-                          <a href="https://wa.me/{{ $waNumber }}"
-                             target="_blank"
-                             class="btn-wa-modern">
+                        <a href="javascript:void(0)"
+                            onclick="
+                            var phone = '{{ $waNumber }}';
+                            var text = encodeURIComponent('Halo');
+                            var isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+
+                            if (isMobile) {
+                                window.location.href = 'whatsapp://send?phone=' + phone + '&text=' + text;
+
+                                setTimeout(function () {
+                                window.location.href = 'https://wa.me/' + phone + '?text=' + text;
+                                }, 1200);
+                            } else {
+                                window.open('https://wa.me/' + phone + '?text=' + text, '_blank');
+                            }
+                            return false;
+                            "
+                            class="btn-wa-modern">
                             <i class="bi bi-whatsapp"></i> WA
-                          </a>
+                        </a>
                         @endif
                       </div>
                     </div>

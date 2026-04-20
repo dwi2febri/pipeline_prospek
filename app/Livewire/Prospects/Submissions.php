@@ -209,7 +209,7 @@ class Submissions extends Component
 
         $user = User::query()
             ->where('name', $username)
-            ->first(['name', 'nama_lengkap']);
+            ->first(['id', 'name', 'nama_lengkap']);
 
         if (!$user) {
             return $username;
@@ -275,7 +275,7 @@ class Submissions extends Component
             ->where('role', 'AO')
             ->orderBy('name');
 
-        $selects = ['name', 'nama_lengkap', 'role'];
+        $selects = ['id', 'name', 'nama_lengkap', 'role'];
 
         if (Schema::hasColumn('users', 'job_position')) {
             $selects[] = 'job_position';
@@ -297,6 +297,7 @@ class Submissions extends Component
                 $namaPegawai = (string) ($u->nama_lengkap ?: $u->name ?: '-');
 
                 return [
+                    'id'           => (int) $u->id,
                     'username'     => (string) $u->name,
                     'nama_lengkap' => $namaPegawai,
                     'job_position' => $job,
@@ -370,6 +371,39 @@ class Submissions extends Component
         return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
     }
 
+    protected function kirimNotifPenugasanAo(Prospect $prospect, string $usernameAo): void
+    {
+        $usernameAo = trim($usernameAo);
+
+        if ($usernameAo === '') {
+            return;
+        }
+
+        $ao = User::query()
+            ->where('name', $usernameAo)
+            ->first(['id', 'name', 'nama_lengkap']);
+
+        if (!$ao) {
+            return;
+        }
+
+        ProspectNotification::query()
+            ->where('user_id', $ao->id)
+            ->where('prospect_id', $prospect->id)
+            ->where('status', 'ditugaskan')
+            ->whereNull('read_at')
+            ->delete();
+
+        ProspectNotification::create([
+            'user_id'     => $ao->id,
+            'prospect_id' => $prospect->id,
+            'title'       => 'Prospek Ditugaskan',
+            'message'     => 'Anda ditugaskan untuk menindaklanjuti prospek: ' . ($prospect->nama ?? '-') . '.',
+            'status'      => 'ditugaskan',
+            'read_at'     => null,
+        ]);
+    }
+
     public function assignProspect(int $prospectId, string $username): void
     {
         $role = $this->currentUserRole();
@@ -407,6 +441,8 @@ class Submissions extends Component
         }
 
         $prospect->save();
+
+        $this->kirimNotifPenugasanAo($prospect, $username);
 
         $this->takenByUsername = $prospect->diambil_oleh;
         $this->takenByFullName = $this->getNamaLengkapUserByUsername($prospect->diambil_oleh);
@@ -656,13 +692,11 @@ class Submissions extends Component
             in_array($newStatus, ['CLOSING', 'REJECTED'], true) &&
             !empty($p->input_by)
         ) {
-            $statusLabel = $newStatus === 'CLOSING' ? 'Closing' : 'Rejected';
-
             ProspectNotification::create([
                 'user_id'     => $p->input_by,
                 'prospect_id' => $p->id,
                 'title'       => 'Status prospek diperbarui',
-                'message'     => 'Prospek "' . ($p->nama ?: '-') . '" diubah menjadi ' . $statusLabel . '.',
+                'message'     => 'Prospek "' . ($p->nama ?: '-') . '" diubah menjadi ' . ($newStatus === 'CLOSING' ? 'Closing' : 'Rejected') . '.',
                 'status'      => $newStatus,
             ]);
         }
