@@ -850,26 +850,31 @@
                         <div class="detail-value">{{ $detail->no_hp ?: '-' }}</div>
 
                         @if(!empty($detail->no_hp) && !empty($waNumber))
-                        <a href="javascript:void(0)"
-                            onclick="
-                            var phone = '{{ $waNumber }}';
-                            var text = encodeURIComponent('Halo');
-                            var isMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+                            <a href="https://wa.me/{{ $waNumber }}?text=Halo"
+                                class="btn-wa-modern"
+                                onclick="
+                                var phone = '{{ $waNumber }}';
+                                var text = 'Halo';
+                                var isAndroid = /Android/i.test(navigator.userAgent);
+                                var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-                            if (isMobile) {
-                                window.location.href = 'whatsapp://send?phone=' + phone + '&text=' + text;
+                                if (isAndroid) {
+                                    window.location.href = 'intent://send?phone=' + phone + '&text=' + encodeURIComponent(text) + '#Intent;scheme=smsto;package=com.whatsapp;action=android.intent.action.SENDTO;end';
+                                    setTimeout(function () {
+                                    window.location.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
+                                    }, 1200);
+                                    return false;
+                                }
 
-                                setTimeout(function () {
-                                window.location.href = 'https://wa.me/' + phone + '?text=' + text;
-                                }, 1200);
-                            } else {
-                                window.open('https://wa.me/' + phone + '?text=' + text, '_blank');
-                            }
-                            return false;
-                            "
-                            class="btn-wa-modern">
-                            <i class="bi bi-whatsapp"></i> WA
-                        </a>
+                                if (isIOS) {
+                                    window.location.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
+                                    return false;
+                                }
+
+                                return true;
+                                ">
+                                <i class="bi bi-whatsapp"></i> WA
+                            </a>
                         @endif
                       </div>
                     </div>
