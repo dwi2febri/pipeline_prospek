@@ -851,13 +851,13 @@
 
 
                         @if(!empty($detail->no_hp) && !empty($waNumber))
-                            <a href="https://api.whatsapp.com/send?phone={{ $waNumber }}&text={{ urlencode('') }}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="btn-wa-modern">
-                                <i class="bi bi-whatsapp"></i> WA
-                            </a>
-                        @endif
+    <a href="https://api.whatsapp.com/send?phone={{ $waNumber }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="btn-wa-modern">
+        <i class="bi bi-whatsapp"></i> WA
+    </a>
+@endif
                       </div>
                     </div>
 
