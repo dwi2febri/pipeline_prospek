@@ -849,30 +849,12 @@
                       <div class="d-flex flex-wrap align-items-center gap-2">
                         <div class="detail-value">{{ $detail->no_hp ?: '-' }}</div>
 
+
                         @if(!empty($detail->no_hp) && !empty($waNumber))
-                            <a href="https://wa.me/{{ $waNumber }}?text=Halo"
-                                class="btn-wa-modern"
-                                onclick="
-                                var phone = '{{ $waNumber }}';
-                                var text = 'Halo';
-                                var isAndroid = /Android/i.test(navigator.userAgent);
-                                var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-                                if (isAndroid) {
-                                    window.location.href = 'intent://send?phone=' + phone + '&text=' + encodeURIComponent(text) + '#Intent;scheme=smsto;package=com.whatsapp;action=android.intent.action.SENDTO;end';
-                                    setTimeout(function () {
-                                    window.location.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
-                                    }, 1200);
-                                    return false;
-                                }
-
-                                if (isIOS) {
-                                    window.location.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
-                                    return false;
-                                }
-
-                                return true;
-                                ">
+                            <a href="https://api.whatsapp.com/send?phone={{ $waNumber }}&text={{ urlencode('') }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn-wa-modern">
                                 <i class="bi bi-whatsapp"></i> WA
                             </a>
                         @endif
