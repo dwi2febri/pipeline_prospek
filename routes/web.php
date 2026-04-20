@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 use App\Livewire\Dashboard\Index as DashboardIndex;
 
@@ -101,6 +102,34 @@ Route::get('/api-wilayah/villages/{districtId}', function ($districtId) {
 
 // Semua halaman aplikasi harus login
 Route::middleware(['auth'])->group(function () {
+
+    // ===== SAVE FCM TOKEN DARI WEBVIEW ANDROID =====
+// ===== SAVE FCM TOKEN DARI WEBVIEW ANDROID =====
+Route::post('/mobile/save-fcm-token', function () {
+    request()->validate([
+        'token' => ['required', 'string'],
+    ]);
+
+    $user = Auth::guard('web')->user();
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthenticated.',
+        ], 401);
+    }
+
+    \App\Models\User::where('id', $user->id)->update([
+        'fcm_token' => request()->input('token'),
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'FCM token berhasil disimpan.',
+        'user_id' => $user->id,
+        'username' => $user->name,
+    ]);
+})->name('mobile.save-fcm-token');
 
     // ===== DASHBOARD =====
     Route::get('/dashboard', DashboardIndex::class)
