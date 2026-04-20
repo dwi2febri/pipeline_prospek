@@ -407,6 +407,40 @@ class Submissions extends Component
         $this->kirimPushFcmPenugasanAo($ao, $prospect);
     }
 
+    protected function kirimNotifStatusKePengaju(Prospect $prospect, string $newStatus): void
+    {
+        if (empty($prospect->input_by)) {
+            return;
+        }
+
+        $statusUpper = strtoupper(trim($newStatus));
+
+        $labelStatus = match ($statusUpper) {
+            'FOLLOW UP' => 'Follow Up',
+            'CLOSING'   => 'Closing',
+            'REJECTED'  => 'Rejected',
+            default     => $statusUpper,
+        };
+
+        $message = 'Prospek "' . ($prospect->nama ?: '-') . '" diubah menjadi ' . $labelStatus . '.';
+
+        ProspectNotification::query()
+            ->where('user_id', (int) $prospect->input_by)
+            ->where('prospect_id', $prospect->id)
+            ->where('status', $statusUpper)
+            ->whereNull('read_at')
+            ->delete();
+
+        ProspectNotification::create([
+            'user_id'     => (int) $prospect->input_by,
+            'prospect_id' => $prospect->id,
+            'title'       => 'Status prospek diperbarui',
+            'message'     => $message,
+            'status'      => $statusUpper,
+            'read_at'     => null,
+        ]);
+    }
+
     protected function base64UrlEncode(string $data): string
     {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
@@ -808,16 +842,9 @@ class Submissions extends Component
 
         if (
             $oldStatus !== $newStatus &&
-            in_array($newStatus, ['CLOSING', 'REJECTED'], true) &&
-            !empty($p->input_by)
+            in_array($newStatus, ['FOLLOW UP', 'CLOSING', 'REJECTED'], true)
         ) {
-            ProspectNotification::create([
-                'user_id'     => $p->input_by,
-                'prospect_id' => $p->id,
-                'title'       => 'Status prospek diperbarui',
-                'message'     => 'Prospek "' . ($p->nama ?: '-') . '" diubah menjadi ' . ($newStatus === 'CLOSING' ? 'Closing' : 'Rejected') . '.',
-                'status'      => $newStatus,
-            ]);
+            $this->kirimNotifStatusKePengaju($p, $newStatus);
         }
 
         session()->flash('ok', 'Status prospek berhasil diperbarui.');
@@ -841,6 +868,7 @@ class Submissions extends Component
         $role = $this->currentUserRole();
 
         $p = Prospect::findOrFail($this->detailId);
+        $oldStatus = (string) $p->status;
 
         $allowedProduk = $this->getAllowedProdukByUser();
         if (!empty($allowedProduk) && !in_array((string) $p->jenis_produk, $allowedProduk, true)) {
@@ -879,6 +907,13 @@ class Submissions extends Component
         }
 
         $p->save();
+
+        if (
+            $oldStatus !== (string) $p->status &&
+            in_array((string) $p->status, ['FOLLOW UP', 'CLOSING', 'REJECTED'], true)
+        ) {
+            $this->kirimNotifStatusKePengaju($p, (string) $p->status);
+        }
 
         $this->takenByUsername = $p->diambil_oleh;
         $this->takenByFullName = $this->getNamaLengkapUserByUsername($p->diambil_oleh);
