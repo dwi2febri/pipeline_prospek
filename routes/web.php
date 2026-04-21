@@ -197,14 +197,16 @@ Route::post('/mobile/save-fcm-token', function () {
 
     // ===== TEMPLATE CSV USER =====
     Route::get('/users/template', function () {
-        $filename = 'template_users.csv';
+    $filename = 'template_users.csv';
 
-        $header = "username;password;nama_lengkap;role;id_cabang;job_posisi\n";
-        $example =
-            "admin2;password;Administrator;ADMIN;29;ADMIN\n" .
-            "102-004;password;SAIFUL AZIS NASUTION, SH;PEGAWAI;31;Kepala Kantor Wilayah\n" .
-            "102-029;password;YUSUF MAHENDRA, S.Ak., M.M.;PEGAWAI;31;Residen Kepatuhan\n" .
-            "103-017;password;DIAH NUR HAYATI, SE;PEGAWAI;32;Kepala Kantor Wilayah\n";
+    $header = "kode;employee_id;full_name;branch_name;unit_kerja;job_position;level;group_jabatan\n";
+
+    $example =
+        "000;130-024;HASTONI SAPTO RENGGO, SE;Kantor Wilayah Banyumas;Area Kantor Wilayah;Residen Manajemen Risiko;Kepala Sub Bidang;PS\n" .
+        "000;128-063;KARTIKA PANDU FILANDU, S.Pd;Kantor Wilayah Banyumas;Area Kantor Wilayah;Residen Analis Kredit;Kepala Sub Bidang;PS\n" .
+        "000;127-019;NOVI TRI UTAMI, S.Pd;Kantor Wilayah Banyumas;Area Kantor Wilayah;Staf Administrasi Kantor Wilayah;Staf;Staf\n" .
+        "000;137-042;ARIF SUPRAYOGO, S.Kom;Kantor Wilayah Pekalongan;Area Kantor Wilayah;Residen Analis Kredit;Kepala Sub Bidang;PS\n" .
+        "000;102-089;IFAL ALEXIS HIDAYATULLAH, S.E;Kantor Wilayah Pekalongan;Area Kantor Wilayah;Residen Manajemen Risiko;Kepala Sub Bidang;PS\n";
 
         return response()->streamDownload(function () use ($header, $example) {
             echo $header;

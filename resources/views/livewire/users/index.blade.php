@@ -168,7 +168,6 @@
     {{ $items->links() }}
   </div>
 
-  <!-- Modal Import CSV Users -->
   <div class="modal fade" id="modalImportUsers" tabindex="-1" aria-labelledby="modalImportUsersLabel" aria-hidden="true" wire:ignore.self>
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0" style="border-radius:20px; overflow:hidden;">
@@ -184,9 +183,9 @@
           <div class="alert alert-light border rounded-4 mb-3">
             <div class="fw-semibold mb-1">Format CSV</div>
             <div class="small text-muted">
-              Header: <code>username;password;nama_lengkap;role;id_cabang;job_posisi</code><br>
-              Role valid: <b>ADMIN</b>, <b>MANAJEMEN</b>, <b>SUPERVISOR</b>, <b>AO</b>, <b>PEGAWAI</b><br>
-              Jika username / nama_lengkap sudah ada, data akan <b>diupdate</b>.
+              Header: <code>kode;employee_id;full_name;branch_name;unit_kerja;job_position;level;group_jabatan</code><br>
+              Role otomatis ditentukan dari <b>level</b> dan <b>job_position</b>.<br>
+              Jika <b>nama_lengkap</b> sudah ada di tabel users, data akan <b>diupdate</b>. Jika belum ada, data akan <b>ditambahkan</b>.
             </div>
           </div>
 
@@ -237,12 +236,49 @@
   </style>
 
   <script>
+    function cleanupImportUsersModal() {
+      const modalEl = document.getElementById('modalImportUsers');
+
+      if (modalEl) {
+        modalEl.classList.remove('show');
+        modalEl.style.display = 'none';
+        modalEl.setAttribute('aria-hidden', 'true');
+        modalEl.removeAttribute('aria-modal');
+      }
+
+      document.querySelectorAll('.modal-backdrop').forEach(function(backdrop) {
+        backdrop.remove();
+      });
+
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('padding-right');
+    }
+
     document.addEventListener('livewire:init', function () {
       Livewire.on('closeImportUsersModal', function () {
         const modalEl = document.getElementById('modalImportUsers');
-        const modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) modal.hide();
+
+        if (modalEl) {
+          let modal = bootstrap.Modal.getInstance(modalEl);
+
+          if (!modal) {
+            modal = new bootstrap.Modal(modalEl);
+          }
+
+          modal.hide();
+        }
+
+        setTimeout(function () {
+          cleanupImportUsersModal();
+        }, 300);
       });
+    });
+
+    document.addEventListener('hidden.bs.modal', function (event) {
+      if (event.target && event.target.id === 'modalImportUsers') {
+        cleanupImportUsersModal();
+      }
     });
   </script>
 </div>
