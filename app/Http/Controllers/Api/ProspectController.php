@@ -23,11 +23,11 @@ class ProspectController extends Controller
         }
 
         $data = [
-            'total'           => (clone $q)->count(),
-            'BELUM_BERMINAT'  => (clone $q)->where('status', 'BELUM_BERMINAT')->count(),
-            'BERMINAT'        => (clone $q)->where('status', 'BERMINAT')->count(),
-            'TIDAK_BERMINAT'  => (clone $q)->where('status', 'TIDAK_BERMINAT')->count(),
-            'CLOSING'         => (clone $q)->where('status', 'CLOSING')->count(),
+            'total'      => (clone $q)->count(),
+            'OPEN'       => (clone $q)->where('status', 'OPEN')->count(),
+            'FOLLOW_UP'  => (clone $q)->where('status', 'FOLLOW UP')->count(),
+            'CLOSING'    => (clone $q)->where('status', 'CLOSING')->count(),
+            'REJECTED'   => (clone $q)->where('status', 'REJECTED')->count(),
         ];
 
         return response()->json([
@@ -44,12 +44,10 @@ class ProspectController extends Controller
             $q->whereNull('deleted_at');
         }
 
-        // optional filter status
         if ($r->filled('status')) {
             $q->where('status', $r->query('status'));
         }
 
-        // optional filter search
         if ($r->filled('search')) {
             $s = '%' . trim($r->query('search')) . '%';
             $q->where(function ($w) use ($s) {
@@ -62,12 +60,10 @@ class ProspectController extends Controller
             });
         }
 
-        // optional filter cabang
         if ($r->filled('cabang_id')) {
             $q->where('cabang_id', (int) $r->query('cabang_id'));
         }
 
-        // tampilkan semua data, tanpa pagination, tanpa filter periode default
         $items = $q->orderByDesc('tanggal_prospek')
                    ->orderByDesc('id')
                    ->get();
@@ -110,13 +106,13 @@ class ProspectController extends Controller
             'jenis_usaha'      => ['nullable', 'string', 'max:60'],
             'keterangan_usaha' => ['nullable', 'string'],
             'jenis_produk'     => ['required', 'in:TABUNGAN,DEPOSITO,KREDIT,ASET'],
-            'status'           => ['nullable', 'in:BELUM_BERMINAT,BERMINAT,TIDAK_BERMINAT,CLOSING'],
+            'status'           => ['nullable', 'in:OPEN,FOLLOW UP,CLOSING,REJECTED'],
             'catatan'          => ['nullable', 'string'],
             'cabang_id'        => ['required', 'integer', 'exists:cabangs,id'],
         ]);
 
         if (empty($data['status'])) {
-            $data['status'] = 'BELUM_BERMINAT';
+            $data['status'] = 'OPEN';
         }
 
         $p = new Prospect();
@@ -151,13 +147,13 @@ class ProspectController extends Controller
             'jenis_usaha'      => ['nullable', 'string', 'max:60'],
             'keterangan_usaha' => ['nullable', 'string'],
             'jenis_produk'     => ['required', 'in:TABUNGAN,DEPOSITO,KREDIT,ASET'],
-            'status'           => ['nullable', 'in:BELUM_BERMINAT,BERMINAT,TIDAK_BERMINAT,CLOSING'],
+            'status'           => ['nullable', 'in:OPEN,FOLLOW UP,CLOSING,REJECTED'],
             'catatan'          => ['nullable', 'string'],
             'cabang_id'        => ['required', 'integer', 'exists:cabangs,id'],
         ]);
 
         if (empty($data['status'])) {
-            $data['status'] = $p->status ?: 'BELUM_BERMINAT';
+            $data['status'] = $p->status ?: 'OPEN';
         }
 
         $p->fill($data);
