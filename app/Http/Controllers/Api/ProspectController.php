@@ -5,90 +5,94 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Prospect;
-use App\Support\Role;
+use Illuminate\Support\Facades\Schema;
 
 class ProspectController extends Controller
 {
-    private function baseScope(Request $r)
+    private function baseScope()
     {
-        $u = $r->user();
-        $q = Prospect::query()->with(['cabang','creator']);
-
-        // Akses:
-        if (Role::isCabang($u)) {
-            $q->where('cabang_id', (int)$u->cabang_id);
-        } elseif (Role::isPegawaiOrAO($u)) {
-            $q->where('input_by', (int)$u->id);
-        }
-        return $q;
+        return Prospect::query()->with(['cabang', 'creator']);
     }
 
     public function summary(Request $r)
     {
-        $q = $this->baseScope($r);
+        $q = $this->baseScope();
 
-        // periode optional
-        $periode = $r->query('periode', 'bulan_ini');
-        if ($periode === 'hari_ini') {
-            $q->whereDate('tanggal_prospek', now()->toDateString());
-        } elseif ($periode === 'bulan_ini') {
-            $q->whereMonth('tanggal_prospek', now()->month)
-              ->whereYear('tanggal_prospek', now()->year);
+        if (Schema::hasColumn('prospects', 'deleted_at')) {
+            $q->whereNull('deleted_at');
         }
 
-        $clone = clone $q;
         $data = [
-            'BELUM_BERMINAT' => (clone $clone)->where('status','BELUM_BERMINAT')->count(),
-            'BERMINAT'       => (clone $clone)->where('status','BERMINAT')->count(),
-            'TIDAK_BERMINAT' => (clone $clone)->where('status','TIDAK_BERMINAT')->count(),
-            'CLOSING'        => (clone $clone)->where('status','CLOSING')->count(),
+            'total'           => (clone $q)->count(),
+            'BELUM_BERMINAT'  => (clone $q)->where('status', 'BELUM_BERMINAT')->count(),
+            'BERMINAT'        => (clone $q)->where('status', 'BERMINAT')->count(),
+            'TIDAK_BERMINAT'  => (clone $q)->where('status', 'TIDAK_BERMINAT')->count(),
+            'CLOSING'         => (clone $q)->where('status', 'CLOSING')->count(),
         ];
 
-        return response()->json(['ok'=>true,'summary'=>$data]);
+        return response()->json([
+            'ok' => true,
+            'summary' => $data
+        ]);
     }
 
     public function index(Request $r)
     {
-        $q = $this->baseScope($r);
+        $q = $this->baseScope();
 
-        // filter status
+        if (Schema::hasColumn('prospects', 'deleted_at')) {
+            $q->whereNull('deleted_at');
+        }
+
+        // optional filter status
         if ($r->filled('status')) {
             $q->where('status', $r->query('status'));
         }
 
-        // periode
-        $periode = $r->query('periode', 'bulan_ini');
-        if ($periode === 'hari_ini') {
-            $q->whereDate('tanggal_prospek', now()->toDateString());
-        } elseif ($periode === 'bulan_ini') {
-            $q->whereMonth('tanggal_prospek', now()->month)
-              ->whereYear('tanggal_prospek', now()->year);
-        }
-
-        // search
+        // optional filter search
         if ($r->filled('search')) {
-            $s = '%' . $r->query('search') . '%';
-            $q->where(function($w) use ($s){
-                $w->where('nama','like',$s)
-                  ->orWhere('no_hp','like',$s)
-                  ->orWhere('nik','like',$s);
+            $s = '%' . trim($r->query('search')) . '%';
+            $q->where(function ($w) use ($s) {
+                $w->where('nama', 'like', $s)
+                  ->orWhere('no_hp', 'like', $s)
+                  ->orWhere('nik', 'like', $s)
+                  ->orWhere('alamat', 'like', $s)
+                  ->orWhere('jenis_produk', 'like', $s)
+                  ->orWhere('status', 'like', $s);
             });
         }
 
-        // pagination
-        $perPage = (int)($r->query('per_page', 10));
-        if ($perPage < 1) $perPage = 10;
-        if ($perPage > 50) $perPage = 50;
+        // optional filter cabang
+        if ($r->filled('cabang_id')) {
+            $q->where('cabang_id', (int) $r->query('cabang_id'));
+        }
 
-        $items = $q->latest('tanggal_prospek')->paginate($perPage);
+        // tampilkan semua data, tanpa pagination, tanpa filter periode default
+        $items = $q->orderByDesc('tanggal_prospek')
+                   ->orderByDesc('id')
+                   ->get();
 
-        return response()->json(['ok'=>true,'items'=>$items]);
+        return response()->json([
+            'ok'    => true,
+            'total' => $items->count(),
+            'items' => $items,
+        ]);
     }
 
     public function show(Request $r, $id)
     {
-        $p = $this->baseScope($r)->where('id', (int)$id)->firstOrFail();
-        return response()->json(['ok'=>true,'item'=>$p]);
+        $q = $this->baseScope();
+
+        if (Schema::hasColumn('prospects', 'deleted_at')) {
+            $q->whereNull('deleted_at');
+        }
+
+        $item = $q->where('id', (int) $id)->firstOrFail();
+
+        return response()->json([
+            'ok'   => true,
+            'item' => $item
+        ]);
     }
 
     public function store(Request $r)
@@ -96,82 +100,105 @@ class ProspectController extends Controller
         $u = $r->user();
 
         $data = $r->validate([
-            'tanggal_prospek' => ['required','date'],
-            'nama'            => ['required','string','max:150'],
-            'nik'             => ['nullable','string','max:30'],
-            'no_hp'           => ['nullable','string','max:30'],
-            'alamat'          => ['nullable','string','max:255'],
-            'lokasi_lat'      => ['nullable','numeric'],
-            'lokasi_lng'      => ['nullable','numeric'],
-            'jenis_usaha'     => ['nullable','string','max:60'],
-            'keterangan_usaha'=> ['nullable','string'],
-            'jenis_produk'    => ['required','in:TABUNGAN,DEPOSITO,KREDIT,ASET'],
-            'status'          => ['nullable','in:BELUM_BERMINAT,BERMINAT,TIDAK_BERMINAT,CLOSING'],
-            'catatan'         => ['nullable','string'],
-            'cabang_id'       => ['required','integer','exists:cabangs,id'],
+            'tanggal_prospek'  => ['required', 'date'],
+            'nama'             => ['required', 'string', 'max:150'],
+            'nik'              => ['nullable', 'string', 'max:30'],
+            'no_hp'            => ['nullable', 'string', 'max:30'],
+            'alamat'           => ['nullable', 'string', 'max:255'],
+            'lokasi_lat'       => ['nullable', 'numeric'],
+            'lokasi_lng'       => ['nullable', 'numeric'],
+            'jenis_usaha'      => ['nullable', 'string', 'max:60'],
+            'keterangan_usaha' => ['nullable', 'string'],
+            'jenis_produk'     => ['required', 'in:TABUNGAN,DEPOSITO,KREDIT,ASET'],
+            'status'           => ['nullable', 'in:BELUM_BERMINAT,BERMINAT,TIDAK_BERMINAT,CLOSING'],
+            'catatan'          => ['nullable', 'string'],
+            'cabang_id'        => ['required', 'integer', 'exists:cabangs,id'],
         ]);
 
-        // default status bila UI disembunyikan
-        if (empty($data['status'])) $data['status'] = 'BELUM_BERMINAT';
+        if (empty($data['status'])) {
+            $data['status'] = 'BELUM_BERMINAT';
+        }
 
         $p = new Prospect();
-        $p->input_by = (int)$u->id;
+        $p->input_by = $u ? (int) $u->id : null;
         $p->fill($data);
         $p->save();
 
-        return response()->json(['ok'=>true,'item'=>$p], 201);
+        return response()->json([
+            'ok'   => true,
+            'item' => $p
+        ], 201);
     }
 
     public function update(Request $r, $id)
     {
-        $p = $this->baseScope($r)->where('id',(int)$id)->firstOrFail();
+        $q = Prospect::query();
+
+        if (Schema::hasColumn('prospects', 'deleted_at')) {
+            $q->whereNull('deleted_at');
+        }
+
+        $p = $q->where('id', (int) $id)->firstOrFail();
 
         $data = $r->validate([
-            'tanggal_prospek' => ['required','date'],
-            'nama'            => ['required','string','max:150'],
-            'nik'             => ['nullable','string','max:30'],
-            'no_hp'           => ['nullable','string','max:30'],
-            'alamat'          => ['nullable','string','max:255'],
-            'lokasi_lat'      => ['nullable','numeric'],
-            'lokasi_lng'      => ['nullable','numeric'],
-            'jenis_usaha'     => ['nullable','string','max:60'],
-            'keterangan_usaha'=> ['nullable','string'],
-            'jenis_produk'    => ['required','in:TABUNGAN,DEPOSITO,KREDIT,ASET'],
-            'status'          => ['nullable','in:BELUM_BERMINAT,BERMINAT,TIDAK_BERMINAT,CLOSING'],
-            'catatan'         => ['nullable','string'],
-            'cabang_id'       => ['required','integer','exists:cabangs,id'],
+            'tanggal_prospek'  => ['required', 'date'],
+            'nama'             => ['required', 'string', 'max:150'],
+            'nik'              => ['nullable', 'string', 'max:30'],
+            'no_hp'            => ['nullable', 'string', 'max:30'],
+            'alamat'           => ['nullable', 'string', 'max:255'],
+            'lokasi_lat'       => ['nullable', 'numeric'],
+            'lokasi_lng'       => ['nullable', 'numeric'],
+            'jenis_usaha'      => ['nullable', 'string', 'max:60'],
+            'keterangan_usaha' => ['nullable', 'string'],
+            'jenis_produk'     => ['required', 'in:TABUNGAN,DEPOSITO,KREDIT,ASET'],
+            'status'           => ['nullable', 'in:BELUM_BERMINAT,BERMINAT,TIDAK_BERMINAT,CLOSING'],
+            'catatan'          => ['nullable', 'string'],
+            'cabang_id'        => ['required', 'integer', 'exists:cabangs,id'],
         ]);
 
-        if (empty($data['status'])) $data['status'] = $p->status ?: 'BELUM_BERMINAT';
+        if (empty($data['status'])) {
+            $data['status'] = $p->status ?: 'BELUM_BERMINAT';
+        }
 
         $p->fill($data);
         $p->save();
 
-        return response()->json(['ok'=>true,'item'=>$p]);
+        return response()->json([
+            'ok'   => true,
+            'item' => $p->fresh()
+        ]);
     }
 
     public function destroy(Request $r, $id)
     {
-        $p = $this->baseScope($r)->where('id',(int)$id)->firstOrFail();
+        $q = Prospect::query();
+
+        if (Schema::hasColumn('prospects', 'deleted_at')) {
+            $q->whereNull('deleted_at');
+        }
+
+        $p = $q->where('id', (int) $id)->firstOrFail();
         $p->delete();
-        return response()->json(['ok'=>true]);
+
+        return response()->json([
+            'ok' => true
+        ]);
     }
 
     public function restore(Request $r, $id)
     {
-        // restore but still must follow scope: admin restore all, cabang restore their, pegawai/ao restore theirs
-        $q = Prospect::onlyTrashed()->with(['cabang','creator']);
-        $u = $r->user();
-
-        if (Role::isCabang($u)) {
-            $q->where('cabang_id', (int)$u->cabang_id);
-        } elseif (Role::isPegawaiOrAO($u)) {
-            $q->where('input_by', (int)$u->id);
+        if (!Schema::hasColumn('prospects', 'deleted_at')) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Restore tidak tersedia karena tabel prospects tidak menggunakan soft delete.'
+            ], 400);
         }
 
-        $p = $q->where('id',(int)$id)->firstOrFail();
+        $p = Prospect::onlyTrashed()->where('id', (int) $id)->firstOrFail();
         $p->restore();
 
-        return response()->json(['ok'=>true]);
+        return response()->json([
+            'ok' => true
+        ]);
     }
 }
