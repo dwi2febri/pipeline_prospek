@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ProspectController;
 use App\Http\Controllers\Api\ProspectDocumentController;
 use App\Http\Controllers\Api\CabangController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ProspectRecapController;
 
 Route::prefix('v1')->group(function () {
 
@@ -25,18 +26,24 @@ Route::prefix('v1')->group(function () {
         Route::get('/prospects', [ProspectController::class, 'index']);
         Route::get('/prospects/{id}', [ProspectController::class, 'show']);
 
+        // rekap prospect
+        Route::get('/prospects-recap/per-kc', [ProspectRecapController::class, 'perKc']);
+        Route::get('/prospects-recap/per-pegawai', [ProspectRecapController::class, 'perPegawai']);
+        Route::get('/prospects-recap/pengaju', [ProspectRecapController::class, 'pengaju']);
+        Route::get('/prospects-recap/per-pegawai/{userId}/detail', [ProspectRecapController::class, 'detailPegawai']);
+
         // prospect documents - wajib token
         Route::get('/prospects/{id}/documents', [ProspectDocumentController::class, 'index']);
         Route::post('/prospects/{id}/documents', [ProspectDocumentController::class, 'store']);
         Route::delete('/prospect-documents/{docId}', [ProspectDocumentController::class, 'destroy']);
 
-        // kalau write prospects juga mau sekalian private
+        // write prospects
         Route::post('/prospects', [ProspectController::class, 'store']);
         Route::put('/prospects/{id}', [ProspectController::class, 'update']);
         Route::delete('/prospects/{id}', [ProspectController::class, 'destroy']);
         Route::post('/prospects/{id}/restore', [ProspectController::class, 'restore']);
 
-        // kalau cabangs dan users juga mau private, biarkan di sini
+        // cabangs
         Route::get('/cabangs', [CabangController::class, 'index']);
         Route::post('/cabangs', [CabangController::class, 'store']);
         Route::put('/cabangs/{id}', [CabangController::class, 'update']);
@@ -44,6 +51,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/cabangs/template', [CabangController::class, 'downloadTemplate']);
         Route::post('/cabangs/import', [CabangController::class, 'import']);
 
+        // users
         Route::get('/users', [UserController::class, 'index']);
         Route::post('/users', [UserController::class, 'store']);
         Route::put('/users/{id}', [UserController::class, 'update']);
