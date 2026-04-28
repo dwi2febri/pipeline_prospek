@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'static.api.token' => \App\Http\Middleware\StaticApiToken::class,
         ]);
 
         $middleware->web(append: [

@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProspectController;
 use App\Http\Controllers\Api\ProspectDocumentController;
 use App\Http\Controllers\Api\CabangController;
@@ -10,55 +9,34 @@ use App\Http\Controllers\Api\UserController;
 
 Route::prefix('v1')->group(function () {
 
-    // ===== AUTH =====
-    Route::post('/login', [AuthController::class, 'login']);
+    // public
+    Route::get('/ping', function () {
+        return response()->json([
+            'success' => true,
+            'message' => 'API aktif',
+        ]);
+    });
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/me', [AuthController::class, 'me']);
+    // private pakai 1 token tetap
+    Route::middleware('static.api.token')->group(function () {
 
-        // ===== SAVE FCM TOKEN =====
-        Route::post('/me/fcm-token', function (Request $request) {
-            $request->validate([
-                'token' => ['required', 'string'],
-            ]);
-
-            $user = $request->user();
-            $user->fcm_token = $request->token;
-            $user->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'FCM token berhasil disimpan.',
-            ]);
-        });
-
-        Route::delete('/me/fcm-token', function (Request $request) {
-            $user = $request->user();
-            $user->fcm_token = null;
-            $user->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'FCM token berhasil dihapus.',
-            ]);
-        });
-
-        // ===== PROSPECTS =====
+        // prospects - wajib token
         Route::get('/prospects/summary', [ProspectController::class, 'summary']);
         Route::get('/prospects', [ProspectController::class, 'index']);
-        Route::post('/prospects', [ProspectController::class, 'store']);
         Route::get('/prospects/{id}', [ProspectController::class, 'show']);
-        Route::put('/prospects/{id}', [ProspectController::class, 'update']);
-        Route::delete('/prospects/{id}', [ProspectController::class, 'destroy']);
-        Route::post('/prospects/{id}/restore', [ProspectController::class, 'restore']);
 
-        // ===== PROSPECT DOCUMENTS (FOTO) =====
+        // prospect documents - wajib token
         Route::get('/prospects/{id}/documents', [ProspectDocumentController::class, 'index']);
         Route::post('/prospects/{id}/documents', [ProspectDocumentController::class, 'store']);
         Route::delete('/prospect-documents/{docId}', [ProspectDocumentController::class, 'destroy']);
 
-        // ===== CABANGS =====
+        // kalau write prospects juga mau sekalian private
+        Route::post('/prospects', [ProspectController::class, 'store']);
+        Route::put('/prospects/{id}', [ProspectController::class, 'update']);
+        Route::delete('/prospects/{id}', [ProspectController::class, 'destroy']);
+        Route::post('/prospects/{id}/restore', [ProspectController::class, 'restore']);
+
+        // kalau cabangs dan users juga mau private, biarkan di sini
         Route::get('/cabangs', [CabangController::class, 'index']);
         Route::post('/cabangs', [CabangController::class, 'store']);
         Route::put('/cabangs/{id}', [CabangController::class, 'update']);
@@ -66,7 +44,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/cabangs/template', [CabangController::class, 'downloadTemplate']);
         Route::post('/cabangs/import', [CabangController::class, 'import']);
 
-        // ===== USERS =====
         Route::get('/users', [UserController::class, 'index']);
         Route::post('/users', [UserController::class, 'store']);
         Route::put('/users/{id}', [UserController::class, 'update']);
