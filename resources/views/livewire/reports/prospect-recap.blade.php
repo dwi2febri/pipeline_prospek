@@ -488,7 +488,7 @@
 
   @if($detailPegawai)
     <div class="modal fade" id="modalDetailPegawai" tabindex="-1" aria-hidden="true" wire:ignore.self>
-      <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+      <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down" style="max-width: 1500px; width: 96vw;">
         <div class="modal-content border-0" style="border-radius:20px;overflow:hidden;">
           <div class="modal-header">
             <div>
