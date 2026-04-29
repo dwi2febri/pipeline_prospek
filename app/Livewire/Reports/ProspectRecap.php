@@ -38,6 +38,12 @@ class ProspectRecap extends Component
     public string $detailFilterBulan = '';
     public string $detailFilterTahun = '';
 
+    // DETAIL PER KC
+    public ?int $detailKcCabangId = null;
+    public string $detailKcStatus = 'ALL';
+    public string $detailKcFilterBulan = '';
+    public string $detailKcFilterTahun = '';
+
     protected $queryString = [
         'activeTab' => ['except' => 'kc'],
         'filterCabang' => ['except' => ''],
@@ -66,6 +72,9 @@ class ProspectRecap extends Component
         $this->filterTahun = (string) $now->year;
         $this->detailFilterBulan = (string) $now->month;
         $this->detailFilterTahun = (string) $now->year;
+
+        $this->detailKcFilterBulan = (string) $now->month;
+        $this->detailKcFilterTahun = (string) $now->year;
 
         $role = $this->getRoleUserLogin();
 
@@ -117,6 +126,17 @@ class ProspectRecap extends Component
     public function updatedDetailFilterTahun(): void
     {
         $this->dispatch('open-detail-pegawai-modal');
+    }
+
+    // DETAIL KC
+    public function updatedDetailKcFilterBulan(): void
+    {
+        $this->dispatch('open-detail-kc-modal');
+    }
+
+    public function updatedDetailKcFilterTahun(): void
+    {
+        $this->dispatch('open-detail-kc-modal');
     }
 
     protected function getRoleUserLogin(): string
@@ -443,6 +463,69 @@ class ProspectRecap extends Component
         $this->detailPegawaiId = null;
     }
 
+    // DETAIL PER KC
+    public function openDetailKc(int $cabangId, string $status = 'ALL'): void
+    {
+        $this->detailKcCabangId = $cabangId;
+        $this->detailKcStatus = strtoupper(trim($status)) ?: 'ALL';
+        $this->detailKcFilterBulan = $this->filterBulan;
+        $this->detailKcFilterTahun = $this->filterTahun;
+        $this->dispatch('open-detail-kc-modal');
+    }
+
+    #[\Livewire\Attributes\On('closeDetailKcModal')]
+    public function closeDetailKcModal(): void
+    {
+        $this->detailKcCabangId = null;
+        $this->detailKcStatus = 'ALL';
+    }
+
+    protected function getDetailKcQuery()
+    {
+        if (!$this->detailKcCabangId) {
+            return Prospect::query()->whereRaw('1=0');
+        }
+
+        $query = Prospect::query()
+            ->where('cabang_id', $this->detailKcCabangId)
+            ->whereNull('deleted_at')
+            ->when($this->detailKcFilterBulan !== '', function ($q) {
+                $q->whereMonth('tanggal_prospek', (int) $this->detailKcFilterBulan);
+            })
+            ->when($this->detailKcFilterTahun !== '', function ($q) {
+                $q->whereYear('tanggal_prospek', (int) $this->detailKcFilterTahun);
+            });
+
+        if ($this->detailKcStatus !== 'ALL') {
+            $query->where('status', $this->detailKcStatus);
+        }
+
+        return $query
+            ->latest('tanggal_prospek')
+            ->latest('id')
+            ->select([
+                'id',
+                'tanggal_prospek',
+                'nama',
+                'no_hp',
+                'alamat',
+                'jenis_produk',
+                'jenis_usaha',
+                'status',
+            ]);
+    }
+
+    protected function getDetailKcStatusLabel(): string
+    {
+        return match ($this->detailKcStatus) {
+            'OPEN' => 'Open',
+            'FOLLOW UP' => 'Follow Up',
+            'CLOSING' => 'Closing',
+            'REJECTED' => 'Rejected',
+            default => 'Semua Status',
+        };
+    }
+
     protected function getDetailPegawaiQuery()
     {
         if (!$this->detailPegawaiId) {
@@ -737,6 +820,17 @@ class ProspectRecap extends Component
             $detailItems = $this->getDetailPegawaiQuery()->get();
         }
 
+        $detailKcCabang = null;
+        $detailKcItems = collect();
+
+        if ($this->detailKcCabangId) {
+            $detailKcCabang = Cabang::query()
+                ->where('id', $this->detailKcCabangId)
+                ->first(['id', 'kode_cabang', 'nama_cabang']);
+
+            $detailKcItems = $this->getDetailKcQuery()->get();
+        }
+
         return view('livewire.reports.prospect-recap', [
             'items' => $items,
             'cabangs' => $cabangs,
@@ -744,6 +838,9 @@ class ProspectRecap extends Component
             'tahunOptions' => $tahunOptions,
             'detailPegawai' => $detailPegawai,
             'detailItems' => $detailItems,
+            'detailKcCabang' => $detailKcCabang,
+            'detailKcItems' => $detailKcItems,
+            'detailKcStatusLabel' => $this->getDetailKcStatusLabel(),
         ])->layout('layouts.bootstrap');
     }
 }

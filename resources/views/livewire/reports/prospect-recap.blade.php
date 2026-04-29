@@ -179,11 +179,46 @@
                 <td>{{ $items->firstItem() + $i }}</td>
                 <td class="fw-semibold">{{ $row->kode_cabang }}</td>
                 <td>{{ $row->nama_cabang }}</td>
-                <td class="text-end fw-bold">{{ number_format($row->total_pengajuan) }}</td>
-                <td class="text-end text-secondary fw-bold">{{ number_format($row->total_open) }}</td>
-                <td class="text-end text-warning fw-bold">{{ number_format($row->total_follow_up) }}</td>
-                <td class="text-end text-success fw-bold">{{ number_format($row->total_closing) }}</td>
-                <td class="text-end text-danger fw-bold">{{ number_format($row->total_rejected) }}</td>
+
+                <td class="text-end fw-bold">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'ALL')">
+                    {{ number_format($row->total_pengajuan) }}
+                  </button>
+                </td>
+
+                <td class="text-end text-secondary fw-bold">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none text-secondary fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'OPEN')">
+                    {{ number_format($row->total_open) }}
+                  </button>
+                </td>
+
+                <td class="text-end text-warning fw-bold">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none text-warning fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'FOLLOW UP')">
+                    {{ number_format($row->total_follow_up) }}
+                  </button>
+                </td>
+
+                <td class="text-end text-success fw-bold">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none text-success fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'CLOSING')">
+                    {{ number_format($row->total_closing) }}
+                  </button>
+                </td>
+
+                <td class="text-end text-danger fw-bold">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none text-danger fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'REJECTED')">
+                    {{ number_format($row->total_rejected) }}
+                  </button>
+                </td>
               </tr>
             @empty
               <tr>
@@ -534,29 +569,141 @@
       </div>
     </div>
   @endif
+
+  @if($detailKcCabang)
+    <div class="modal fade" id="modalDetailKc" tabindex="-1" aria-hidden="true" wire:ignore.self>
+      <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content border-0" style="border-radius:20px;overflow:hidden;">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title fw-bold mb-0">Detail Calon Nasabah Per KC</h5>
+              <div class="text-muted small">
+                {{ $detailKcCabang->kode_cabang ?? '-' }} - {{ $detailKcCabang->nama_cabang ?? '-' }}
+                • {{ $detailKcStatusLabel }}
+              </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="card-soft p-3 mb-3">
+              <div class="row g-2 align-items-end">
+                <div class="col-6 col-md-3">
+                  <label class="form-label fw-semibold mb-1">Bulan</label>
+                  <select class="form-select" wire:model.live="detailKcFilterBulan">
+                    @foreach($bulanOptions as $b)
+                      <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
+                    @endforeach
+                  </select>
+                </div>
+
+                <div class="col-6 col-md-3">
+                  <label class="form-label fw-semibold mb-1">Tahun</label>
+                  <select class="form-select" wire:model.live="detailKcFilterTahun">
+                    @foreach($tahunOptions as $t)
+                      <option value="{{ $t }}">{{ $t }}</option>
+                    @endforeach
+                  </select>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="small text-muted mt-4">
+                    Klik angka pada tab <strong>Per KC</strong> untuk melihat calon nasabah sesuai cabang dan status.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width:70px;">No</th>
+                    <th style="min-width:140px;">Tanggal</th>
+                    <th style="min-width:220px;">Nama Calon Nasabah</th>
+                    <th style="min-width:150px;">No HP</th>
+                    <th style="min-width:260px;">Alamat</th>
+                    <th style="min-width:140px;">Produk</th>
+                    <th style="min-width:160px;">Jenis Usaha</th>
+                    <th style="min-width:120px;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @forelse($detailKcItems as $i => $row)
+                    <tr>
+                      <td>{{ $i + 1 }}</td>
+                      <td>{{ \Carbon\Carbon::parse($row->tanggal_prospek)->format('d/m/Y') }}</td>
+                      <td>{{ $row->nama ?: '-' }}</td>
+                      <td>{{ $row->no_hp ?: '-' }}</td>
+                      <td>{{ $row->alamat ?: '-' }}</td>
+                      <td>{{ $row->jenis_produk ?: '-' }}</td>
+                      <td>{{ $row->jenis_usaha ?: '-' }}</td>
+                      <td>{{ $row->status ?: '-' }}</td>
+                    </tr>
+                  @empty
+                    <tr>
+                      <td colspan="8" class="text-center text-muted p-4">
+                        Belum ada data calon nasabah untuk filter ini.
+                      </td>
+                    </tr>
+                  @endforelse
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
 </div>
 
 @push('scripts')
 <script>
 document.addEventListener('livewire:init', function () {
-    let detailModalInstance = null;
+    let detailPegawaiModalInstance = null;
+    let detailKcModalInstance = null;
 
-    function ensureDetailModal() {
+    function ensureDetailPegawaiModal() {
         const modalEl = document.getElementById('modalDetailPegawai');
         if (!modalEl || typeof bootstrap === 'undefined') return null;
-        detailModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        return detailModalInstance;
+        detailPegawaiModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        return detailPegawaiModalInstance;
+    }
+
+    function ensureDetailKcModal() {
+        const modalEl = document.getElementById('modalDetailKc');
+        if (!modalEl || typeof bootstrap === 'undefined') return null;
+        detailKcModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        return detailKcModalInstance;
     }
 
     Livewire.on('open-detail-pegawai-modal', function () {
-        const modal = ensureDetailModal();
+        const modal = ensureDetailPegawaiModal();
         if (modal) modal.show();
     });
 
-    const modalEl = document.getElementById('modalDetailPegawai');
-    if (modalEl) {
-        modalEl.addEventListener('hidden.bs.modal', function () {
+    Livewire.on('open-detail-kc-modal', function () {
+        const modal = ensureDetailKcModal();
+        if (modal) modal.show();
+    });
+
+    const modalPegawaiEl = document.getElementById('modalDetailPegawai');
+    if (modalPegawaiEl) {
+        modalPegawaiEl.addEventListener('hidden.bs.modal', function () {
             Livewire.dispatch('closeDetailPegawaiModal');
+        });
+    }
+
+    const modalKcEl = document.getElementById('modalDetailKc');
+    if (modalKcEl) {
+        modalKcEl.addEventListener('hidden.bs.modal', function () {
+            Livewire.dispatch('closeDetailKcModal');
         });
     }
 });
