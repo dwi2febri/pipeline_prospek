@@ -26,8 +26,13 @@ Route::prefix('v1')->group(function () {
         Route::get('/prospects', [ProspectController::class, 'index']);
         Route::get('/prospects/{id}', [ProspectController::class, 'show']);
 
+        // update status prospect langsung
+        Route::patch('/prospects/{id}/status', [ProspectController::class, 'updateStatus']);
+
         // rekap prospect
         Route::get('/prospects-recap/per-kc', [ProspectRecapController::class, 'perKc']);
+        Route::get('/prospects-recap/per-kc/{cabangId}/detail', [ProspectRecapController::class, 'detailPerKc']);
+
         Route::get('/prospects-recap/per-pegawai', [ProspectRecapController::class, 'perPegawai']);
         Route::get('/prospects-recap/pengaju', [ProspectRecapController::class, 'pengaju']);
         Route::get('/prospects-recap/per-pegawai/{userId}/detail', [ProspectRecapController::class, 'detailPegawai']);

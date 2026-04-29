@@ -304,6 +304,89 @@ class ProspectRecapController extends Controller
         ]);
     }
 
+    public function detailPerKc(Request $request, $cabangId)
+    {
+        $bulan = $this->getMonth($request);
+        $tahun = $this->getYear($request);
+        $status = strtoupper(trim((string) $request->query('status', 'ALL')));
+
+        $allowedStatus = ['ALL', 'OPEN', 'FOLLOW UP', 'CLOSING', 'REJECTED'];
+        if (!in_array($status, $allowedStatus, true)) {
+            $status = 'ALL';
+        }
+
+        $cabang = Cabang::query()
+            ->where('id', (int) $cabangId)
+            ->first(['id', 'kode_cabang', 'nama_cabang']);
+
+        if (!$cabang) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Cabang tidak ditemukan',
+            ], 404);
+        }
+
+        $items = Prospect::query()
+            ->leftJoin('users as ao', 'ao.id', '=', 'prospects.input_by')
+            ->where('prospects.cabang_id', (int) $cabangId)
+            ->whereNull('prospects.deleted_at')
+            ->whereMonth('prospects.tanggal_prospek', $bulan)
+            ->whereYear('prospects.tanggal_prospek', $tahun)
+            ->when($status !== 'ALL', function ($q) use ($status) {
+                $q->where('prospects.status', $status);
+            })
+            ->latest('prospects.tanggal_prospek')
+            ->latest('prospects.id')
+            ->select([
+                'prospects.id',
+                'prospects.tanggal_prospek',
+                'prospects.nama',
+                'prospects.no_hp',
+                'prospects.alamat',
+                'prospects.jenis_produk',
+                'prospects.jenis_usaha',
+                'prospects.status',
+                'prospects.input_by',
+                'ao.name as ao_username',
+                'ao.nama_lengkap as ao_nama',
+                'ao.job_position as ao_jabatan',
+                'ao.role as ao_role',
+            ])
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'id' => (int) $row->id,
+                    'tanggal_prospek' => $row->tanggal_prospek,
+                    'nama' => $row->nama,
+                    'no_hp' => $row->no_hp,
+                    'alamat' => $row->alamat,
+                    'jenis_produk' => $row->jenis_produk,
+                    'jenis_usaha' => $row->jenis_usaha,
+                    'status' => $row->status,
+                    'ao' => [
+                        'id' => $row->input_by ? (int) $row->input_by : null,
+                        'username' => $row->ao_username,
+                        'nama_lengkap' => $row->ao_nama,
+                        'jabatan' => $row->ao_jabatan,
+                        'role' => $row->ao_role,
+                    ],
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'cabang' => $cabang,
+            'filters' => [
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'status' => $status,
+            ],
+            'total' => $items->count(),
+            'items' => $items,
+        ]);
+    }
+
     public function pengaju(Request $request)
     {
         $allowed = [
