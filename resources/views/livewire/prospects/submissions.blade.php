@@ -355,6 +355,18 @@
       font-weight:700;
       padding:6px 2px 0;
     }
+
+    .filter-mode-card{
+      border:1px solid #e7edf5;
+      border-radius:16px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .filter-mode-hint{
+      font-size:.82rem;
+      color:#64748b;
+    }
   </style>
 
   @php
@@ -394,6 +406,7 @@
 
   <div class="soft-filter-card p-3 mb-3">
     <div class="row g-2 align-items-end">
+
       <div class="col-12 col-md-4">
         <label class="form-label small text-muted">Cari</label>
         <div class="input-group">
@@ -409,6 +422,7 @@
         <label class="form-label small text-muted">Status</label>
         <select class="form-select" wire:model.live="filterStatus">
           <option value="">-- Semua Status --</option>
+          <option value="OPEN">OPEN</option>
           <option value="FOLLOW UP">FOLLOW UP</option>
           <option value="CLOSING">CLOSING</option>
           <option value="REJECTED">REJECTED</option>
@@ -436,10 +450,20 @@
         </select>
       </div>
 
-      @if(in_array($loggedRole, ['ADMIN','MANAJEMEN','SUPERVISOR','AO']))
+      <div class="col-12 col-md-2">
+        <label class="form-label small text-muted">Mode Filter Tanggal</label>
+        <select class="form-select" wire:model.live="filterMode">
+          <option value="all">Semua Data</option>
+          <option value="monthly">Bulanan</option>
+          <option value="range">Range Tanggal</option>
+        </select>
+      </div>
+
+      @if($filterMode === 'monthly')
         <div class="col-6 col-md-1">
           <label class="form-label small text-muted">Bulan</label>
           <select class="form-select" wire:model.live="filterBulan">
+            <option value="">-- Bulan --</option>
             @foreach($bulanOptions as $b)
               <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
             @endforeach
@@ -449,10 +473,27 @@
         <div class="col-6 col-md-1">
           <label class="form-label small text-muted">Tahun</label>
           <select class="form-select" wire:model.live="filterTahun">
+            <option value="">-- Tahun --</option>
             @foreach($tahunOptions as $t)
               <option value="{{ $t }}">{{ $t }}</option>
             @endforeach
           </select>
+        </div>
+      @endif
+
+      @if($filterMode === 'range')
+        <div class="col-12 col-md-2">
+          <label class="form-label small text-muted">Dari Tanggal</label>
+          <input type="date"
+                 class="form-control"
+                 wire:model.live="filterTanggalAwal">
+        </div>
+
+        <div class="col-12 col-md-2">
+          <label class="form-label small text-muted">Sampai Tanggal</label>
+          <input type="date"
+                 class="form-control"
+                 wire:model.live="filterTanggalAkhir">
         </div>
       @endif
 
@@ -466,6 +507,28 @@
       <div class="col-12 col-md text-md-end text-muted small">
         Total: <span class="fw-bold">{{ $items->total() }}</span> pengajuan
       </div>
+    </div>
+
+    <div class="mt-3">
+      @if($filterMode === 'all')
+        <div class="filter-mode-hint">
+          Menampilkan <span class="fw-semibold">semua pengajuan</span> tanpa filter periode.
+        </div>
+      @elseif($filterMode === 'monthly')
+        <div class="filter-mode-hint">
+          Menampilkan data berdasarkan
+          <span class="fw-semibold">bulan {{ $filterBulan ?: '-' }}</span>
+          dan
+          <span class="fw-semibold">tahun {{ $filterTahun ?: '-' }}</span>.
+        </div>
+      @elseif($filterMode === 'range')
+        <div class="filter-mode-hint">
+          Menampilkan data dari
+          <span class="fw-semibold">{{ $filterTanggalAwal ?: '-' }}</span>
+          s.d.
+          <span class="fw-semibold">{{ $filterTanggalAkhir ?: '-' }}</span>.
+        </div>
+      @endif
     </div>
   </div>
 
@@ -849,12 +912,11 @@
                       <div class="d-flex flex-wrap align-items-center gap-2">
                         <div class="detail-value">{{ $detail->no_hp ?: '-' }}</div>
 
-
                         @if(!empty($detail->no_hp) && !empty($waNumber))
                             <a href="https://api.whatsapp.com/send?phone={{ $waNumber }}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="btn-wa-modern">
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn-wa-modern">
                                 <i class="bi bi-whatsapp"></i> WA
                             </a>
                         @endif

@@ -21,8 +21,14 @@ class Submissions extends Component
     public ?string $filterStatus = '';
     public ?string $filterPengambilan = '';
     public ?int $filterCabang = null;
+
     public string $filterBulan = '';
     public string $filterTahun = '';
+    public string $filterMode = 'all';
+
+    // disamakan dengan blade
+    public ?string $filterTanggalAwal = null;
+    public ?string $filterTanggalAkhir = null;
 
     public ?int $detailId = null;
     public ?string $statusUpdate = null;
@@ -42,19 +48,23 @@ class Submissions extends Component
         'filterStatus' => ['except' => ''],
         'filterPengambilan' => ['except' => ''],
         'filterCabang' => ['except' => ''],
+        'filterMode' => ['except' => 'all'],
         'filterBulan' => ['except' => ''],
         'filterTahun' => ['except' => ''],
+        'filterTanggalAwal' => ['except' => ''],
+        'filterTanggalAkhir' => ['except' => ''],
     ];
 
     public function mount(): void
     {
         $role = $this->currentUserRole();
-        $now = now();
 
-        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR', 'AO'], true)) {
-            $this->filterBulan = (string) $now->month;
-            $this->filterTahun = (string) $now->year;
-        }
+        // default = semua data
+        $this->filterMode = 'all';
+        $this->filterBulan = '';
+        $this->filterTahun = '';
+        $this->filterTanggalAwal = null;
+        $this->filterTanggalAkhir = null;
 
         if ($role === 'SUPERVISOR') {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
@@ -96,6 +106,41 @@ class Submissions extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterMode(): void
+    {
+        if ($this->filterMode === 'all') {
+            $this->filterBulan = '';
+            $this->filterTahun = '';
+            $this->filterTanggalAwal = null;
+            $this->filterTanggalAkhir = null;
+        } elseif ($this->filterMode === 'monthly') {
+            // jangan auto isi current month kalau user belum pilih
+            $this->filterTanggalAwal = null;
+            $this->filterTanggalAkhir = null;
+        } elseif ($this->filterMode === 'range') {
+            $this->filterBulan = '';
+            $this->filterTahun = '';
+        }
+
+        $this->resetPage();
+    }
+
+    public function updatingFilterTanggalAwal(): void
+    {
+        if ($this->filterMode !== 'range') {
+            $this->filterMode = 'range';
+        }
+        $this->resetPage();
+    }
+
+    public function updatingFilterTanggalAkhir(): void
+    {
+        if ($this->filterMode !== 'range') {
+            $this->filterMode = 'range';
+        }
+        $this->resetPage();
+    }
+
     public function updatedNoRekening($value): void
     {
         $this->noRekening = preg_replace('/[^0-9]/', '', (string) $value);
@@ -106,22 +151,16 @@ class Submissions extends Component
         $this->search = '';
         $this->filterStatus = '';
         $this->filterPengambilan = '';
+        $this->filterMode = 'all';
+        $this->filterBulan = '';
+        $this->filterTahun = '';
+        $this->filterTanggalAwal = null;
+        $this->filterTanggalAkhir = null;
 
         if ($this->lockCabangFilter) {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
         } else {
             $this->filterCabang = null;
-        }
-
-        $role = $this->currentUserRole();
-        $now = now();
-
-        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR', 'AO'], true)) {
-            $this->filterBulan = (string) $now->month;
-            $this->filterTahun = (string) $now->year;
-        } else {
-            $this->filterBulan = '';
-            $this->filterTahun = '';
         }
 
         $this->resetPage();
@@ -350,11 +389,17 @@ class Submissions extends Component
             ->when($this->filterCabang, function ($q) {
                 $q->where('cabang_id', $this->filterCabang);
             })
-            ->when($this->filterBulan !== '', function ($q) {
+            ->when($this->filterMode === 'monthly' && $this->filterBulan !== '', function ($q) {
                 $q->whereMonth('tanggal_prospek', (int) $this->filterBulan);
             })
-            ->when($this->filterTahun !== '', function ($q) {
+            ->when($this->filterMode === 'monthly' && $this->filterTahun !== '', function ($q) {
                 $q->whereYear('tanggal_prospek', (int) $this->filterTahun);
+            })
+            ->when($this->filterMode === 'range' && filled($this->filterTanggalAwal), function ($q) {
+                $q->whereDate('tanggal_prospek', '>=', $this->filterTanggalAwal);
+            })
+            ->when($this->filterMode === 'range' && filled($this->filterTanggalAkhir), function ($q) {
+                $q->whereDate('tanggal_prospek', '<=', $this->filterTanggalAkhir);
             })
             ->when(!empty($allowedProduk), function ($q) use ($allowedProduk) {
                 $q->whereIn('jenis_produk', $allowedProduk);
@@ -958,6 +1003,12 @@ class Submissions extends Component
             ->orderByRaw("CAST(kode_cabang AS UNSIGNED) ASC")
             ->get(['id', 'kode_cabang', 'nama_cabang']);
 
+        $filterModeOptions = [
+            ['id' => 'all', 'label' => 'Semua Data'],
+            ['id' => 'monthly', 'label' => 'Bulanan'],
+            ['id' => 'range', 'label' => 'Range Tanggal'],
+        ];
+
         $bulanOptions = collect(range(1, 12))->map(function ($b) {
             return [
                 'id' => $b,
@@ -975,7 +1026,8 @@ class Submissions extends Component
             'bulanOptions',
             'tahunOptions',
             'namaPengambilMap',
-            'assignmentMap'
+            'assignmentMap',
+            'filterModeOptions'
         ))->layout('layouts.bootstrap');
     }
 }
