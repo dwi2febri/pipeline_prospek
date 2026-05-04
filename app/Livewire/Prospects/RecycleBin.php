@@ -25,8 +25,11 @@ class RecycleBin extends Component
 
     public function restore(int $id): void
     {
+        $userId = auth()->id();
+
         $p = Prospect::onlyTrashed()
             ->where('id', $id)
+            ->where('input_by', $userId)
             ->firstOrFail();
 
         $p->restore();
@@ -37,8 +40,11 @@ class RecycleBin extends Component
 
     public function forceDelete(int $id): void
     {
+        $userId = auth()->id();
+
         $p = Prospect::onlyTrashed()
             ->where('id', $id)
+            ->where('input_by', $userId)
             ->firstOrFail();
 
         $p->forceDelete();
@@ -49,8 +55,11 @@ class RecycleBin extends Component
 
     public function render()
     {
+        $userId = auth()->id();
+
         $q = Prospect::onlyTrashed()
             ->with(['cabang', 'creator'])
+            ->where('input_by', $userId)
             ->latest('deleted_at');
 
         if (trim($this->search) !== '') {

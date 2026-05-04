@@ -5,11 +5,11 @@
       <div class="fw-bold fs-3">Rekap Prospek</div>
       <div class="text-muted">
         @if($activeTab === 'kc')
-          Rekap jumlah pengajuan prospek per kantor cabang 001 - 028
+          Rekap jumlah pengajuan prospek per kantor cabang, termasuk Kantor Pusat
         @elseif($activeTab === 'pengaju')
           Rekap jumlah pengajuan dari user pada masing-masing cabang, termasuk Kantor Pusat
         @else
-          Daftar pegawai / AO beserta jumlah pengajuan prospek bulan berjalan
+          Daftar pegawai / AO beserta jumlah pengajuan prospek
         @endif
       </div>
     </div>
@@ -62,25 +62,46 @@
         @endif
       </div>
 
-      <div class="col-6 col-md-2">
-        <label class="form-label fw-semibold mb-1">Bulan</label>
-        <select class="form-select" wire:model.live="filterBulan">
-          @foreach($bulanOptions as $b)
-            <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
-          @endforeach
+      <div class="col-12 col-md-2">
+        <label class="form-label fw-semibold mb-1">Mode Tanggal</label>
+        <select class="form-select" wire:model.live="filterMode">
+          <option value="all">Semua</option>
+          <option value="monthly">Bulanan</option>
+          <option value="range">Range Tanggal</option>
         </select>
       </div>
 
-      <div class="col-6 col-md-2">
-        <label class="form-label fw-semibold mb-1">Tahun</label>
-        <select class="form-select" wire:model.live="filterTahun">
-          @foreach($tahunOptions as $t)
-            <option value="{{ $t }}">{{ $t }}</option>
-          @endforeach
-        </select>
-      </div>
+      @if($filterMode === 'monthly')
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold mb-1">Bulan</label>
+          <select class="form-select" wire:model.live="filterBulan">
+            @foreach($bulanOptions as $b)
+              <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
+            @endforeach
+          </select>
+        </div>
 
-      <div class="col-12 col-md-5">
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold mb-1">Tahun</label>
+          <select class="form-select" wire:model.live="filterTahun">
+            @foreach($tahunOptions as $t)
+              <option value="{{ $t }}">{{ $t }}</option>
+            @endforeach
+          </select>
+        </div>
+      @elseif($filterMode === 'range')
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold mb-1">Tanggal Awal</label>
+          <input type="date" class="form-control" wire:model.live="filterTanggalAwal">
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold mb-1">Tanggal Akhir</label>
+          <input type="date" class="form-control" wire:model.live="filterTanggalAkhir">
+        </div>
+      @endif
+
+      <div class="col-12 col-md-3">
         <label class="form-label fw-semibold mb-1">Cari</label>
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
@@ -104,71 +125,43 @@
               <th style="min-width:150px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('kode_cabang')">
                   Kode Cabang
-                  @if($sortFieldKc === 'kode_cabang')
-                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th style="min-width:260px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('nama_cabang')">
                   Nama Cabang
-                  @if($sortFieldKc === 'nama_cabang')
-                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:150px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_pengajuan')">
                   Jumlah Pengajuan
-                  @if($sortFieldKc === 'total_pengajuan')
-                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_open')">
                   Open
-                  @if($sortFieldKc === 'total_open')
-                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_follow_up')">
                   Follow Up
-                  @if($sortFieldKc === 'total_follow_up')
-                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_closing')">
                   Closing
-                  @if($sortFieldKc === 'total_closing')
-                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_rejected')">
                   Rejected
-                  @if($sortFieldKc === 'total_rejected')
-                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
             </tr>
@@ -176,55 +169,43 @@
           <tbody>
             @forelse($items as $i => $row)
               <tr>
-                <td>{{ $items->firstItem() + $i }}</td>
+                <td>{{ $i + 1 }}</td>
                 <td class="fw-semibold">{{ $row->kode_cabang }}</td>
                 <td>{{ $row->nama_cabang }}</td>
 
                 <td class="text-end fw-bold">
-                  <button type="button"
-                          class="btn btn-link p-0 text-decoration-none fw-bold"
-                          wire:click="openDetailKc({{ $row->id }}, 'ALL')">
+                  <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold" wire:click="openDetailKc({{ $row->id }}, 'ALL')">
                     {{ number_format($row->total_pengajuan) }}
                   </button>
                 </td>
 
                 <td class="text-end text-secondary fw-bold">
-                  <button type="button"
-                          class="btn btn-link p-0 text-decoration-none text-secondary fw-bold"
-                          wire:click="openDetailKc({{ $row->id }}, 'OPEN')">
+                  <button type="button" class="btn btn-link p-0 text-decoration-none text-secondary fw-bold" wire:click="openDetailKc({{ $row->id }}, 'OPEN')">
                     {{ number_format($row->total_open) }}
                   </button>
                 </td>
 
                 <td class="text-end text-warning fw-bold">
-                  <button type="button"
-                          class="btn btn-link p-0 text-decoration-none text-warning fw-bold"
-                          wire:click="openDetailKc({{ $row->id }}, 'FOLLOW UP')">
+                  <button type="button" class="btn btn-link p-0 text-decoration-none text-warning fw-bold" wire:click="openDetailKc({{ $row->id }}, 'FOLLOW UP')">
                     {{ number_format($row->total_follow_up) }}
                   </button>
                 </td>
 
                 <td class="text-end text-success fw-bold">
-                  <button type="button"
-                          class="btn btn-link p-0 text-decoration-none text-success fw-bold"
-                          wire:click="openDetailKc({{ $row->id }}, 'CLOSING')">
+                  <button type="button" class="btn btn-link p-0 text-decoration-none text-success fw-bold" wire:click="openDetailKc({{ $row->id }}, 'CLOSING')">
                     {{ number_format($row->total_closing) }}
                   </button>
                 </td>
 
                 <td class="text-end text-danger fw-bold">
-                  <button type="button"
-                          class="btn btn-link p-0 text-decoration-none text-danger fw-bold"
-                          wire:click="openDetailKc({{ $row->id }}, 'REJECTED')">
+                  <button type="button" class="btn btn-link p-0 text-decoration-none text-danger fw-bold" wire:click="openDetailKc({{ $row->id }}, 'REJECTED')">
                     {{ number_format($row->total_rejected) }}
                   </button>
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="8" class="text-center text-muted p-5">
-                  Belum ada data rekap prospek per KC.
-                </td>
+                <td colspan="8" class="text-center text-muted p-5">Belum ada data rekap prospek per KC.</td>
               </tr>
             @endforelse
           </tbody>
@@ -235,90 +216,54 @@
           <thead class="table-light">
             <tr>
               <th style="width:70px;">No</th>
-
               <th style="min-width:150px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('kode_cabang')">
                   Kode Cabang
-                  @if($sortFieldPengaju === 'kode_cabang')
-                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
-
               <th style="min-width:260px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('nama_cabang')">
                   Nama Cabang
-                  @if($sortFieldPengaju === 'nama_cabang')
-                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
-
               <th class="text-end" style="min-width:150px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_pengajuan')">
                   Jumlah Pengaju
-                  @if($sortFieldPengaju === 'total_pengajuan')
-                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
-
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_open')">
                   Open
-                  @if($sortFieldPengaju === 'total_open')
-                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
-
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_follow_up')">
                   Follow Up
-                  @if($sortFieldPengaju === 'total_follow_up')
-                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
-
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_closing')">
                   Closing
-                  @if($sortFieldPengaju === 'total_closing')
-                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
-
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_rejected')">
                   Rejected
-                  @if($sortFieldPengaju === 'total_rejected')
-                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
             </tr>
           </thead>
-
           <tbody>
             @forelse($items as $i => $row)
               <tr>
-                <td>{{ $items->firstItem() + $i }}</td>
+                <td>{{ $i + 1 }}</td>
                 <td class="fw-semibold">{{ $row->kode_cabang }}</td>
                 <td>{{ $row->nama_cabang }}</td>
                 <td class="text-end fw-bold text-primary">{{ number_format($row->total_pengajuan) }}</td>
@@ -329,9 +274,7 @@
               </tr>
             @empty
               <tr>
-                <td colspan="8" class="text-center text-muted p-5">
-                  Belum ada data rekap pengaju per cabang.
-                </td>
+                <td colspan="8" class="text-center text-muted p-5">Belum ada data rekap pengaju per cabang.</td>
               </tr>
             @endforelse
           </tbody>
@@ -344,108 +287,57 @@
               <th style="width:70px;">No</th>
               <th style="min-width:160px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('name')">
-                  Username
-                  @if($sortFieldPegawai === 'name')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Username <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th style="min-width:220px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('nama_lengkap')">
-                  Nama Lengkap
-                  @if($sortFieldPegawai === 'nama_lengkap')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Nama Lengkap <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th style="min-width:130px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('role')">
-                  Role
-                  @if($sortFieldPegawai === 'role')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Role <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th style="min-width:220px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('job_position')">
-                  Jabatan
-                  @if($sortFieldPegawai === 'job_position')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Jabatan <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th style="min-width:220px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('kode_cabang')">
-                  Cabang
-                  @if($sortFieldPegawai === 'kode_cabang')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Cabang <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:150px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_pengajuan')">
-                  Jumlah Pengajuan
-                  @if($sortFieldPegawai === 'total_pengajuan')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Jumlah Pengajuan <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_open')">
-                  Open
-                  @if($sortFieldPegawai === 'total_open')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Open <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_follow_up')">
-                  Follow Up
-                  @if($sortFieldPegawai === 'total_follow_up')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Follow Up <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_closing')">
-                  Closing
-                  @if($sortFieldPegawai === 'total_closing')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Closing <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th class="text-end" style="min-width:120px;">
                 <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_rejected')">
-                  Rejected
-                  @if($sortFieldPegawai === 'total_rejected')
-                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
-                  @else
-                    <i class="bi bi-arrow-down-up text-muted"></i>
-                  @endif
+                  Rejected <i class="bi bi-arrow-down-up text-muted"></i>
                 </button>
               </th>
               <th style="width:120px;" class="text-center">Aksi</th>
             </tr>
           </thead>
-
           <tbody>
             @forelse($items as $i => $row)
               <tr>
@@ -461,18 +353,14 @@
                 <td class="text-end text-success fw-bold">{{ number_format($row->total_closing) }}</td>
                 <td class="text-end text-danger fw-bold">{{ number_format($row->total_rejected) }}</td>
                 <td class="text-center">
-                  <button type="button"
-                          class="btn btn-outline-primary btn-sm rounded-pill px-3"
-                          wire:click="openDetailPegawai({{ $row->id }})">
+                  <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" wire:click="openDetailPegawai({{ $row->id }})">
                     <i class="bi bi-eye me-1"></i> Detail
                   </button>
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="12" class="text-center text-muted p-5">
-                  Belum ada data rekap prospek per pegawai.
-                </td>
+                <td colspan="12" class="text-center text-muted p-5">Belum ada data rekap prospek per pegawai.</td>
               </tr>
             @endforelse
           </tbody>
@@ -482,9 +370,11 @@
     </div>
   </div>
 
-  <div class="mt-3">
-    {{ $items->links() }}
-  </div>
+  @if($activeTab === 'pegawai')
+    <div class="mt-3">
+      {{ $items->links() }}
+    </div>
+  @endif
 
   @if($detailPegawai)
     <div class="modal fade" id="modalDetailPegawai" tabindex="-1" aria-hidden="true" wire:ignore.self>
@@ -506,23 +396,44 @@
           <div class="modal-body">
             <div class="card-soft p-3 mb-3">
               <div class="row g-2 align-items-end">
-                <div class="col-6 col-md-3">
-                  <label class="form-label fw-semibold mb-1">Bulan</label>
-                  <select class="form-select" wire:model.live="detailFilterBulan">
-                    @foreach($bulanOptions as $b)
-                      <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
-                    @endforeach
+                <div class="col-12 col-md-3">
+                  <label class="form-label fw-semibold mb-1">Mode Tanggal</label>
+                  <select class="form-select" wire:model.live="detailFilterMode">
+                    <option value="all">Semua</option>
+                    <option value="monthly">Bulanan</option>
+                    <option value="range">Range Tanggal</option>
                   </select>
                 </div>
 
-                <div class="col-6 col-md-3">
-                  <label class="form-label fw-semibold mb-1">Tahun</label>
-                  <select class="form-select" wire:model.live="detailFilterTahun">
-                    @foreach($tahunOptions as $t)
-                      <option value="{{ $t }}">{{ $t }}</option>
-                    @endforeach
-                  </select>
-                </div>
+                @if($detailFilterMode === 'monthly')
+                  <div class="col-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1">Bulan</label>
+                    <select class="form-select" wire:model.live="detailFilterBulan">
+                      @foreach($bulanOptions as $b)
+                        <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
+                      @endforeach
+                    </select>
+                  </div>
+
+                  <div class="col-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1">Tahun</label>
+                    <select class="form-select" wire:model.live="detailFilterTahun">
+                      @foreach($tahunOptions as $t)
+                        <option value="{{ $t }}">{{ $t }}</option>
+                      @endforeach
+                    </select>
+                  </div>
+                @elseif($detailFilterMode === 'range')
+                  <div class="col-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1">Tanggal Awal</label>
+                    <input type="date" class="form-control" wire:model.live="detailFilterTanggalAwal">
+                  </div>
+
+                  <div class="col-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1">Tanggal Akhir</label>
+                    <input type="date" class="form-control" wire:model.live="detailFilterTanggalAkhir">
+                  </div>
+                @endif
               </div>
             </div>
 
@@ -550,9 +461,7 @@
                     </tr>
                   @empty
                     <tr>
-                      <td colspan="6" class="text-center text-muted p-4">
-                        Belum ada data detail pengajuan.
-                      </td>
+                      <td colspan="6" class="text-center text-muted p-4">Belum ada data detail pengajuan.</td>
                     </tr>
                   @endforelse
                 </tbody>
@@ -561,9 +470,7 @@
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
-              Tutup
-            </button>
+            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
           </div>
         </div>
       </div>
@@ -588,29 +495,44 @@
           <div class="modal-body">
             <div class="card-soft p-3 mb-3">
               <div class="row g-2 align-items-end">
-                <div class="col-6 col-md-3">
-                  <label class="form-label fw-semibold mb-1">Bulan</label>
-                  <select class="form-select" wire:model.live="detailKcFilterBulan">
-                    @foreach($bulanOptions as $b)
-                      <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
-                    @endforeach
+                <div class="col-12 col-md-3">
+                  <label class="form-label fw-semibold mb-1">Mode Tanggal</label>
+                  <select class="form-select" wire:model.live="detailKcFilterMode">
+                    <option value="all">Semua</option>
+                    <option value="monthly">Bulanan</option>
+                    <option value="range">Range Tanggal</option>
                   </select>
                 </div>
 
-                <div class="col-6 col-md-3">
-                  <label class="form-label fw-semibold mb-1">Tahun</label>
-                  <select class="form-select" wire:model.live="detailKcFilterTahun">
-                    @foreach($tahunOptions as $t)
-                      <option value="{{ $t }}">{{ $t }}</option>
-                    @endforeach
-                  </select>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="small text-muted mt-4">
-                    Klik angka pada tab <strong>Per KC</strong> untuk melihat calon nasabah sesuai cabang dan status.
+                @if($detailKcFilterMode === 'monthly')
+                  <div class="col-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1">Bulan</label>
+                    <select class="form-select" wire:model.live="detailKcFilterBulan">
+                      @foreach($bulanOptions as $b)
+                        <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
+                      @endforeach
+                    </select>
                   </div>
-                </div>
+
+                  <div class="col-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1">Tahun</label>
+                    <select class="form-select" wire:model.live="detailKcFilterTahun">
+                      @foreach($tahunOptions as $t)
+                        <option value="{{ $t }}">{{ $t }}</option>
+                      @endforeach
+                    </select>
+                  </div>
+                @elseif($detailKcFilterMode === 'range')
+                  <div class="col-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1">Tanggal Awal</label>
+                    <input type="date" class="form-control" wire:model.live="detailKcFilterTanggalAwal">
+                  </div>
+
+                  <div class="col-6 col-md-3">
+                    <label class="form-label fw-semibold mb-1">Tanggal Akhir</label>
+                    <input type="date" class="form-control" wire:model.live="detailKcFilterTanggalAkhir">
+                  </div>
+                @endif
               </div>
             </div>
 
@@ -642,9 +564,7 @@
                     </tr>
                   @empty
                     <tr>
-                      <td colspan="8" class="text-center text-muted p-4">
-                        Belum ada data calon nasabah untuk filter ini.
-                      </td>
+                      <td colspan="8" class="text-center text-muted p-4">Belum ada data calon nasabah untuk filter ini.</td>
                     </tr>
                   @endforelse
                 </tbody>
@@ -653,9 +573,7 @@
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
-              Tutup
-            </button>
+            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <div>
       <div class="fw-bold fs-3">Recycle Bin - Prospek</div>
-      <div class="text-muted">Data prospek yang sudah dihapus oleh akun Anda</div>
+      <div class="text-muted">Data prospek milik akun Anda yang sudah dihapus</div>
     </div>
 
     <a href="{{ route('prospects.index') }}" class="btn btn-light rounded-pill px-4">
