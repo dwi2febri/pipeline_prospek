@@ -404,133 +404,167 @@
     </div>
   </div>
 
-  <div class="soft-filter-card p-3 mb-3">
-    <div class="row g-2 align-items-end">
+<div class="soft-filter-card p-3 mb-3">
+  <div class="row g-2 align-items-end">
 
-      <div class="col-12 col-md-4">
-        <label class="form-label small text-muted">Cari</label>
-        <div class="input-group">
-          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-          <input class="form-control"
-                 style="border-left:0"
-                 placeholder="Cari nama / no hp / nik / status / no rekening..."
-                 wire:model.live.debounce.300ms="search">
-        </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label small text-muted">Cari</label>
+      <div class="input-group">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input class="form-control"
+               style="border-left:0"
+               placeholder="Cari nama / no hp / nik / status / no rekening..."
+               wire:model.live.debounce.300ms="search">
       </div>
+    </div>
 
-      <div class="col-12 col-md-2">
-        <label class="form-label small text-muted">Status</label>
-        <select class="form-select" wire:model.live="filterStatus">
-          <option value="">-- Semua Status --</option>
-          <option value="OPEN">OPEN</option>
-          <option value="FOLLOW UP">FOLLOW UP</option>
-          <option value="CLOSING">CLOSING</option>
-          <option value="REJECTED">REJECTED</option>
-        </select>
-      </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label small text-muted">Status</label>
+      <select class="form-select" wire:model.live="filterStatus">
+        <option value="">-- Semua Status --</option>
+        <option value="OPEN">OPEN</option>
+        <option value="FOLLOW UP">FOLLOW UP</option>
+        <option value="CLOSING">CLOSING</option>
+        <option value="REJECTED">REJECTED</option>
+      </select>
+    </div>
 
-      <div class="col-12 col-md-2">
-        <label class="form-label small text-muted">Cabang</label>
-        <select class="form-select"
-                wire:model.live="filterCabang"
-                @if($lockCabangFilter) disabled @endif>
-          <option value="">-- Semua Cabang --</option>
-          @foreach($cabangOptions as $c)
-            <option value="{{ $c->id }}">{{ $c->kode_cabang }} - {{ $c->nama_cabang }}</option>
+    <div class="col-12 col-md-2">
+      <label class="form-label small text-muted">Kanwil</label>
+      <select class="form-select"
+              wire:model.live="filterKanwil"
+              @if($lockCabangFilter) disabled @endif>
+        <option value="">-- Semua Kanwil --</option>
+        @foreach($kanwilOptions as $k)
+          <option value="{{ $k['id'] }}">{{ $k['label'] }}</option>
+        @endforeach
+      </select>
+    </div>
+
+    <div class="col-12 col-md-2">
+      <label class="form-label small text-muted">Cabang</label>
+      <select class="form-select"
+              wire:model.live="filterCabang"
+              @if($lockCabangFilter) disabled @endif>
+        <option value="">-- Semua Cabang --</option>
+        @foreach($cabangOptions as $c)
+          <option value="{{ $c->id }}">{{ $c->kode_cabang }} - {{ $c->nama_cabang }}</option>
+        @endforeach
+      </select>
+    </div>
+
+    <div class="col-12 col-md-3">
+      <label class="form-label small text-muted">AO</label>
+      <select class="form-select" wire:model.live="filterAo">
+        <option value="">-- Semua AO --</option>
+        @foreach($aoOptions as $ao)
+          <option value="{{ $ao->name }}">
+            {{ $ao->label }}
+          </option>
+        @endforeach
+      </select>
+    </div>
+
+    <div class="col-12 col-md-2">
+      <label class="form-label small text-muted">Input Oleh</label>
+      <select class="form-select" wire:model.live="filterInputRole">
+        <option value="">-- Semua --</option>
+        @foreach($inputRoleOptions as $opt)
+          <option value="{{ $opt['id'] }}">{{ $opt['label'] }}</option>
+        @endforeach
+      </select>
+    </div>
+
+    <div class="col-12 col-md-2">
+      <label class="form-label small text-muted">Penugasan</label>
+      <select class="form-select" wire:model.live="filterPengambilan">
+        <option value="">-- Semua --</option>
+        <option value="1">Diambil</option>
+        <option value="0">Belum</option>
+      </select>
+    </div>
+
+    <div class="col-12 col-md-2">
+      <label class="form-label small text-muted">Mode Filter Tanggal</label>
+      <select class="form-select" wire:model.live="filterMode">
+        @foreach($filterModeOptions as $mode)
+          <option value="{{ $mode['id'] }}">{{ $mode['label'] }}</option>
+        @endforeach
+      </select>
+    </div>
+
+    @if($filterMode === 'monthly')
+      <div class="col-6 col-md-2">
+        <label class="form-label small text-muted">Bulan</label>
+        <select class="form-select" wire:model.live="filterBulan">
+          <option value="">-- Bulan --</option>
+          @foreach($bulanOptions as $b)
+            <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
           @endforeach
         </select>
       </div>
 
-      <div class="col-12 col-md-2">
-        <label class="form-label small text-muted">Penugasan</label>
-        <select class="form-select" wire:model.live="filterPengambilan">
-          <option value="">-- Semua --</option>
-          <option value="1">Diambil</option>
-          <option value="0">Belum</option>
+      <div class="col-6 col-md-2">
+        <label class="form-label small text-muted">Tahun</label>
+        <select class="form-select" wire:model.live="filterTahun">
+          <option value="">-- Tahun --</option>
+          @foreach($tahunOptions as $t)
+            <option value="{{ $t }}">{{ $t }}</option>
+          @endforeach
         </select>
       </div>
+    @endif
+
+    @if($filterMode === 'range')
+      <div class="col-12 col-md-2">
+        <label class="form-label small text-muted">Dari Tanggal</label>
+        <input type="date"
+               class="form-control"
+               wire:model.live="filterTanggalAwal">
+      </div>
 
       <div class="col-12 col-md-2">
-        <label class="form-label small text-muted">Mode Filter Tanggal</label>
-        <select class="form-select" wire:model.live="filterMode">
-          <option value="all">Semua Data</option>
-          <option value="monthly">Bulanan</option>
-          <option value="range">Range Tanggal</option>
-        </select>
+        <label class="form-label small text-muted">Sampai Tanggal</label>
+        <input type="date"
+               class="form-control"
+               wire:model.live="filterTanggalAkhir">
       </div>
+    @endif
 
-      @if($filterMode === 'monthly')
-        <div class="col-6 col-md-1">
-          <label class="form-label small text-muted">Bulan</label>
-          <select class="form-select" wire:model.live="filterBulan">
-            <option value="">-- Bulan --</option>
-            @foreach($bulanOptions as $b)
-              <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
-            @endforeach
-          </select>
-        </div>
-
-        <div class="col-6 col-md-1">
-          <label class="form-label small text-muted">Tahun</label>
-          <select class="form-select" wire:model.live="filterTahun">
-            <option value="">-- Tahun --</option>
-            @foreach($tahunOptions as $t)
-              <option value="{{ $t }}">{{ $t }}</option>
-            @endforeach
-          </select>
-        </div>
-      @endif
-
-      @if($filterMode === 'range')
-        <div class="col-12 col-md-2">
-          <label class="form-label small text-muted">Dari Tanggal</label>
-          <input type="date"
-                 class="form-control"
-                 wire:model.live="filterTanggalAwal">
-        </div>
-
-        <div class="col-12 col-md-2">
-          <label class="form-label small text-muted">Sampai Tanggal</label>
-          <input type="date"
-                 class="form-control"
-                 wire:model.live="filterTanggalAkhir">
-        </div>
-      @endif
-
-      <div class="col-12 col-md-2">
-        <label class="form-label small text-muted d-block">&nbsp;</label>
-        <button type="button" class="btn btn-light w-100 rounded-pill" wire:click="resetFilter">
-          <i class="bi bi-arrow-clockwise me-1"></i> Reset
-        </button>
-      </div>
-
-      <div class="col-12 col-md text-md-end text-muted small">
-        Total: <span class="fw-bold">{{ $items->total() }}</span> pengajuan
-      </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label small text-muted d-block">&nbsp;</label>
+      <button type="button" class="btn btn-light w-100 rounded-pill" wire:click="resetFilter">
+        <i class="bi bi-arrow-clockwise me-1"></i> Reset
+      </button>
     </div>
 
-    <div class="mt-3">
-      @if($filterMode === 'all')
-        <div class="filter-mode-hint">
-          Menampilkan <span class="fw-semibold">semua pengajuan</span> tanpa filter periode.
-        </div>
-      @elseif($filterMode === 'monthly')
-        <div class="filter-mode-hint">
-          Menampilkan data berdasarkan
-          <span class="fw-semibold">bulan {{ $filterBulan ?: '-' }}</span>
-          dan
-          <span class="fw-semibold">tahun {{ $filterTahun ?: '-' }}</span>.
-        </div>
-      @elseif($filterMode === 'range')
-        <div class="filter-mode-hint">
-          Menampilkan data dari
-          <span class="fw-semibold">{{ $filterTanggalAwal ?: '-' }}</span>
-          s.d.
-          <span class="fw-semibold">{{ $filterTanggalAkhir ?: '-' }}</span>.
-        </div>
-      @endif
+    <div class="col-12 col-md text-md-end text-muted small">
+      Total: <span class="fw-bold">{{ $items->total() }}</span> pengajuan
     </div>
   </div>
+
+  <div class="mt-3">
+    @if($filterMode === 'all')
+      <div class="filter-mode-hint">
+        Menampilkan <span class="fw-semibold">semua pengajuan</span> tanpa filter periode.
+      </div>
+    @elseif($filterMode === 'monthly')
+      <div class="filter-mode-hint">
+        Menampilkan data berdasarkan
+        <span class="fw-semibold">bulan {{ $filterBulan ?: '-' }}</span>
+        dan
+        <span class="fw-semibold">tahun {{ $filterTahun ?: '-' }}</span>.
+      </div>
+    @elseif($filterMode === 'range')
+      <div class="filter-mode-hint">
+        Menampilkan data dari
+        <span class="fw-semibold">{{ $filterTanggalAwal ?: '-' }}</span>
+        s.d.
+        <span class="fw-semibold">{{ $filterTanggalAkhir ?: '-' }}</span>.
+      </div>
+    @endif
+  </div>
+</div>
 
   <div class="sub-card overflow-hidden d-none d-md-block">
     <div class="table-responsive">

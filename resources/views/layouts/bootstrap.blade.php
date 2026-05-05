@@ -441,28 +441,28 @@
 </head>
 
 <body>
-  @php
-    $role = strtoupper(trim((string) (auth()->user()->role ?? '')));
+@php
+  $role = strtoupper(trim((string) (auth()->user()->role ?? '')));
 
-    $isAdmin      = $role === 'ADMIN';
-    $isManajemen  = $role === 'MANAJEMEN';
-    $isSupervisor = $role === 'SUPERVISOR';
-    $isAo         = in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL']);
-    $isPegawai    = $role === 'PEGAWAI';
+  $isAdmin            = $role === 'ADMIN';
+  $isManajemen        = in_array($role, ['MANAJEMEN', 'MANAJEMEN KANWIL'], true);
+  $isManajemenKanwil  = $role === 'MANAJEMEN KANWIL';
+  $isSupervisor       = $role === 'SUPERVISOR';
+  $isAo               = in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true);
+  $isPegawai          = $role === 'PEGAWAI';
 
-    $canDashboard         = $isAdmin || $isManajemen || $isSupervisor;
-    $canProspects         = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
-    $canProspectsDiajukan = $isAdmin || $isManajemen || $isSupervisor || $isAo;
-    $canRekapProspek      = $isAdmin || $isManajemen || $isSupervisor;
-    $canRecycleBin        = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
-    $canProfile           = auth()->check();
-    $canAuditLog          = $isAdmin;
-    $canMasterCabang      = $isAdmin;
-    $canUsers             = $isAdmin;
-    $canKontenApp         = $isAdmin;
-    $canSimulasiKredit    = auth()->check();
-  @endphp
-
+  $canDashboard         = $isAdmin || $isManajemen || $isSupervisor;
+  $canProspects         = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
+  $canProspectsDiajukan = $isAdmin || $isManajemen || $isSupervisor || $isAo;
+  $canRekapProspek      = $isAdmin || $isManajemen || $isSupervisor;
+  $canRecycleBin        = $isAdmin || $isManajemen || $isSupervisor || $isAo || $isPegawai;
+  $canProfile           = auth()->check();
+  $canAuditLog          = $isAdmin;
+  $canMasterCabang      = $isAdmin;
+  $canUsers             = $isAdmin;
+  $canKontenApp         = $isAdmin;
+  $canSimulasiKredit    = auth()->check();
+@endphp
   <div class="app-shell" id="appShell">
 
     <aside class="sidebar d-none d-md-flex" id="sidebar">

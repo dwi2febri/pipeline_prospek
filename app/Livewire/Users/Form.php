@@ -63,7 +63,7 @@ class Form extends Component
                 'required', 'email', 'max:255',
                 Rule::unique('users', 'email')->ignore($this->id)
             ],
-            'role' => ['required', 'in:ADMIN,MANAJEMEN,SUPERVISOR,AO,PEGAWAI'],
+            'role' => ['required', 'in:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,PEGAWAI'],
             'cabang_id' => ['nullable', 'integer'],
             'aktif' => ['required', 'in:0,1'],
             'password' => [$this->id ? 'nullable' : 'required', 'string', 'min:6', 'confirmed'],
@@ -84,21 +84,32 @@ class Form extends Component
         return $value === '' ? null : $value;
     }
 
-    protected function deriveRole(?string $kode, ?string $jobPosition, ?string $level): string
+    protected function deriveRole(?string $kode, ?string $jobPosition, ?string $level, ?string $branchName = null, ?string $unitKerja = null): string
     {
         $kode = trim((string) $kode);
         $jobPosition = strtoupper(trim((string) $jobPosition));
         $level = strtoupper(trim((string) $level));
+        $branchName = strtoupper(trim((string) $branchName));
+        $unitKerja = strtoupper(trim((string) $unitKerja));
 
         if ($level === 'DEWAN KOMISARIS DAN DIREKSI') {
             return 'MANAJEMEN';
+        }
+
+        if (
+            str_contains($branchName, 'KANTOR WILAYAH') ||
+            str_contains($branchName, 'KANWIL') ||
+            str_contains($unitKerja, 'KANTOR WILAYAH') ||
+            str_contains($unitKerja, 'AREA KANTOR WILAYAH')
+        ) {
+            return 'MANAJEMEN KANWIL';
         }
 
         if (in_array($level, ['KEPALA BIDANG', 'KEPALA CABANG'], true) && $kode !== '' && $kode !== '000') {
             return 'SUPERVISOR';
         }
 
-        if (in_array($jobPosition, ['AO KREDIT', 'AO DANA', 'AO REMIDIAL', 'AO REMEDIAL'], true)) {
+        if (in_array($jobPosition, ['AO KREDIT', 'AO DANA', 'AO REMIDIAL', 'AO REMEDIAL', 'AO'], true)) {
             return 'AO';
         }
 
@@ -116,7 +127,13 @@ class Form extends Component
         $this->level = $this->normalizeText($this->level);
         $this->group_jabatan = $this->normalizeText($this->group_jabatan);
 
-        $this->role = $this->deriveRole($this->kode, $this->job_position, $this->level);
+        $this->role = $this->deriveRole(
+            $this->kode,
+            $this->job_position,
+            $this->level,
+            $this->branch_name,
+            $this->unit_kerja
+        );
 
         $this->validate();
 
@@ -166,7 +183,10 @@ class Form extends Component
 
     public function render()
     {
-        $cabangs = Cabang::query()->where('aktif', 1)->orderBy('kode_cabang')->get();
+        $cabangs = Cabang::query()
+            ->where('aktif', 1)
+            ->orderBy('kode_cabang')
+            ->get();
 
         return view('livewire.users.form', compact('cabangs'))
             ->layout('layouts.bootstrap');

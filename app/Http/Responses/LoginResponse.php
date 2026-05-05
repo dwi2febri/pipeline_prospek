@@ -11,11 +11,12 @@ class LoginResponse implements LoginResponseContract
         $user = auth()->user();
         $role = strtoupper(trim((string) ($user->role ?? '')));
 
-        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'])) {
+        // MANAJEMEN KANWIL diarahkan ke dashboard
+        if (in_array($role, ['ADMIN', 'MANAJEMEN', 'MANAJEMEN KANWIL', 'SUPERVISOR'], true)) {
             return redirect()->route('dashboard');
         }
 
-        if (in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'])) {
+        if (in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
             return redirect()->route('prospects.submissions');
         }
 
@@ -23,6 +24,6 @@ class LoginResponse implements LoginResponseContract
             return redirect()->route('prospects.index');
         }
 
-        return redirect()->route('prospects.index');
+        return redirect()->route('dashboard');
     }
 }

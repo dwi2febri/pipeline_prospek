@@ -18,6 +18,9 @@ class Index extends Component
     public string $filterCabang = '';
     public string $filterRole = '';
     public string $filterAktif = '';
+    public string $filterJobPosition = '';
+    public string $filterBranchName = '';
+    public string $filterUnitKerja = '';
     public $file;
 
     protected $queryString = [
@@ -25,6 +28,9 @@ class Index extends Component
         'filterCabang' => ['except' => ''],
         'filterRole' => ['except' => ''],
         'filterAktif' => ['except' => ''],
+        'filterJobPosition' => ['except' => ''],
+        'filterBranchName' => ['except' => ''],
+        'filterUnitKerja' => ['except' => ''],
     ];
 
     public function updatingSearch()
@@ -47,12 +53,30 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterJobPosition()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterBranchName()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterUnitKerja()
+    {
+        $this->resetPage();
+    }
+
     public function resetFilter(): void
     {
         $this->search = '';
         $this->filterCabang = '';
         $this->filterRole = '';
         $this->filterAktif = '';
+        $this->filterJobPosition = '';
+        $this->filterBranchName = '';
+        $this->filterUnitKerja = '';
         $this->resetPage();
     }
 
@@ -62,21 +86,32 @@ class Index extends Component
         return $value === '' ? null : $value;
     }
 
-    protected function deriveRole(?string $kode, ?string $jobPosition, ?string $level): string
+    protected function deriveRole(?string $kode, ?string $jobPosition, ?string $level, ?string $branchName = null, ?string $unitKerja = null): string
     {
         $kode = trim((string) $kode);
         $jobPosition = strtoupper(trim((string) $jobPosition));
         $level = strtoupper(trim((string) $level));
+        $branchName = strtoupper(trim((string) $branchName));
+        $unitKerja = strtoupper(trim((string) $unitKerja));
 
         if ($level === 'DEWAN KOMISARIS DAN DIREKSI') {
             return 'MANAJEMEN';
+        }
+
+        if (
+            str_contains($branchName, 'KANTOR WILAYAH') ||
+            str_contains($branchName, 'KANWIL') ||
+            str_contains($unitKerja, 'KANTOR WILAYAH') ||
+            str_contains($unitKerja, 'AREA KANTOR WILAYAH')
+        ) {
+            return 'MANAJEMEN KANWIL';
         }
 
         if (in_array($level, ['KEPALA BIDANG', 'KEPALA CABANG'], true) && $kode !== '' && $kode !== '000') {
             return 'SUPERVISOR';
         }
 
-        if (in_array($jobPosition, ['AO KREDIT', 'AO DANA', 'AO REMIDIAL', 'AO REMEDIAL'], true)) {
+        if (in_array($jobPosition, ['AO KREDIT', 'AO DANA', 'AO REMIDIAL', 'AO REMEDIAL', 'AO'], true)) {
             return 'AO';
         }
 
@@ -88,8 +123,6 @@ class Index extends Component
         $kode = trim((string) $kode);
         $branchName = trim((string) $branchName);
 
-        // Ambil digit saja, lalu paksa 3 digit:
-        // 0 => 000, 10 => 010, 011 => 011, 000 => 000
         if ($kode !== '') {
             $kodeOnly = preg_replace('/[^0-9]/', '', $kode);
 
@@ -106,7 +139,6 @@ class Index extends Component
             }
         }
 
-        // Fallback ke nama cabang bila kode tidak ketemu
         if ($branchName !== '') {
             $branchNameNorm = strtolower($branchName);
 
@@ -216,7 +248,7 @@ class Index extends Component
                     continue;
                 }
 
-                $role = $this->deriveRole($kode, $jobPosition, $level);
+                $role = $this->deriveRole($kode, $jobPosition, $level, $branchName, $unitKerja);
                 $cabangId = $this->resolveCabangId($kode, $branchName);
 
                 $username = $employeeId;
@@ -318,6 +350,27 @@ class Index extends Component
             ->orderBy('kode_cabang')
             ->get(['id', 'kode_cabang', 'nama_cabang']);
 
+        $jobPositions = User::query()
+            ->whereNotNull('job_position')
+            ->where('job_position', '!=', '')
+            ->distinct()
+            ->orderBy('job_position')
+            ->pluck('job_position');
+
+        $branchNames = User::query()
+            ->whereNotNull('branch_name')
+            ->where('branch_name', '!=', '')
+            ->distinct()
+            ->orderBy('branch_name')
+            ->pluck('branch_name');
+
+        $unitKerjas = User::query()
+            ->whereNotNull('unit_kerja')
+            ->where('unit_kerja', '!=', '')
+            ->distinct()
+            ->orderBy('unit_kerja')
+            ->pluck('unit_kerja');
+
         $items = User::query()
             ->with('cabang')
             ->when($this->search !== '', function ($q) {
@@ -344,10 +397,24 @@ class Index extends Component
             ->when($this->filterAktif !== '', function ($q) {
                 $q->where('aktif', (int) $this->filterAktif);
             })
+            ->when($this->filterJobPosition !== '', function ($q) {
+                $q->where('job_position', $this->filterJobPosition);
+            })
+            ->when($this->filterBranchName !== '', function ($q) {
+                $q->where('branch_name', $this->filterBranchName);
+            })
+            ->when($this->filterUnitKerja !== '', function ($q) {
+                $q->where('unit_kerja', $this->filterUnitKerja);
+            })
             ->latest('id')
             ->paginate(10);
 
-        return view('livewire.users.index', compact('items', 'cabangs'))
-            ->layout('layouts.bootstrap');
+        return view('livewire.users.index', compact(
+            'items',
+            'cabangs',
+            'jobPositions',
+            'branchNames',
+            'unitKerjas'
+        ))->layout('layouts.bootstrap');
     }
 }

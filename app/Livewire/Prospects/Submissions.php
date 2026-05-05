@@ -6,6 +6,7 @@ use App\Models\Cabang;
 use App\Models\Prospect;
 use App\Models\ProspectNotification;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
@@ -22,11 +23,14 @@ class Submissions extends Component
     public ?string $filterPengambilan = '';
     public ?int $filterCabang = null;
 
+    public ?string $filterKanwil = '';
+    public ?string $filterAo = '';
+    public ?string $filterInputRole = '';
+
     public string $filterBulan = '';
     public string $filterTahun = '';
     public string $filterMode = 'all';
 
-    // disamakan dengan blade
     public ?string $filterTanggalAwal = null;
     public ?string $filterTanggalAkhir = null;
 
@@ -48,6 +52,9 @@ class Submissions extends Component
         'filterStatus' => ['except' => ''],
         'filterPengambilan' => ['except' => ''],
         'filterCabang' => ['except' => ''],
+        'filterKanwil' => ['except' => ''],
+        'filterAo' => ['except' => ''],
+        'filterInputRole' => ['except' => ''],
         'filterMode' => ['except' => 'all'],
         'filterBulan' => ['except' => ''],
         'filterTahun' => ['except' => ''],
@@ -59,16 +66,28 @@ class Submissions extends Component
     {
         $role = $this->currentUserRole();
 
-        // default = semua data
         $this->filterMode = 'all';
         $this->filterBulan = '';
         $this->filterTahun = '';
         $this->filterTanggalAwal = null;
         $this->filterTanggalAkhir = null;
+        $this->filterKanwil = '';
+        $this->filterAo = '';
+        $this->filterInputRole = '';
 
         if ($role === 'SUPERVISOR') {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
             $this->lockCabangFilter = true;
+        }
+
+        if ($role === 'MANAJEMEN KANWIL') {
+            $kodeKanwil = $this->getUserKanwilKode();
+
+            if (in_array($kodeKanwil, ['100', '200', '300', '400'], true)) {
+                $this->filterKanwil = $kodeKanwil;
+                $this->filterCabang = null;
+                $this->lockCabangFilter = false;
+            }
         }
     }
 
@@ -87,12 +106,55 @@ class Submissions extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterKanwil(): void
+    {
+        if ($this->lockCabangFilter) {
+            $this->filterKanwil = '';
+            return;
+        }
+
+        if ($this->isManagementKanwilRole()) {
+            $kodeKanwil = $this->getUserKanwilKode();
+
+            if (in_array($kodeKanwil, ['100', '200', '300', '400'], true)) {
+                $this->filterKanwil = $kodeKanwil;
+            }
+        }
+
+        $this->filterCabang = null;
+        $this->filterAo = '';
+        $this->resetPage();
+    }
+
     public function updatingFilterCabang(): void
     {
         if ($this->lockCabangFilter) {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
+        } else {
+            if ($this->isManagementKanwilRole()) {
+                $allowedCabangIds = $this->getAllowedCabangIdsForManagementKanwil();
+
+                if (!empty($this->filterCabang) && !in_array((int) $this->filterCabang, $allowedCabangIds, true)) {
+                    $this->filterCabang = null;
+                }
+
+                $this->filterKanwil = $this->getUserKanwilKode();
+            } else {
+                $this->filterKanwil = '';
+            }
         }
 
+        $this->filterAo = '';
+        $this->resetPage();
+    }
+
+    public function updatingFilterAo(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterInputRole(): void
+    {
         $this->resetPage();
     }
 
@@ -114,7 +176,6 @@ class Submissions extends Component
             $this->filterTanggalAwal = null;
             $this->filterTanggalAkhir = null;
         } elseif ($this->filterMode === 'monthly') {
-            // jangan auto isi current month kalau user belum pilih
             $this->filterTanggalAwal = null;
             $this->filterTanggalAkhir = null;
         } elseif ($this->filterMode === 'range') {
@@ -151,6 +212,8 @@ class Submissions extends Component
         $this->search = '';
         $this->filterStatus = '';
         $this->filterPengambilan = '';
+        $this->filterAo = '';
+        $this->filterInputRole = '';
         $this->filterMode = 'all';
         $this->filterBulan = '';
         $this->filterTahun = '';
@@ -159,7 +222,12 @@ class Submissions extends Component
 
         if ($this->lockCabangFilter) {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
+            $this->filterKanwil = '';
+        } elseif ($this->isManagementKanwilRole()) {
+            $this->filterKanwil = $this->getUserKanwilKode();
+            $this->filterCabang = null;
         } else {
+            $this->filterKanwil = '';
             $this->filterCabang = null;
         }
 
@@ -169,6 +237,58 @@ class Submissions extends Component
     protected function currentUserRole(): string
     {
         return strtoupper(trim((string) (auth()->user()->role ?? '')));
+    }
+
+    protected function isManagementKanwilRole(?string $role = null): bool
+    {
+        $role = $role ?: $this->currentUserRole();
+        return $role === 'MANAJEMEN KANWIL';
+    }
+
+    protected function getUserKanwilKode(): string
+    {
+        $user = auth()->user();
+
+        if (!$user || empty($user->cabang_id)) {
+            return '';
+        }
+
+        $cabang = Cabang::query()
+            ->where('id', (int) $user->cabang_id)
+            ->first(['kode_cabang']);
+
+        return trim((string) ($cabang->kode_cabang ?? ''));
+    }
+
+    protected function getKanwilRange(string $kodeKanwil): array
+    {
+        return match ($kodeKanwil) {
+            '100' => [1, 7],
+            '200' => [8, 14],
+            '300' => [15, 21],
+            '400' => [22, 28],
+            default => [0, 0],
+        };
+    }
+
+    protected function getAllowedCabangIdsForManagementKanwil(): array
+    {
+        $kodeKanwil = $this->getUserKanwilKode();
+
+        if (!in_array($kodeKanwil, ['100', '200', '300', '400'], true)) {
+            return [];
+        }
+
+        [$start, $end] = $this->getKanwilRange($kodeKanwil);
+
+        return Cabang::query()
+            ->where(function ($q) use ($kodeKanwil, $start, $end) {
+                $q->where('kode_cabang', $kodeKanwil)
+                    ->orWhereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN {$start} AND {$end}");
+            })
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->toArray();
     }
 
     protected function currentUserJobPosition(): string
@@ -218,7 +338,7 @@ class Submissions extends Component
     protected function isAdminOrManagementRole(?string $role = null): bool
     {
         $role = $role ?: $this->currentUserRole();
-        return in_array($role, ['ADMIN', 'MANAJEMEN'], true);
+        return in_array($role, ['ADMIN', 'MANAJEMEN', 'MANAJEMEN KANWIL'], true);
     }
 
     protected function isSupervisorRole(?string $role = null): bool
@@ -236,7 +356,78 @@ class Submissions extends Component
     protected function canManageAssignment(?string $role = null): bool
     {
         $role = $role ?: $this->currentUserRole();
-        return in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'], true);
+        return in_array($role, ['ADMIN', 'MANAJEMEN', 'MANAJEMEN KANWIL', 'SUPERVISOR'], true);
+    }
+
+    protected function normalizeDateRange(): void
+    {
+        if (
+            !empty($this->filterTanggalAwal) &&
+            !empty($this->filterTanggalAkhir) &&
+            $this->filterTanggalAwal > $this->filterTanggalAkhir
+        ) {
+            [$this->filterTanggalAwal, $this->filterTanggalAkhir] = [$this->filterTanggalAkhir, $this->filterTanggalAwal];
+        }
+    }
+
+    protected function getSelectedCabangIds(): array
+    {
+        if ($this->lockCabangFilter) {
+            $forcedCabang = (int) (auth()->user()->cabang_id ?? 0);
+            return $forcedCabang > 0 ? [$forcedCabang] : [];
+        }
+
+        if ($this->isManagementKanwilRole()) {
+            $allowedCabangIds = $this->getAllowedCabangIdsForManagementKanwil();
+
+            if (!empty($this->filterCabang)) {
+                return in_array((int) $this->filterCabang, $allowedCabangIds, true)
+                    ? [(int) $this->filterCabang]
+                    : $allowedCabangIds;
+            }
+
+            return $allowedCabangIds;
+        }
+
+        if (!empty($this->filterCabang)) {
+            return [(int) $this->filterCabang];
+        }
+
+        $kanwil = trim((string) $this->filterKanwil);
+
+        if ($kanwil === '100') {
+            return Cabang::query()
+                ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 7")
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->toArray();
+        }
+
+        if ($kanwil === '200') {
+            return Cabang::query()
+                ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 8 AND 14")
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->toArray();
+        }
+
+        if ($kanwil === '300') {
+            return Cabang::query()
+                ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 15 AND 21")
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->toArray();
+        }
+
+        if ($kanwil === '400') {
+            return Cabang::query()
+                ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 22 AND 28")
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->toArray();
+        }
+
+        return [];
     }
 
     protected function getNamaLengkapUserByUsername(?string $username): ?string
@@ -301,6 +492,18 @@ class Submissions extends Component
         return [];
     }
 
+    protected function getAoJobOrder(?string $jobPosition): int
+    {
+        $job = strtoupper(trim((string) $jobPosition));
+
+        return match ($job) {
+            'AO KREDIT' => 1,
+            'AO DANA' => 2,
+            'AO REMIDIAL', 'AO REMEDIAL', 'AO REMIDAL' => 3,
+            default => 99,
+        };
+    }
+
     protected function getAssignableAoOptions(?string $jenisProduk, ?int $cabangId): array
     {
         $jobPositions = $this->getAssignmentJobPositionsByProduk($jenisProduk);
@@ -349,15 +552,82 @@ class Submissions extends Component
             ->toArray();
     }
 
+    protected function getAoOptionsByCabangFilter()
+    {
+        $selectedCabangIds = $this->getSelectedCabangIds();
+
+        $query = User::query()
+            ->where('aktif', 1)
+            ->where(function ($q) {
+                $q->where('role', 'AO')
+                  ->orWhere(function ($qq) {
+                      $qq->whereIn(DB::raw('UPPER(COALESCE(job_position, ""))'), [
+                          'AO KREDIT',
+                          'AO DANA',
+                          'AO REMIDIAL',
+                          'AO REMEDIAL',
+                          'AO REMIDAL'
+                      ]);
+                  });
+            });
+
+        if (!empty($selectedCabangIds)) {
+            $query->whereIn('cabang_id', $selectedCabangIds);
+        }
+
+        $items = $query->get([
+            'id',
+            'name',
+            'nama_lengkap',
+            'job_position',
+            'cabang_id',
+            'role',
+        ]);
+
+        return $items
+            ->map(function ($u) {
+                $job = trim((string) $u->job_position);
+                $kodePegawai = trim((string) $u->name);
+                $namaPegawai = trim((string) ($u->nama_lengkap ?: $u->name));
+
+                return (object) [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'nama_lengkap' => $u->nama_lengkap,
+                    'job_position' => $job,
+                    'cabang_id' => $u->cabang_id,
+                    'kode_pegawai' => $kodePegawai,
+                    'label' => $kodePegawai . ' - ' . $namaPegawai . ($job !== '' ? ' - ' . $job : ''),
+                    'sort_order' => $this->getAoJobOrder($job),
+                ];
+            })
+            ->sort(function ($a, $b) {
+                if ($a->sort_order === $b->sort_order) {
+                    return strcmp((string) $a->nama_lengkap, (string) $b->nama_lengkap);
+                }
+                return $a->sort_order <=> $b->sort_order;
+            })
+            ->values();
+    }
+
     protected function baseQuery()
     {
         $u = auth()->user();
         $role = $this->currentUserRole();
         $allowedProduk = $this->getAllowedProdukByUser();
 
+        $this->normalizeDateRange();
+
         if ($this->lockCabangFilter) {
             $this->filterCabang = (int) ($u->cabang_id ?? 0);
+            $this->filterKanwil = '';
         }
+
+        if ($this->isManagementKanwilRole()) {
+            $this->filterKanwil = $this->getUserKanwilKode();
+        }
+
+        $selectedCabangIds = $this->getSelectedCabangIds();
 
         return Prospect::query()
             ->with([
@@ -386,8 +656,17 @@ class Submissions extends Component
             ->when($this->filterPengambilan !== null && $this->filterPengambilan !== '', function ($q) {
                 $q->where('is_diambil', (int) $this->filterPengambilan);
             })
-            ->when($this->filterCabang, function ($q) {
-                $q->where('cabang_id', $this->filterCabang);
+            ->when(!empty($selectedCabangIds), function ($q) use ($selectedCabangIds) {
+                $q->whereIn('cabang_id', $selectedCabangIds);
+            })
+            ->when($this->filterAo !== null && trim((string) $this->filterAo) !== '', function ($q) {
+                $q->where('diambil_oleh', trim((string) $this->filterAo));
+            })
+            ->when($this->filterInputRole !== null && trim((string) $this->filterInputRole) !== '', function ($q) {
+                $roleFilter = trim((string) $this->filterInputRole);
+                $q->whereHas('creator', function ($creatorQ) use ($roleFilter) {
+                    $creatorQ->where('role', $roleFilter);
+                });
             })
             ->when($this->filterMode === 'monthly' && $this->filterBulan !== '', function ($q) {
                 $q->whereMonth('tanggal_prospek', (int) $this->filterBulan);
@@ -622,6 +901,15 @@ class Submissions extends Component
             return;
         }
 
+        if ($this->isManagementKanwilRole($role)) {
+            $allowedCabangIds = $this->getAllowedCabangIdsForManagementKanwil();
+
+            if (!in_array((int) $prospect->cabang_id, $allowedCabangIds, true)) {
+                session()->flash('ok', 'Anda tidak berhak menugaskan prospek di luar wilayah kanwil Anda.');
+                return;
+            }
+        }
+
         $allowedOptions = collect($this->getAssignableAoOptions($prospect->jenis_produk, (int) $prospect->cabang_id))
             ->pluck('username')
             ->all();
@@ -660,14 +948,9 @@ class Submissions extends Component
         $namaFile = 'prospek_diajukan_' . now()->format('Ymd_His') . '.xls';
 
         $html = '';
-        $html .= '<html>';
-        $html .= '<head><meta charset="UTF-8"></head>';
-        $html .= '<body>';
+        $html .= '<html><head><meta charset="UTF-8"></head><body>';
         $html .= '<table border="1">';
-        $html .= '<tr>';
-        $html .= '<th colspan="24" style="font-weight:bold; font-size:16px;">DATA PROSPEK DIAJUKAN</th>';
-        $html .= '</tr>';
-
+        $html .= '<tr><th colspan="24" style="font-weight:bold; font-size:16px;">DATA PROSPEK DIAJUKAN</th></tr>';
         $html .= '<tr>';
         $html .= '<th>Tanggal Prospek</th>';
         $html .= '<th>Nama Prospek</th>';
@@ -729,9 +1012,7 @@ class Submissions extends Component
             $html .= '</tr>';
         }
 
-        $html .= '</table>';
-        $html .= '</body>';
-        $html .= '</html>';
+        $html .= '</table></body></html>';
 
         return response()->streamDownload(function () use ($html) {
             echo $html;
@@ -758,6 +1039,15 @@ class Submissions extends Component
             return;
         }
 
+        if ($this->isManagementKanwilRole($role)) {
+            $allowedCabangIds = $this->getAllowedCabangIdsForManagementKanwil();
+
+            if (!in_array((int) $p->cabang_id, $allowedCabangIds, true)) {
+                session()->flash('ok', 'Anda tidak berhak melihat prospek di luar wilayah kanwil Anda.');
+                return;
+            }
+        }
+
         $this->detailId = $p->id;
         $this->statusUpdate = in_array((string) $p->status, ['FOLLOW UP', 'CLOSING', 'REJECTED'], true)
             ? (string) $p->status
@@ -769,7 +1059,7 @@ class Submissions extends Component
         $this->takenByUsername = $p->diambil_oleh;
         $this->takenByFullName = $this->getNamaLengkapUserByUsername($p->diambil_oleh);
         $this->isAdminOrManagement = $this->isAdminOrManagementRole($role);
-        $this->hideActionForm = in_array($role, ['MANAJEMEN', 'SUPERVISOR'], true);
+        $this->hideActionForm = in_array($role, ['MANAJEMEN', 'MANAJEMEN KANWIL', 'SUPERVISOR'], true);
 
         if ($this->isAdminOrManagementRole($role)) {
             $this->canViewDetail = true;
@@ -864,111 +1154,53 @@ class Submissions extends Component
         }
 
         if ($this->isAoViewerRole($role) && (string) $p->diambil_oleh !== (string) $u->name) {
-            session()->flash('ok', 'Anda tidak berhak mengubah status prospek ini.');
+            session()->flash('ok', 'Anda hanya bisa mengubah prospek yang ditugaskan ke Anda.');
             return;
         }
 
-        if ($this->isSupervisorRole($role) && (int) $p->cabang_id !== (int) ($u->cabang_id ?? 0)) {
-            session()->flash('ok', 'Anda tidak berhak mengubah status prospek ini.');
-            return;
+        if ($this->isManagementKanwilRole($role)) {
+            $allowedCabangIds = $this->getAllowedCabangIdsForManagementKanwil();
+
+            if (!in_array((int) $p->cabang_id, $allowedCabangIds, true)) {
+                session()->flash('ok', 'Anda tidak berhak mengubah prospek di luar wilayah kanwil Anda.');
+                return;
+            }
         }
 
         $p->status = $newStatus;
 
-        if ($this->hasNoRekeningColumn()) {
-            if ($newStatus === 'CLOSING') {
-                $p->no_rekening = $this->normalizeDigits($this->noRekening);
-            } elseif ($this->isAoViewerRole($role)) {
-                $p->no_rekening = null;
+        if ($newStatus === 'CLOSING' && $this->hasNoRekeningColumn()) {
+            $p->no_rekening = $this->noRekening;
+            $p->is_diambil = 1;
+            if (empty($p->diambil_oleh)) {
+                $p->diambil_oleh = (string) $u->name;
             }
         }
 
         $p->save();
 
-        if (
-            $oldStatus !== $newStatus &&
-            in_array($newStatus, ['FOLLOW UP', 'CLOSING', 'REJECTED'], true)
-        ) {
+        if ($oldStatus !== $newStatus) {
             $this->kirimNotifStatusKePengaju($p, $newStatus);
         }
 
         session()->flash('ok', 'Status prospek berhasil diperbarui.');
-        $this->openDetail($p->id);
+        $this->dispatch('close-prospect-detail-modal');
+        $this->closeDetail();
     }
 
-    public function updateAmbilStatus(): void
+    public function getDetailProperty()
     {
-        $this->validate([
-            'ambilStatus' => ['required', 'in:0,1'],
-        ], [
-            'ambilStatus.required' => 'Status pengambilan wajib dipilih.',
-            'ambilStatus.in' => 'Status pengambilan tidak valid.',
-        ]);
-
-        if (!$this->detailId || $this->hideActionForm) {
-            return;
+        if (!$this->detailId) {
+            return null;
         }
 
-        $u = auth()->user();
-        $role = $this->currentUserRole();
-
-        $p = Prospect::findOrFail($this->detailId);
-        $oldStatus = (string) $p->status;
-
-        $allowedProduk = $this->getAllowedProdukByUser();
-        if (!empty($allowedProduk) && !in_array((string) $p->jenis_produk, $allowedProduk, true)) {
-            session()->flash('ok', 'Anda tidak berhak mengubah pengambilan prospek dengan rekomendasi produk tersebut.');
-            return;
-        }
-
-        if ($this->isAoViewerRole($role) && (string) $p->diambil_oleh !== (string) $u->name) {
-            session()->flash('ok', 'Anda tidak berhak mengubah penugasan prospek ini.');
-            return;
-        }
-
-        if ($this->isSupervisorRole($role) && (int) $p->cabang_id !== (int) ($u->cabang_id ?? 0)) {
-            session()->flash('ok', 'Anda tidak berhak mengubah penugasan prospek ini.');
-            return;
-        }
-
-        if ($this->ambilStatus === '1') {
-            $p->is_diambil = 1;
-            $p->diambil_oleh = $u->name;
-
-            if ((string) $p->status === 'OPEN' || empty($p->status)) {
-                $p->status = 'FOLLOW UP';
-                $this->statusUpdate = 'FOLLOW UP';
-            }
-        } else {
-            if ($this->isAoViewerRole($role)) {
-                if (!empty($p->diambil_oleh) && $p->diambil_oleh !== $u->name) {
-                    session()->flash('ok', 'Prospek ini tidak bisa dilepas karena bukan Anda yang mengambil.');
-                    return;
-                }
-            }
-
-            $p->is_diambil = 0;
-            $p->diambil_oleh = null;
-        }
-
-        $p->save();
-
-        if (
-            $oldStatus !== (string) $p->status &&
-            in_array((string) $p->status, ['FOLLOW UP', 'CLOSING', 'REJECTED'], true)
-        ) {
-            $this->kirimNotifStatusKePengaju($p, (string) $p->status);
-        }
-
-        $this->takenByUsername = $p->diambil_oleh;
-        $this->takenByFullName = $this->getNamaLengkapUserByUsername($p->diambil_oleh);
-
-        session()->flash('ok', 'Status pengambilan prospek berhasil diperbarui.');
-        $this->openDetail($p->id);
+        return Prospect::with(['cabang', 'creator', 'creator.cabang', 'documents'])->find($this->detailId);
     }
 
     public function render()
     {
+        $this->normalizeDateRange();
+
         $items = $this->baseQuery()
             ->latest('tanggal_prospek')
             ->latest('id')
@@ -993,15 +1225,45 @@ class Submissions extends Component
             $assignmentMap[$p->id] = $this->getAssignableAoOptions($p->jenis_produk, (int) $p->cabang_id);
         }
 
-        $detail = null;
-        if ($this->detailId) {
-            $detail = Prospect::with(['cabang', 'creator', 'creator.cabang', 'documents'])->find($this->detailId);
+        $detail = $this->detail;
+
+        $role = $this->currentUserRole();
+        $kodeKanwilUser = $this->getUserKanwilKode();
+
+        $cabangOptionsQuery = Cabang::query()
+            ->where('aktif', 1)
+            ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28");
+
+        if ($this->isManagementKanwilRole() && in_array($kodeKanwilUser, ['100', '200', '300', '400'], true)) {
+            [$start, $end] = $this->getKanwilRange($kodeKanwilUser);
+
+            $cabangOptionsQuery->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN {$start} AND {$end}");
+        } elseif ($this->filterKanwil === '100') {
+            $cabangOptionsQuery->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 7");
+        } elseif ($this->filterKanwil === '200') {
+            $cabangOptionsQuery->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 8 AND 14");
+        } elseif ($this->filterKanwil === '300') {
+            $cabangOptionsQuery->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 15 AND 21");
+        } elseif ($this->filterKanwil === '400') {
+            $cabangOptionsQuery->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 22 AND 28");
         }
 
-        $cabangOptions = Cabang::query()
-            ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28")
+        $cabangOptions = $cabangOptionsQuery
             ->orderByRaw("CAST(kode_cabang AS UNSIGNED) ASC")
             ->get(['id', 'kode_cabang', 'nama_cabang']);
+
+        $aoOptions = $this->getAoOptionsByCabangFilter();
+
+        $allKanwilOptions = [
+            ['id' => '100', 'label' => '100 - KANWIL SEMARANG'],
+            ['id' => '200', 'label' => '200 - KANWIL SOLO'],
+            ['id' => '300', 'label' => '300 - KANWIL BANYUMAS'],
+            ['id' => '400', 'label' => '400 - KANWIL PEKALONGAN'],
+        ];
+
+        $kanwilOptions = $this->isManagementKanwilRole() && in_array($kodeKanwilUser, ['100', '200', '300', '400'], true)
+            ? array_values(array_filter($allKanwilOptions, fn ($k) => $k['id'] === $kodeKanwilUser))
+            : $allKanwilOptions;
 
         $filterModeOptions = [
             ['id' => 'all', 'label' => 'Semua Data'],
@@ -1019,15 +1281,23 @@ class Submissions extends Component
         $tahunNow = (int) now()->year;
         $tahunOptions = collect(range($tahunNow - 3, $tahunNow + 1));
 
+        $inputRoleOptions = [
+            ['id' => 'AO', 'label' => 'AO'],
+            ['id' => 'PEGAWAI', 'label' => 'PEGAWAI'],
+        ];
+
         return view('livewire.prospects.submissions', compact(
             'items',
             'detail',
             'cabangOptions',
+            'aoOptions',
+            'kanwilOptions',
             'bulanOptions',
             'tahunOptions',
             'namaPengambilMap',
             'assignmentMap',
-            'filterModeOptions'
+            'filterModeOptions',
+            'inputRoleOptions'
         ))->layout('layouts.bootstrap');
     }
 }

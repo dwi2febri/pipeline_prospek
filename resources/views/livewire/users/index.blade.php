@@ -3,7 +3,7 @@
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <div>
       <div class="fw-bold fs-3">Manajemen User</div>
-      <div class="text-muted">Kelola akun admin / manajemen / supervisor / AO / pegawai</div>
+      <div class="text-muted">Kelola akun admin / manajemen / manajemen kanwil / supervisor / AO / pegawai</div>
     </div>
 
     <div class="d-flex flex-wrap gap-2">
@@ -30,12 +30,12 @@
 
   <div class="card-soft p-3 mb-3">
     <div class="row g-2 align-items-center">
-      <div class="col-12 col-lg-4">
+      <div class="col-12 col-lg-3">
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
           <input class="form-control"
                  style="border-left:0"
-                 placeholder="Cari nama / email / role..."
+                 placeholder="Cari nama / email / role / employee id..."
                  wire:model.live.debounce.300ms="search">
         </div>
       </div>
@@ -56,6 +56,7 @@
           <option value="">Semua Role</option>
           <option value="ADMIN">ADMIN</option>
           <option value="MANAJEMEN">MANAJEMEN</option>
+          <option value="MANAJEMEN KANWIL">MANAJEMEN KANWIL</option>
           <option value="SUPERVISOR">SUPERVISOR</option>
           <option value="AO">AO</option>
           <option value="PEGAWAI">PEGAWAI</option>
@@ -70,10 +71,37 @@
         </select>
       </div>
 
-      <div class="col-12 col-sm-6 col-lg-2 d-grid">
+      <div class="col-12 col-sm-6 col-lg-3 d-grid">
         <button type="button" class="btn btn-light rounded-pill" wire:click="resetFilter">
           <i class="bi bi-arrow-clockwise me-1"></i> Reset Filter
         </button>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <select class="form-select" wire:model.live="filterJobPosition">
+          <option value="">Semua Job Position</option>
+          @foreach($jobPositions as $jp)
+            <option value="{{ $jp }}">{{ $jp }}</option>
+          @endforeach
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <select class="form-select" wire:model.live="filterBranchName">
+          <option value="">Semua Branch Name</option>
+          @foreach($branchNames as $bn)
+            <option value="{{ $bn }}">{{ $bn }}</option>
+          @endforeach
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <select class="form-select" wire:model.live="filterUnitKerja">
+          <option value="">Semua Unit Kerja</option>
+          @foreach($unitKerjas as $uk)
+            <option value="{{ $uk }}">{{ $uk }}</option>
+          @endforeach
+        </select>
       </div>
 
       <div class="col-12 text-md-end text-muted small pt-1">
@@ -89,8 +117,11 @@
           <tr>
             <th style="min-width:260px;">User</th>
             <th style="min-width:220px;">Email</th>
-            <th style="min-width:160px;">Role</th>
+            <th style="min-width:180px;">Role</th>
             <th style="min-width:220px;">Cabang</th>
+            <th style="min-width:220px;">Job Position</th>
+            <th style="min-width:220px;">Branch Name</th>
+            <th style="min-width:220px;">Unit Kerja</th>
             <th style="width:110px;">Aktif</th>
             <th style="width:140px;" class="text-end">Aksi</th>
           </tr>
@@ -103,6 +134,7 @@
               $roleBadge = 'bg-dark';
               if($role==='ADMIN') $roleBadge = 'bg-danger';
               if($role==='MANAJEMEN') $roleBadge = 'bg-dark';
+              if($role==='MANAJEMEN KANWIL') $roleBadge = 'bg-info text-dark';
               if($role==='SUPERVISOR') $roleBadge = 'bg-warning text-dark';
               if($role==='AO') $roleBadge = 'bg-primary';
               if($role==='PEGAWAI') $roleBadge = 'bg-secondary';
@@ -118,6 +150,7 @@
                   <div>
                     <div class="fw-bold">{{ $u->name }}</div>
                     <div class="text-muted small">{{ $u->nama_lengkap ?? '-' }}</div>
+                    <div class="text-muted small">{{ $u->employee_id ?? '-' }}</div>
                   </div>
                 </div>
               </td>
@@ -133,6 +166,10 @@
               <td class="small">
                 {{ $u->cabang ? ($u->cabang->kode_cabang.' - '.$u->cabang->nama_cabang) : '-' }}
               </td>
+
+              <td class="small">{{ $u->job_position ?: '-' }}</td>
+              <td class="small">{{ $u->branch_name ?: '-' }}</td>
+              <td class="small">{{ $u->unit_kerja ?: '-' }}</td>
 
               <td>
                 <div class="form-check form-switch m-0">
@@ -154,7 +191,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="text-center text-muted p-5">
+              <td colspan="9" class="text-center text-muted p-5">
                 Belum ada user.
               </td>
             </tr>
@@ -184,7 +221,7 @@
             <div class="fw-semibold mb-1">Format CSV</div>
             <div class="small text-muted">
               Header: <code>kode;employee_id;full_name;branch_name;unit_kerja;job_position;level;group_jabatan</code><br>
-              Role otomatis ditentukan dari <b>level</b> dan <b>job_position</b>.<br>
+              Role otomatis ditentukan dari <b>level</b>, <b>branch_name</b>, <b>unit_kerja</b>, dan <b>job_position</b>.<br>
               Jika <b>nama_lengkap</b> sudah ada di tabel users, data akan <b>diupdate</b>. Jika belum ada, data akan <b>ditambahkan</b>.
             </div>
           </div>

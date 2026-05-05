@@ -8,19 +8,16 @@
       color:#1e293b;
       line-height:1.1;
     }
-
     .dash-subtitle{
       color:#64748b;
       font-size:1rem;
     }
-
     .dash-filter-card{
       border:1px solid #e9eef5;
       border-radius:26px;
       background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
       box-shadow:0 14px 34px rgba(15,23,42,.06);
     }
-
     .dash-stat-card{
       position:relative;
       overflow:hidden;
@@ -31,21 +28,18 @@
       min-height:140px;
       box-shadow:0 18px 38px rgba(15,23,42,.12);
     }
-
     .dash-stat-card .label{
       font-size:.98rem;
       font-weight:700;
       opacity:.95;
       margin-bottom:8px;
     }
-
     .dash-stat-card .value{
       font-size:2.5rem;
       font-weight:900;
       line-height:1;
       letter-spacing:-.03em;
     }
-
     .dash-stat-card .icon{
       position:absolute;
       right:16px;
@@ -54,25 +48,11 @@
       opacity:.18;
     }
 
-    .bg-total{
-      background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);
-    }
-
-    .bg-open{
-      background:linear-gradient(135deg,#ffcfcf 0%,#fc9d9d 100%);
-    }
-
-    .bg-follow{
-      background:linear-gradient(135deg,#10b981 0%,#059669 100%);
-    }
-
-    .bg-rejected{
-      background:linear-gradient(135deg,#fb7185 0%,#e11d48 100%);
-    }
-
-    .bg-closing{
-      background:linear-gradient(135deg,#60a5fa 0%,#2563eb 100%);
-    }
+    .bg-total{ background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%); }
+    .bg-open{ background:linear-gradient(135deg,#ffcfcf 0%,#fc9d9d 100%); color:#7f1d1d; }
+    .bg-follow{ background:linear-gradient(135deg,#10b981 0%,#059669 100%); }
+    .bg-rejected{ background:linear-gradient(135deg,#fb7185 0%,#e11d48 100%); }
+    .bg-closing{ background:linear-gradient(135deg,#60a5fa 0%,#2563eb 100%); }
 
     .dash-panel{
       border:1px solid #e9eef5;
@@ -81,23 +61,19 @@
       box-shadow:0 14px 34px rgba(15,23,42,.06);
       overflow:hidden;
     }
-
     .dash-panel .panel-head{
       padding:18px 20px 0 20px;
     }
-
     .dash-panel .panel-title{
       font-size:1.12rem;
       font-weight:800;
       color:#1f2937;
       margin-bottom:4px;
     }
-
     .dash-panel .panel-sub{
       font-size:.88rem;
       color:#64748b;
     }
-
     .dash-panel .panel-body{
       padding:16px 20px 20px 20px;
     }
@@ -124,12 +100,10 @@
       white-space:nowrap;
       vertical-align:middle;
     }
-
     .modern-table tbody td{
       border-color:#eef2f7 !important;
       vertical-align:middle;
     }
-
     .modern-table tbody tr:hover{
       background:#fbfdff;
     }
@@ -158,23 +132,19 @@
       letter-spacing:.02em;
       white-space:nowrap;
     }
-
     .status-open{
       background:linear-gradient(180deg,#f8fafc 0%,#e2e8f0 100%);
       color:#475569;
       border:1px solid #cbd5e1;
     }
-
     .status-follow{
       background:linear-gradient(135deg,#fde68a 0%,#fbbf24 100%);
       color:#4b3a00;
     }
-
     .status-rejected{
       background:linear-gradient(135deg,#fda4af 0%,#f43f5e 100%);
       color:#fff;
     }
-
     .status-closing{
       background:linear-gradient(135deg,#86efac 0%,#22c55e 100%);
       color:#14532d;
@@ -192,34 +162,30 @@
       white-space:nowrap;
       color:#fff;
     }
-
     .produk-kredit{ background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%); }
     .produk-tabungan{ background:linear-gradient(135deg,#22c55e 0%,#15803d 100%); }
     .produk-deposito{ background:linear-gradient(135deg,#facc15 0%,#eab308 100%); color:#4b3a00; }
     .produk-aset{ background:linear-gradient(135deg,#374151 0%,#111827 100%); }
 
     .dashboard-map{
-      height: 460px;
-      border-radius: 22px;
-      overflow: hidden;
-      border: 1px solid #e5e7eb;
+      height:460px;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid #e5e7eb;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
     }
-
     .map-panel{
       background: linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%);
       border-radius: 24px;
       padding: 12px;
       border: 1px solid #e5e7eb;
     }
-
     .legend-wrap{
       background:#f8fafc;
       border:1px solid #e5e7eb;
       border-radius:20px;
       padding:14px 16px;
     }
-
     .legend-chip{
       display:inline-flex;
       align-items:center;
@@ -232,7 +198,6 @@
       font-weight:600;
       box-shadow:0 1px 2px rgba(15,23,42,.04);
     }
-
     .legend-dot{
       width:12px;
       height:12px;
@@ -240,28 +205,23 @@
       display:inline-block;
       flex:0 0 auto;
     }
-
     .leaflet-popup-content-wrapper{
       border-radius:16px;
     }
-
     .leaflet-popup-content{
       margin:14px 16px;
     }
-
     .map-popup-title{
       font-weight:700;
       font-size:14px;
       margin-bottom:8px;
       color:#0f172a;
     }
-
     .map-popup-row{
       margin-bottom:4px;
       font-size:13px;
       color:#334155;
     }
-
     .map-popup-badge{
       display:inline-block;
       padding:4px 10px;
@@ -273,7 +233,6 @@
       border:1px solid rgba(15,23,42,.08);
       background:#f8fafc;
     }
-
     .map-popup-photo{
       margin-top:10px;
       border-radius:12px;
@@ -285,19 +244,13 @@
     }
 
     @media (max-width: 767.98px){
-      .dash-title{
-        font-size:1.7rem;
-      }
+      .dash-title{ font-size:1.7rem; }
       .dash-stat-card{
         min-height:124px;
         border-radius:22px;
       }
-      .dash-stat-card .value{
-        font-size:2.15rem;
-      }
-      .dashboard-map{
-        height:360px;
-      }
+      .dash-stat-card .value{ font-size:2.15rem; }
+      .dashboard-map{ height:360px; }
     }
   </style>
 
@@ -309,18 +262,19 @@
   </div>
 
   <div class="dash-filter-card p-3 mb-4">
-    <div class="row g-3 align-items-center">
-      <div class="col-12 col-md-4">
-        <label class="form-label fw-semibold mb-1">Filter Cabang</label>
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-md-3">
+        <label class="form-label fw-semibold mb-1">Filter Cabang / Kanwil</label>
         <select class="form-select"
                 wire:model.live="filterCabang"
                 @if($lockCabangFilter) disabled @endif>
           <option value="">-- Semua Cabang --</option>
           @foreach($cabangs as $c)
-            <option value="{{ $c->id }}">{{ $c->kode_cabang }} - {{ $c->nama_cabang }}</option>
+            <option value="{{ in_array($c->kode_cabang, ['100','200','300','400']) ? $c->kode_cabang : $c->id }}">
+              {{ $c->kode_cabang }} - {{ $c->nama_cabang }}
+            </option>
           @endforeach
         </select>
-
         @if($lockCabangFilter)
           <div class="small text-muted mt-1">
             Filter cabang otomatis mengikuti cabang user supervisor.
@@ -328,10 +282,49 @@
         @endif
       </div>
 
-      <div class="col-12 col-md-8">
-        <div class="summary-note mt-md-4">
+      <div class="col-12 col-md-2">
+        <label class="form-label fw-semibold mb-1">Mode Tanggal</label>
+        <select class="form-select" wire:model.live="filterDateMode">
+          <option value="all">Semua Data</option>
+          <option value="monthly">Bulanan</option>
+          <option value="range">Range Tanggal</option>
+        </select>
+      </div>
+
+      @if($filterDateMode === 'monthly')
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold mb-1">Bulan</label>
+          <select class="form-select" wire:model.live="filterBulan">
+            @foreach($bulanOptions as $b)
+              <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
+            @endforeach
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold mb-1">Tahun</label>
+          <select class="form-select" wire:model.live="filterTahun">
+            @foreach($tahunOptions as $t)
+              <option value="{{ $t }}">{{ $t }}</option>
+            @endforeach
+          </select>
+        </div>
+      @elseif($filterDateMode === 'range')
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold mb-1">Tanggal Awal</label>
+          <input type="date" class="form-control" wire:model.live="filterTanggalAwal">
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold mb-1">Tanggal Akhir</label>
+          <input type="date" class="form-control" wire:model.live="filterTanggalAkhir">
+        </div>
+      @endif
+
+      <div class="col-12 col-md">
+        <div class="summary-note">
           <i class="bi bi-info-circle"></i>
-          Dashboard akan menyesuaikan grafik sesuai cabang yang dipilih.
+          Dashboard akan menyesuaikan seluruh rekap sesuai filter yang dipilih.
         </div>
       </div>
     </div>
@@ -382,10 +375,24 @@
   <div class="row g-3 mb-4">
     <div class="col-12 col-xl-8">
       <div class="dash-panel h-100">
-        <div class="panel-head">
-          <div class="panel-title">Closing per Cabang (ID 1 - 28)</div>
-          <div class="panel-sub">Memantau jumlah closing tiap kantor cabang</div>
+        <div class="panel-head d-flex flex-wrap align-items-start justify-content-between gap-3">
+          <div>
+            <div class="panel-title">{{ $grafikUtamaTitle }}</div>
+            <div class="panel-sub">{{ $grafikUtamaSubtitle }}</div>
+          </div>
+
+          <div style="min-width:260px;">
+            <label class="form-label small fw-semibold mb-1">Mode Grafik</label>
+            <select class="form-select form-select-sm" wire:model.live="filterGrafikClosingMode">
+              <option value="closing">Per KC (Closing)</option>
+              <option value="pengaju">Per KC By Pengajuan</option>
+              <option value="per_kc_non_closing_rejected">Per KC (Open + Follow up)</option>
+              <option value="per_kc_follow_up">Per KC (Follow Up)</option>
+              <option value="per_kc_rejected">Per KC (Rejected)</option>
+            </select>
+          </div>
         </div>
+
         <div class="panel-body">
           <div style="position:relative;height:320px;">
             <canvas id="chartClosingCabang"></canvas>
@@ -456,25 +463,45 @@
   <div class="row g-3 mb-4">
     <div class="col-12 col-xl-8">
       <div class="dash-panel">
-        <div class="panel-head d-flex flex-wrap align-items-start justify-content-between gap-3">
-          <div>
-            <div class="panel-title">Peta Persebaran Pengajuan Jawa Tengah</div>
-            <div class="panel-sub">Warna marker mengikuti master jenis usaha dari database</div>
-          </div>
-
-          <div style="min-width:240px;">
-            <label class="form-label small fw-semibold mb-1">Filter Status Map</label>
-            <select class="form-select form-select-sm" wire:model.live="filterMapStatus">
-              <option value="">-- Semua Status --</option>
-              <option value="OPEN">OPEN</option>
-              <option value="FOLLOW UP">FOLLOW UP</option>
-              <option value="CLOSING">CLOSING</option>
-              <option value="REJECTED">REJECTED</option>
-            </select>
-          </div>
+        <div class="panel-head">
+          <div class="panel-title">Peta Persebaran Pengajuan Jawa Tengah</div>
+          <div class="panel-sub">Warna marker mengikuti master jenis usaha dari database</div>
         </div>
 
         <div class="panel-body">
+          <div class="row g-2 mb-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold mb-1">Filter Status Map</label>
+              <select class="form-select form-select-sm" wire:model.live="filterMapStatus">
+                <option value="">-- Semua Status --</option>
+                <option value="OPEN">OPEN</option>
+                <option value="FOLLOW UP">FOLLOW UP</option>
+                <option value="CLOSING">CLOSING</option>
+                <option value="REJECTED">REJECTED</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold mb-1">Filter Jenis Usaha</label>
+              <select class="form-select form-select-sm" wire:model.live="filterMapJenisUsaha">
+                <option value="">-- Semua Jenis Usaha --</option>
+                @foreach($mapJenisUsahaOptions as $opt)
+                  <option value="{{ $opt }}">{{ $opt }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold mb-1">Filter Rekomendasi Produk</label>
+              <select class="form-select form-select-sm" wire:model.live="filterMapProduk">
+                <option value="">-- Semua Produk --</option>
+                @foreach($mapProdukOptions as $opt)
+                  <option value="{{ $opt }}">{{ $opt }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+
           <div class="map-panel mb-3">
             <div wire:ignore>
               <div id="jatengMap" class="dashboard-map"></div>
@@ -483,7 +510,6 @@
 
           <div class="legend-wrap">
             <div class="small fw-semibold text-secondary mb-2">Legend Jenis Usaha</div>
-
             <div class="d-flex flex-wrap gap-2">
               @forelse($legendUsaha as $lg)
                 <div class="legend-chip">
@@ -657,6 +683,7 @@
 
   <script type="application/json" id="dashboard-data-closing-labels">@json($closingCabangLabels)</script>
   <script type="application/json" id="dashboard-data-closing-values">@json($closingCabangValues)</script>
+  <script type="application/json" id="dashboard-data-closing-dataset">@json($grafikUtamaDataset)</script>
   <script type="application/json" id="dashboard-data-produk-labels">@json($produkLabels)</script>
   <script type="application/json" id="dashboard-data-produk-values">@json($produkValues)</script>
   <script type="application/json" id="dashboard-data-status-labels">@json($statusLabels)</script>
@@ -683,7 +710,6 @@
       let chartStatus = null;
       let chartUsaha = null;
       let chartTrend = null;
-
       let mapInstance = null;
       let mapLayerGroup = null;
 
@@ -714,6 +740,7 @@
         return {
           closingLabels: parseJsonScript('dashboard-data-closing-labels', []),
           closingValues: parseJsonScript('dashboard-data-closing-values', []),
+          closingDataset: parseJsonScript('dashboard-data-closing-dataset', 'Closing'),
           produkLabels: parseJsonScript('dashboard-data-produk-labels', []),
           produkValues: parseJsonScript('dashboard-data-produk-values', []),
           statusLabels: parseJsonScript('dashboard-data-status-labels', []),
@@ -735,16 +762,7 @@
       function makeCircleIcon(color) {
         return L.divIcon({
           className: '',
-          html: `
-            <div style="
-              width:16px;
-              height:16px;
-              border-radius:999px;
-              background:${color};
-              border:2px solid #fff;
-              box-shadow:0 0 0 2px rgba(15,23,42,.12), 0 4px 10px rgba(15,23,42,.18);
-            "></div>
-          `,
+          html: '<div style="width:16px;height:16px;border-radius:999px;background:' + color + ';border:2px solid #fff;box-shadow:0 0 0 2px rgba(15,23,42,.12), 0 4px 10px rgba(15,23,42,.18);"></div>',
           iconSize: [16, 16],
           iconAnchor: [8, 8]
         });
@@ -772,7 +790,7 @@
           data: {
             labels: data.closingLabels,
             datasets: [{
-              label: 'Closing',
+              label: data.closingDataset,
               data: data.closingValues,
               backgroundColor: '#93c5fd',
               borderColor: '#60a5fa',
@@ -786,9 +804,7 @@
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
-            plugins: {
-              legend: { display: true }
-            },
+            plugins: { legend: { display: true } },
             scales: {
               y: {
                 beginAtZero: true,
@@ -796,11 +812,7 @@
                 grid: { color: 'rgba(148,163,184,.18)' }
               },
               x: {
-                ticks: {
-                  autoSkip: false,
-                  maxRotation: 90,
-                  minRotation: 0
-                },
+                ticks: { autoSkip: false, maxRotation: 90, minRotation: 0 },
                 grid: { display: false }
               }
             }
@@ -812,7 +824,8 @@
           data: {
             labels: data.produkLabels,
             datasets: [{
-              data: data.produkValues
+              data: data.produkValues,
+              backgroundColor: ['#38bdf8','#fb7185','#fb923c','#facc15','#34d399','#818cf8']
             }]
           },
           options: {
@@ -828,7 +841,8 @@
           data: {
             labels: data.statusLabels,
             datasets: [{
-              data: data.statusValues
+              data: data.statusValues,
+              backgroundColor: ['#cbd5e1','#fbbf24','#f43f5e','#22c55e']
             }]
           },
           options: {
@@ -860,9 +874,7 @@
                 ticks: { precision: 0 },
                 grid: { color: 'rgba(148,163,184,.18)' }
               },
-              y: {
-                grid: { display: false }
-              }
+              y: { grid: { display: false } }
             }
           }
         });
@@ -894,9 +906,7 @@
                 ticks: { precision: 0 },
                 grid: { color: 'rgba(148,163,184,.18)' }
               },
-              x: {
-                grid: { display: false }
-              }
+              x: { grid: { display: false } }
             }
           }
         });
@@ -907,7 +917,6 @@
           mapLayerGroup.clearLayers();
           mapLayerGroup = null;
         }
-
         if (mapInstance) {
           mapInstance.off();
           mapInstance.remove();
@@ -943,33 +952,23 @@
 
           let fotoHtml = '';
           if (item.photo_url) {
-            fotoHtml = `
-              <div>
-                <a href="${esc(item.photo_url)}" target="_blank">
-                  <img src="${esc(item.photo_url)}" class="map-popup-photo">
-                </a>
-              </div>
-            `;
+            fotoHtml = '<div><a href="' + esc(item.photo_url) + '" target="_blank"><img src="' + esc(item.photo_url) + '" class="map-popup-photo"></a></div>';
           }
 
-          const popupHtml = `
-            <div style="min-width:250px;max-width:290px;">
-              <div class="map-popup-title">${esc(item.nama || '-')}</div>
-
-              <div class="map-popup-row">
-                <span class="map-popup-badge">${esc(item.status || '-')}</span>
-                <span class="map-popup-badge">${esc(item.jenis_produk || '-')}</span>
-              </div>
-
-              <div class="map-popup-row"><b>Jenis Usaha:</b> ${esc(item.jenis_usaha_label || '-')}</div>
-              <div class="map-popup-row"><b>KC:</b> ${esc(item.cabang || '-')}</div>
-              <div class="map-popup-row"><b>Wilayah:</b> ${esc(item.kab_kota || '-')} , ${esc(item.kecamatan || '-')} , ${esc(item.desa || '-')}</div>
-              <div class="map-popup-row"><b>Alamat:</b> ${esc(item.alamat || '-')}</div>
-              <div class="map-popup-row"><b>Keterangan:</b> ${esc(item.keterangan_usaha || '-')}</div>
-
-              ${fotoHtml}
-            </div>
-          `;
+          const popupHtml =
+            '<div style="min-width:250px;max-width:290px;">' +
+              '<div class="map-popup-title">' + esc(item.nama || '-') + '</div>' +
+              '<div class="map-popup-row">' +
+                '<span class="map-popup-badge">' + esc(item.status || '-') + '</span>' +
+                '<span class="map-popup-badge">' + esc(item.jenis_produk || '-') + '</span>' +
+              '</div>' +
+              '<div class="map-popup-row"><b>Jenis Usaha:</b> ' + esc(item.jenis_usaha_label || '-') + '</div>' +
+              '<div class="map-popup-row"><b>KC:</b> ' + esc(item.cabang || '-') + '</div>' +
+              '<div class="map-popup-row"><b>Wilayah:</b> ' + esc(item.kab_kota || '-') + ' , ' + esc(item.kecamatan || '-') + ' , ' + esc(item.desa || '-') + '</div>' +
+              '<div class="map-popup-row"><b>Alamat:</b> ' + esc(item.alamat || '-') + '</div>' +
+              '<div class="map-popup-row"><b>Keterangan:</b> ' + esc(item.keterangan_usaha || '-') + '</div>' +
+              fotoHtml +
+            '</div>';
 
           const marker = L.marker([item.lat, item.lng], {
             icon: makeCircleIcon(color)
@@ -1025,4 +1024,5 @@
     })();
     </script>
   @endpush
+
 </div>

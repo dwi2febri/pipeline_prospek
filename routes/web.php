@@ -35,11 +35,11 @@ Route::get('/', function () {
 
     $role = strtoupper(trim((string) Auth::user()->role));
 
-    if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'])) {
+    if (in_array($role, ['ADMIN', 'MANAJEMEN', 'MANAJEMEN KANWIL', 'SUPERVISOR'], true)) {
         return redirect('/dashboard');
     }
 
-    if (in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'])) {
+    if (in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
         return redirect('/prospects-diajukan');
     }
 
@@ -47,7 +47,7 @@ Route::get('/', function () {
         return redirect('/prospects');
     }
 
-    return redirect('/prospects');
+    return redirect('/dashboard');
 });
 
 // Untuk template auth yang pakai route('home')
@@ -58,11 +58,11 @@ Route::get('/home', function () {
 
     $role = strtoupper(trim((string) Auth::user()->role));
 
-    if (in_array($role, ['ADMIN', 'MANAJEMEN', 'SUPERVISOR'])) {
+    if (in_array($role, ['ADMIN', 'MANAJEMEN', 'MANAJEMEN KANWIL', 'SUPERVISOR'], true)) {
         return redirect('/dashboard');
     }
 
-    if (in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'])) {
+    if (in_array($role, ['AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
         return redirect('/prospects-diajukan');
     }
 
@@ -70,7 +70,7 @@ Route::get('/home', function () {
         return redirect('/prospects');
     }
 
-    return redirect('/prospects');
+    return redirect('/dashboard');
 })->name('home');
 
 // =====================
@@ -104,73 +104,72 @@ Route::get('/api-wilayah/villages/{districtId}', function ($districtId) {
 Route::middleware(['auth'])->group(function () {
 
     // ===== SAVE FCM TOKEN DARI WEBVIEW ANDROID =====
-// ===== SAVE FCM TOKEN DARI WEBVIEW ANDROID =====
-Route::post('/mobile/save-fcm-token', function () {
-    request()->validate([
-        'token' => ['required', 'string'],
-    ]);
+    Route::post('/mobile/save-fcm-token', function () {
+        request()->validate([
+            'token' => ['required', 'string'],
+        ]);
 
-    $user = Auth::guard('web')->user();
+        $user = Auth::guard('web')->user();
 
-    if (!$user) {
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        \App\Models\User::where('id', $user->id)->update([
+            'fcm_token' => request()->input('token'),
+        ]);
+
         return response()->json([
-            'success' => false,
-            'message' => 'Unauthenticated.',
-        ], 401);
-    }
-
-    \App\Models\User::where('id', $user->id)->update([
-        'fcm_token' => request()->input('token'),
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'FCM token berhasil disimpan.',
-        'user_id' => $user->id,
-        'username' => $user->name,
-    ]);
-})->name('mobile.save-fcm-token');
+            'success' => true,
+            'message' => 'FCM token berhasil disimpan.',
+            'user_id' => $user->id,
+            'username' => $user->name,
+        ]);
+    })->name('mobile.save-fcm-token');
 
     // ===== DASHBOARD =====
     Route::get('/dashboard', DashboardIndex::class)
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR')
         ->name('dashboard');
 
     // ===== PROFILE =====
     Route::get('/profile', [ProfileController::class, 'index'])
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
         ->name('profile.index');
 
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
         ->name('profile.password.update');
 
     // ===== PIPELINE PROSPEK =====
     Route::get('/prospects', ProspectsIndex::class)
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
         ->name('prospects.index');
 
     Route::get('/prospects/create', ProspectsForm::class)
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
         ->name('prospects.create');
 
     Route::get('/prospects/{id}/edit', ProspectsForm::class)
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
         ->name('prospects.edit');
 
     // ===== PROSPEK DIAJUKAN =====
     Route::get('/prospects-diajukan', ProspectsSubmissions::class)
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL')
         ->name('prospects.submissions');
 
     // ===== SIMULASI KREDIT =====
     Route::get('/simulasi-kredit', SimulasiKreditIndex::class)
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
         ->name('simulasi-kredit.index');
 
     // ===== RECYCLE BIN =====
     Route::get('/recycle-bin/prospects', ProspectsRecycle::class)
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
         ->name('prospects.recycle');
 
     // ===== AUDIT LOG =====
@@ -197,16 +196,16 @@ Route::post('/mobile/save-fcm-token', function () {
 
     // ===== TEMPLATE CSV USER =====
     Route::get('/users/template', function () {
-    $filename = 'template_users.csv';
+        $filename = 'template_users.csv';
 
-    $header = "kode;employee_id;full_name;branch_name;unit_kerja;job_position;level;group_jabatan\n";
+        $header = "kode;employee_id;full_name;branch_name;unit_kerja;job_position;level;group_jabatan\n";
 
-    $example =
-        "000;130-024;HASTONI SAPTO RENGGO, SE;Kantor Wilayah Banyumas;Area Kantor Wilayah;Residen Manajemen Risiko;Kepala Sub Bidang;PS\n" .
-        "000;128-063;KARTIKA PANDU FILANDU, S.Pd;Kantor Wilayah Banyumas;Area Kantor Wilayah;Residen Analis Kredit;Kepala Sub Bidang;PS\n" .
-        "000;127-019;NOVI TRI UTAMI, S.Pd;Kantor Wilayah Banyumas;Area Kantor Wilayah;Staf Administrasi Kantor Wilayah;Staf;Staf\n" .
-        "000;137-042;ARIF SUPRAYOGO, S.Kom;Kantor Wilayah Pekalongan;Area Kantor Wilayah;Residen Analis Kredit;Kepala Sub Bidang;PS\n" .
-        "000;102-089;IFAL ALEXIS HIDAYATULLAH, S.E;Kantor Wilayah Pekalongan;Area Kantor Wilayah;Residen Manajemen Risiko;Kepala Sub Bidang;PS\n";
+        $example =
+            "000;130-024;HASTONI SAPTO RENGGO, SE;Kantor Wilayah Banyumas;Area Kantor Wilayah;Residen Manajemen Risiko;Kepala Sub Bidang;PS\n" .
+            "000;128-063;KARTIKA PANDU FILANDU, S.Pd;Kantor Wilayah Banyumas;Area Kantor Wilayah;Residen Analis Kredit;Kepala Sub Bidang;PS\n" .
+            "000;127-019;NOVI TRI UTAMI, S.Pd;Kantor Wilayah Banyumas;Area Kantor Wilayah;Staf Administrasi Kantor Wilayah;Staf;Staf\n" .
+            "000;137-042;ARIF SUPRAYOGO, S.Kom;Kantor Wilayah Pekalongan;Area Kantor Wilayah;Residen Analis Kredit;Kepala Sub Bidang;PS\n" .
+            "000;102-089;IFAL ALEXIS HIDAYATULLAH, S.E;Kantor Wilayah Pekalongan;Area Kantor Wilayah;Residen Manajemen Risiko;Kepala Sub Bidang;PS\n";
 
         return response()->streamDownload(function () use ($header, $example) {
             echo $header;
@@ -231,7 +230,7 @@ Route::post('/mobile/save-fcm-token', function () {
 
     // ===== REKAP PROSPEK =====
     Route::get('/rekap-prospek', ProspectRecapReport::class)
-        ->middleware('role:ADMIN,MANAJEMEN,SUPERVISOR')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR')
         ->name('reports.prospect-recap');
 
     // ===== KONTEN APP =====

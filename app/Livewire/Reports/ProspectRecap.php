@@ -77,6 +77,15 @@ class ProspectRecap extends Component
             $this->filterCabang = (string) (auth()->user()->cabang_id ?? '');
             $this->lockCabangFilter = true;
         }
+
+        if ($role === 'MANAJEMEN KANWIL') {
+            $kodeKanwil = $this->getUserKanwilKode();
+
+            if (in_array($kodeKanwil, ['100', '200', '300', '400'], true)) {
+                $this->filterCabang = $kodeKanwil;
+                $this->lockCabangFilter = false;
+            }
+        }
     }
 
     public function setActiveTab(string $tab): void
@@ -267,6 +276,32 @@ class ProspectRecap extends Component
         return strtoupper(trim((string) (auth()->user()->role ?? '')));
     }
 
+    protected function getUserKanwilKode(): string
+    {
+        $user = auth()->user();
+
+        if (!$user || empty($user->cabang_id)) {
+            return '';
+        }
+
+        $cabang = Cabang::query()
+            ->where('id', (int) $user->cabang_id)
+            ->first(['kode_cabang']);
+
+        return trim((string) ($cabang->kode_cabang ?? ''));
+    }
+
+    protected function getKanwilRange(string $kodeKanwil): array
+    {
+        return match ($kodeKanwil) {
+            '100' => [1, 7],
+            '200' => [8, 14],
+            '300' => [15, 21],
+            '400' => [22, 28],
+            default => [0, 0],
+        };
+    }
+
     protected function normalizeDateRange(): void
     {
         if ($this->filterTanggalAwal !== '' && $this->filterTanggalAkhir !== '' && $this->filterTanggalAwal > $this->filterTanggalAkhir) {
@@ -285,41 +320,111 @@ class ProspectRecap extends Component
         }
     }
 
-    protected function getSelectedCabang(): ?Cabang
+    protected function getSelectedCabangIds(): array
     {
-        $id = trim((string) $this->filterCabang);
+        $value = trim((string) $this->filterCabang);
+        $role = $this->getRoleUserLogin();
 
-        if ($this->getRoleUserLogin() === 'SUPERVISOR') {
-            $id = (string) (auth()->user()->cabang_id ?? '');
+        if ($role === 'SUPERVISOR') {
+            $value = (string) (auth()->user()->cabang_id ?? '');
         }
 
-        if ($id === '' || !is_numeric($id)) {
-            return null;
+        if ($role === 'MANAJEMEN KANWIL') {
+            $kodeKanwilUser = $this->getUserKanwilKode();
+
+            if (in_array($kodeKanwilUser, ['100', '200', '300', '400'], true)) {
+                [$start, $end] = $this->getKanwilRange($kodeKanwilUser);
+
+                $allowedCabangIds = Cabang::query()
+                    ->where(function ($q) use ($kodeKanwilUser, $start, $end) {
+                        $q->where('kode_cabang', $kodeKanwilUser)
+                          ->orWhereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN {$start} AND {$end}");
+                    })
+                    ->pluck('id')
+                    ->map(fn ($v) => (int) $v)
+                    ->toArray();
+
+                if ($value === '') {
+                    $value = $kodeKanwilUser;
+                }
+
+                if (in_array($value, ['100', '200', '300', '400'], true)) {
+                    if ($value !== $kodeKanwilUser) {
+                        $value = $kodeKanwilUser;
+                    }
+                } elseif (is_numeric($value)) {
+                    $selectedCabangId = (int) $value;
+
+                    if (!in_array($selectedCabangId, $allowedCabangIds, true)) {
+                        return $allowedCabangIds;
+                    }
+                } else {
+                    return $allowedCabangIds;
+                }
+            }
         }
 
-        return Cabang::query()->find((int) $id);
+        if ($value === '' || !is_numeric($value)) {
+            return [];
+        }
+
+        $num = (int) $value;
+
+        if ($num === 100) {
+            return Cabang::query()
+                ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 7")
+                ->pluck('id')
+                ->map(fn ($v) => (int) $v)
+                ->toArray();
+        }
+
+        if ($num === 200) {
+            return Cabang::query()
+                ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 8 AND 14")
+                ->pluck('id')
+                ->map(fn ($v) => (int) $v)
+                ->toArray();
+        }
+
+        if ($num === 300) {
+            return Cabang::query()
+                ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 15 AND 21")
+                ->pluck('id')
+                ->map(fn ($v) => (int) $v)
+                ->toArray();
+        }
+
+        if ($num === 400) {
+            return Cabang::query()
+                ->whereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 22 AND 28")
+                ->pluck('id')
+                ->map(fn ($v) => (int) $v)
+                ->toArray();
+        }
+
+        return [$num];
     }
 
     protected function applyCabangFilterToCabangQuery($query, string $alias = 'cabangs')
     {
-        $selected = $this->getSelectedCabang();
+        $ids = $this->getSelectedCabangIds();
 
-        if (!$selected) {
+        if (empty($ids)) {
             return $query;
         }
 
-        return $query->where("{$alias}.id", (int) $selected->id);
+        return $query->whereIn("{$alias}.id", $ids);
     }
 
     protected function applyCabangFilterToUserCabangQuery($query)
     {
-        $selected = $this->getSelectedCabang();
+        $ids = $this->getSelectedCabangIds();
 
-        if (!$selected) {
+        if (empty($ids)) {
             return $query;
         }
 
-        return $query->where('users.cabang_id', (int) $selected->id);
+        return $query->whereIn('users.cabang_id', $ids);
     }
 
     protected function applyProspectDateJoinFilter($join, string $mode, string $bulan, string $tahun, string $tanggalAwal, string $tanggalAkhir, string $column = 'prospects.tanggal_prospek')
@@ -336,7 +441,7 @@ class ProspectRecap extends Component
             $tahunValue = (int) ($tahun !== '' ? $tahun : now()->year);
 
             $join->whereMonth($column, $bulanValue)
-                 ->whereYear($column, $tahunValue);
+                ->whereYear($column, $tahunValue);
         }
 
         return $join;
@@ -356,7 +461,7 @@ class ProspectRecap extends Component
             $tahunValue = (int) ($tahun !== '' ? $tahun : now()->year);
 
             $query->whereMonth($column, $bulanValue)
-                  ->whereYear($column, $tahunValue);
+                ->whereYear($column, $tahunValue);
         }
 
         return $query;
@@ -397,6 +502,129 @@ class ProspectRecap extends Component
         }
 
         $this->resetPage();
+    }
+
+    protected function getPegawaiOrderField(): string
+    {
+        $allowed = ['name', 'nama_lengkap', 'role', 'job_position', 'kode_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
+        return in_array($this->sortFieldPegawai, $allowed, true) ? $this->sortFieldPegawai : 'total_pengajuan';
+    }
+
+    protected function getKcOrderField(): string
+    {
+        $allowed = ['kode_cabang', 'nama_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
+        return in_array($this->sortFieldKc, $allowed, true) ? $this->sortFieldKc : 'kode_cabang';
+    }
+
+    protected function getPengajuOrderField(): string
+    {
+        $allowed = ['kode_cabang', 'nama_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
+        return in_array($this->sortFieldPengaju, $allowed, true) ? $this->sortFieldPengaju : 'kode_cabang';
+    }
+
+    protected function applySpecialKodeCabangOrdering($query, string $column = 'cabangs.kode_cabang')
+    {
+        return $query
+            ->orderByRaw("CASE WHEN {$column} = '000' THEN 0 ELSE 1 END ASC")
+            ->orderByRaw("CASE WHEN {$column} = '000' THEN -1 ELSE CAST({$column} AS UNSIGNED) END ASC");
+    }
+
+    protected function getKcBaseQuery()
+    {
+        $this->normalizeDateRange();
+
+        $query = Cabang::query()
+            ->leftJoin('prospects', function ($join) {
+                $join->on('prospects.cabang_id', '=', 'cabangs.id')
+                    ->whereNull('prospects.deleted_at');
+
+                $this->applyProspectDateJoinFilter(
+                    $join,
+                    $this->filterMode,
+                    $this->filterBulan,
+                    $this->filterTahun,
+                    $this->filterTanggalAwal,
+                    $this->filterTanggalAkhir
+                );
+            })
+            ->where('cabangs.aktif', 1)
+            ->where(function ($q) {
+                $q->where('cabangs.kode_cabang', '000')
+                    ->orWhereRaw("CAST(cabangs.kode_cabang AS UNSIGNED) BETWEEN 1 AND 28");
+            })
+            ->when(trim($this->search) !== '', function ($q) {
+                $s = '%' . trim($this->search) . '%';
+                $q->where(function ($w) use ($s) {
+                    $w->where('cabangs.kode_cabang', 'like', $s)
+                        ->orWhere('cabangs.nama_cabang', 'like', $s);
+                });
+            });
+
+        $query = $this->applyCabangFilterToCabangQuery($query);
+
+        return $query
+            ->groupBy('cabangs.id', 'cabangs.kode_cabang', 'cabangs.nama_cabang')
+            ->select([
+                'cabangs.id',
+                'cabangs.kode_cabang',
+                'cabangs.nama_cabang',
+                DB::raw('COUNT(prospects.id) as total_pengajuan'),
+                DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as total_open"),
+                DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as total_follow_up"),
+                DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as total_closing"),
+                DB::raw("SUM(CASE WHEN prospects.status = 'REJECTED' THEN 1 ELSE 0 END) as total_rejected"),
+            ]);
+    }
+
+    protected function getPengajuBaseQuery()
+    {
+        $this->normalizeDateRange();
+
+        $query = Cabang::query()
+            ->leftJoin('users', function ($join) {
+                $join->on('users.cabang_id', '=', 'cabangs.id')
+                    ->whereIn('users.role', ['PEGAWAI', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL']);
+            })
+            ->leftJoin('prospects', function ($join) {
+                $join->on('prospects.input_by', '=', 'users.id')
+                    ->whereNull('prospects.deleted_at');
+
+                $this->applyProspectDateJoinFilter(
+                    $join,
+                    $this->filterMode,
+                    $this->filterBulan,
+                    $this->filterTahun,
+                    $this->filterTanggalAwal,
+                    $this->filterTanggalAkhir
+                );
+            })
+            ->where('cabangs.aktif', 1)
+            ->where(function ($q) {
+                $q->where('cabangs.kode_cabang', '000')
+                    ->orWhereRaw("CAST(cabangs.kode_cabang AS UNSIGNED) BETWEEN 1 AND 28");
+            })
+            ->when(trim($this->search) !== '', function ($q) {
+                $s = '%' . trim($this->search) . '%';
+                $q->where(function ($w) use ($s) {
+                    $w->where('cabangs.kode_cabang', 'like', $s)
+                        ->orWhere('cabangs.nama_cabang', 'like', $s);
+                });
+            });
+
+        $query = $this->applyCabangFilterToCabangQuery($query);
+
+        return $query
+            ->groupBy('cabangs.id', 'cabangs.kode_cabang', 'cabangs.nama_cabang')
+            ->select([
+                'cabangs.id',
+                'cabangs.kode_cabang',
+                'cabangs.nama_cabang',
+                DB::raw('COUNT(prospects.id) as total_pengajuan'),
+                DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as total_open"),
+                DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as total_follow_up"),
+                DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as total_closing"),
+                DB::raw("SUM(CASE WHEN prospects.status = 'REJECTED' THEN 1 ELSE 0 END) as total_rejected"),
+            ]);
     }
 
     protected function getPegawaiBaseQuery()
@@ -451,104 +679,6 @@ class ProspectRecap extends Component
                 'users.job_position',
                 'users.role',
                 'users.cabang_id',
-                'cabangs.kode_cabang',
-                'cabangs.nama_cabang',
-                DB::raw('COUNT(prospects.id) as total_pengajuan'),
-                DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as total_open"),
-                DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as total_follow_up"),
-                DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as total_closing"),
-                DB::raw("SUM(CASE WHEN prospects.status = 'REJECTED' THEN 1 ELSE 0 END) as total_rejected"),
-            ]);
-    }
-
-    protected function getKcBaseQuery()
-    {
-        $this->normalizeDateRange();
-
-        $query = Cabang::query()
-            ->leftJoin('prospects', function ($join) {
-                $join->on('prospects.cabang_id', '=', 'cabangs.id')
-                    ->whereNull('prospects.deleted_at');
-
-                $this->applyProspectDateJoinFilter(
-                    $join,
-                    $this->filterMode,
-                    $this->filterBulan,
-                    $this->filterTahun,
-                    $this->filterTanggalAwal,
-                    $this->filterTanggalAkhir
-                );
-            })
-            ->where('cabangs.aktif', 1)
-            ->where(function ($q) {
-                $q->where('cabangs.kode_cabang', '000')
-                  ->orWhereRaw("CAST(cabangs.kode_cabang AS UNSIGNED) BETWEEN 1 AND 28");
-            })
-            ->when(trim($this->search) !== '', function ($q) {
-                $s = '%' . trim($this->search) . '%';
-                $q->where(function ($w) use ($s) {
-                    $w->where('cabangs.kode_cabang', 'like', $s)
-                        ->orWhere('cabangs.nama_cabang', 'like', $s);
-                });
-            });
-
-        $query = $this->applyCabangFilterToCabangQuery($query);
-
-        return $query
-            ->groupBy('cabangs.id', 'cabangs.kode_cabang', 'cabangs.nama_cabang')
-            ->select([
-                'cabangs.id',
-                'cabangs.kode_cabang',
-                'cabangs.nama_cabang',
-                DB::raw('COUNT(prospects.id) as total_pengajuan'),
-                DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as total_open"),
-                DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as total_follow_up"),
-                DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as total_closing"),
-                DB::raw("SUM(CASE WHEN prospects.status = 'REJECTED' THEN 1 ELSE 0 END) as total_rejected"),
-            ]);
-    }
-
-    protected function getPengajuBaseQuery()
-    {
-        $this->normalizeDateRange();
-
-        $query = Cabang::query()
-            ->leftJoin('users', function ($join) {
-                $join->on('users.cabang_id', '=', 'cabangs.id')
-                    ->whereIn('users.role', ['PEGAWAI', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL']);
-            })
-            ->leftJoin('prospects', function ($join) {
-                $join->on('prospects.input_by', '=', 'users.id')
-                    ->whereNull('prospects.deleted_at');
-
-                $this->applyProspectDateJoinFilter(
-                    $join,
-                    $this->filterMode,
-                    $this->filterBulan,
-                    $this->filterTahun,
-                    $this->filterTanggalAwal,
-                    $this->filterTanggalAkhir
-                );
-            })
-            ->where('cabangs.aktif', 1)
-            ->where(function ($q) {
-                $q->where('cabangs.kode_cabang', '000')
-                  ->orWhereRaw("CAST(cabangs.kode_cabang AS UNSIGNED) BETWEEN 1 AND 28");
-            })
-            ->when(trim($this->search) !== '', function ($q) {
-                $s = '%' . trim($this->search) . '%';
-                $q->where(function ($w) use ($s) {
-                    $w->where('cabangs.kode_cabang', 'like', $s)
-                        ->orWhere('cabangs.nama_cabang', 'like', $s);
-                });
-            });
-
-        $query = $this->applyCabangFilterToCabangQuery($query);
-
-        return $query
-            ->groupBy('cabangs.id', 'cabangs.kode_cabang', 'cabangs.nama_cabang')
-            ->select([
-                'cabangs.id',
                 'cabangs.kode_cabang',
                 'cabangs.nama_cabang',
                 DB::raw('COUNT(prospects.id) as total_pengajuan'),
@@ -680,12 +810,6 @@ class ProspectRecap extends Component
             ]);
     }
 
-    protected function getPegawaiOrderField(): string
-    {
-        $allowed = ['name', 'nama_lengkap', 'role', 'job_position', 'kode_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
-        return in_array($this->sortFieldPegawai, $allowed, true) ? $this->sortFieldPegawai : 'total_pengajuan';
-    }
-
     protected function getPeriodeLabelForExport(): string
     {
         if ($this->filterMode === 'range') {
@@ -706,10 +830,18 @@ class ProspectRecap extends Component
         $periodeLabel = $this->getPeriodeLabelForExport();
 
         if ($this->activeTab === 'kc') {
-            $rows = $this->getKcBaseQuery()
-                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
-                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC")
-                ->get();
+            $rows = $this->getKcBaseQuery();
+
+            if (in_array($this->getKcOrderField(), ['kode_cabang', 'nama_cabang'], true)) {
+                $rows = $rows->orderBy($this->getKcOrderField(), $this->sortDirectionKc);
+            } else {
+                $rows = $rows
+                    ->orderBy($this->getKcOrderField(), $this->sortDirectionKc)
+                    ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
+                    ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC");
+            }
+
+            $rows = $rows->get();
 
             $filename = 'rekap_prospek_per_kc_' . now()->format('Ymd_His') . '.xls';
 
@@ -734,10 +866,18 @@ class ProspectRecap extends Component
         }
 
         if ($this->activeTab === 'pengaju') {
-            $rows = $this->getPengajuBaseQuery()
-                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
-                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC")
-                ->get();
+            $rows = $this->getPengajuBaseQuery();
+
+            if (in_array($this->getPengajuOrderField(), ['kode_cabang', 'nama_cabang'], true)) {
+                $rows = $rows->orderBy($this->getPengajuOrderField(), $this->sortDirectionPengaju);
+            } else {
+                $rows = $rows
+                    ->orderBy($this->getPengajuOrderField(), $this->sortDirectionPengaju)
+                    ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
+                    ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC");
+            }
+
+            $rows = $rows->get();
 
             $filename = 'rekap_pengaju_per_cabang_' . now()->format('Ymd_His') . '.xls';
 
@@ -807,26 +947,68 @@ class ProspectRecap extends Component
         $tahunNow = (int) now()->year;
         $tahunOptions = collect(range($tahunNow - 3, $tahunNow + 1));
 
-        $cabangs = Cabang::query()
+        $role = $this->getRoleUserLogin();
+        $kodeKanwilUser = $this->getUserKanwilKode();
+
+        $cabangsQuery = Cabang::query()
             ->where('aktif', 1)
             ->where(function ($q) {
                 $q->where('kode_cabang', '000')
-                  ->orWhereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28");
-            })
-            ->orderByRaw("CASE WHEN kode_cabang = '000' THEN 0 ELSE 1 END ASC")
-            ->orderByRaw("CASE WHEN kode_cabang = '000' THEN -1 ELSE CAST(kode_cabang AS UNSIGNED) END ASC")
+                    ->orWhereIn('kode_cabang', ['100', '200', '300', '400'])
+                    ->orWhereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28");
+            });
+
+        if ($role === 'MANAJEMEN KANWIL' && in_array($kodeKanwilUser, ['100', '200', '300', '400'], true)) {
+            [$start, $end] = $this->getKanwilRange($kodeKanwilUser);
+
+            $cabangsQuery->where(function ($q) use ($kodeKanwilUser, $start, $end) {
+                $q->where('kode_cabang', $kodeKanwilUser)
+                  ->orWhereRaw("CAST(kode_cabang AS UNSIGNED) BETWEEN {$start} AND {$end}");
+            });
+        }
+
+        $cabangs = $cabangsQuery
+            ->orderByRaw("
+                CASE
+                    WHEN kode_cabang = '000' THEN 0
+                    WHEN kode_cabang IN ('100','200','300','400') THEN 1
+                    ELSE 2
+                END ASC
+            ")
+            ->orderByRaw("
+                CASE
+                    WHEN kode_cabang = '000' THEN -1
+                    ELSE CAST(kode_cabang AS UNSIGNED)
+                END ASC
+            ")
             ->get(['id', 'kode_cabang', 'nama_cabang']);
 
         if ($this->activeTab === 'kc') {
-            $items = $this->getKcBaseQuery()
-                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
-                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC")
-                ->get();
+            $items = $this->getKcBaseQuery();
+
+            if (in_array($this->getKcOrderField(), ['kode_cabang', 'nama_cabang'], true)) {
+                $items = $items->orderBy($this->getKcOrderField(), $this->sortDirectionKc);
+            } else {
+                $items = $items
+                    ->orderBy($this->getKcOrderField(), $this->sortDirectionKc)
+                    ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
+                    ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC");
+            }
+
+            $items = $items->get();
         } elseif ($this->activeTab === 'pengaju') {
-            $items = $this->getPengajuBaseQuery()
-                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
-                ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC")
-                ->get();
+            $items = $this->getPengajuBaseQuery();
+
+            if (in_array($this->getPengajuOrderField(), ['kode_cabang', 'nama_cabang'], true)) {
+                $items = $items->orderBy($this->getPengajuOrderField(), $this->sortDirectionPengaju);
+            } else {
+                $items = $items
+                    ->orderBy($this->getPengajuOrderField(), $this->sortDirectionPengaju)
+                    ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN 0 ELSE 1 END ASC")
+                    ->orderByRaw("CASE WHEN cabangs.kode_cabang = '000' THEN -1 ELSE CAST(cabangs.kode_cabang AS UNSIGNED) END ASC");
+            }
+
+            $items = $items->get();
         } else {
             $items = $this->getPegawaiBaseQuery()
                 ->orderBy($this->getPegawaiOrderField(), $this->sortDirectionPegawai)

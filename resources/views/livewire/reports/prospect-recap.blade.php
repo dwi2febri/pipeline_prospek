@@ -52,14 +52,11 @@
                 @if($lockCabangFilter) disabled @endif>
           <option value="">-- Semua Cabang --</option>
           @foreach($cabangs as $c)
-            <option value="{{ $c->id }}">{{ $c->kode_cabang }} - {{ $c->nama_cabang }}</option>
+            <option value="{{ in_array($c->kode_cabang, ['100','200','300','400']) ? $c->kode_cabang : $c->id }}">
+              {{ $c->kode_cabang }} - {{ strtoupper($c->nama_cabang) }}
+            </option>
           @endforeach
         </select>
-        @if($lockCabangFilter)
-          <div class="small text-muted mt-1">
-            Cabang otomatis mengikuti cabang supervisor.
-          </div>
-        @endif
       </div>
 
       <div class="col-12 col-md-2">
@@ -122,47 +119,96 @@
           <thead class="table-light">
             <tr>
               <th style="width:70px;">No</th>
+
               <th style="min-width:150px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('kode_cabang')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('kode_cabang')">
                   Kode Cabang
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldKc === 'kode_cabang')
+                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th style="min-width:260px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('nama_cabang')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('nama_cabang')">
                   Nama Cabang
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldKc === 'nama_cabang')
+                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:150px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_pengajuan')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_pengajuan')">
                   Jumlah Pengajuan
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldKc === 'total_pengajuan')
+                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_open')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_open')">
                   Open
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldKc === 'total_open')
+                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_follow_up')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_follow_up')">
                   Follow Up
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldKc === 'total_follow_up')
+                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_closing')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_closing')">
                   Closing
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldKc === 'total_closing')
+                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_rejected')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_rejected')">
                   Rejected
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldKc === 'total_rejected')
+                    <i class="bi {{ $sortDirectionKc === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
             </tr>
           </thead>
@@ -172,33 +218,38 @@
                 <td>{{ $i + 1 }}</td>
                 <td class="fw-semibold">{{ $row->kode_cabang }}</td>
                 <td>{{ $row->nama_cabang }}</td>
-
                 <td class="text-end fw-bold">
-                  <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold" wire:click="openDetailKc({{ $row->id }}, 'ALL')">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'ALL')">
                     {{ number_format($row->total_pengajuan) }}
                   </button>
                 </td>
-
                 <td class="text-end text-secondary fw-bold">
-                  <button type="button" class="btn btn-link p-0 text-decoration-none text-secondary fw-bold" wire:click="openDetailKc({{ $row->id }}, 'OPEN')">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none text-secondary fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'OPEN')">
                     {{ number_format($row->total_open) }}
                   </button>
                 </td>
-
                 <td class="text-end text-warning fw-bold">
-                  <button type="button" class="btn btn-link p-0 text-decoration-none text-warning fw-bold" wire:click="openDetailKc({{ $row->id }}, 'FOLLOW UP')">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none text-warning fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'FOLLOW UP')">
                     {{ number_format($row->total_follow_up) }}
                   </button>
                 </td>
-
                 <td class="text-end text-success fw-bold">
-                  <button type="button" class="btn btn-link p-0 text-decoration-none text-success fw-bold" wire:click="openDetailKc({{ $row->id }}, 'CLOSING')">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none text-success fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'CLOSING')">
                     {{ number_format($row->total_closing) }}
                   </button>
                 </td>
-
                 <td class="text-end text-danger fw-bold">
-                  <button type="button" class="btn btn-link p-0 text-decoration-none text-danger fw-bold" wire:click="openDetailKc({{ $row->id }}, 'REJECTED')">
+                  <button type="button"
+                          class="btn btn-link p-0 text-decoration-none text-danger fw-bold"
+                          wire:click="openDetailKc({{ $row->id }}, 'REJECTED')">
                     {{ number_format($row->total_rejected) }}
                   </button>
                 </td>
@@ -216,47 +267,96 @@
           <thead class="table-light">
             <tr>
               <th style="width:70px;">No</th>
+
               <th style="min-width:150px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('kode_cabang')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('kode_cabang')">
                   Kode Cabang
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldPengaju === 'kode_cabang')
+                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th style="min-width:260px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('nama_cabang')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('nama_cabang')">
                   Nama Cabang
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldPengaju === 'nama_cabang')
+                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:150px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_pengajuan')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_pengajuan')">
                   Jumlah Pengaju
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldPengaju === 'total_pengajuan')
+                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_open')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_open')">
                   Open
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldPengaju === 'total_open')
+                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_follow_up')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_follow_up')">
                   Follow Up
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldPengaju === 'total_follow_up')
+                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_closing')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_closing')">
                   Closing
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldPengaju === 'total_closing')
+                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_rejected')">
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_rejected')">
                   Rejected
-                  <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                  @if($sortFieldPengaju === 'total_rejected')
+                    <i class="bi {{ $sortDirectionPengaju === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
             </tr>
           </thead>
@@ -285,56 +385,137 @@
           <thead class="table-light">
             <tr>
               <th style="width:70px;">No</th>
+
               <th style="min-width:160px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('name')">
-                  Username <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('name')">
+                  Username
+                  @if($sortFieldPegawai === 'name')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th style="min-width:220px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('nama_lengkap')">
-                  Nama Lengkap <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('nama_lengkap')">
+                  Nama Lengkap
+                  @if($sortFieldPegawai === 'nama_lengkap')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th style="min-width:130px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('role')">
-                  Role <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('role')">
+                  Role
+                  @if($sortFieldPegawai === 'role')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th style="min-width:220px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('job_position')">
-                  Jabatan <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('job_position')">
+                  Jabatan
+                  @if($sortFieldPegawai === 'job_position')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th style="min-width:220px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('kode_cabang')">
-                  Cabang <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('kode_cabang')">
+                  Cabang
+                  @if($sortFieldPegawai === 'kode_cabang')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:150px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_pengajuan')">
-                  Jumlah Pengajuan <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_pengajuan')">
+                  Jumlah Pengajuan
+                  @if($sortFieldPegawai === 'total_pengajuan')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_open')">
-                  Open <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_open')">
+                  Open
+                  @if($sortFieldPegawai === 'total_open')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_follow_up')">
-                  Follow Up <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_follow_up')">
+                  Follow Up
+                  @if($sortFieldPegawai === 'total_follow_up')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_closing')">
-                  Closing <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_closing')">
+                  Closing
+                  @if($sortFieldPegawai === 'total_closing')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th class="text-end" style="min-width:120px;">
-                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold text-dark" wire:click="sortBy('total_rejected')">
-                  Rejected <i class="bi bi-arrow-down-up text-muted"></i>
-                </button>
+                <a href="javascript:void(0)"
+                   class="text-decoration-none fw-bold text-dark"
+                   wire:click="sortBy('total_rejected')">
+                  Rejected
+                  @if($sortFieldPegawai === 'total_rejected')
+                    <i class="bi {{ $sortDirectionPegawai === 'asc' ? 'bi-sort-up' : 'bi-sort-down' }}"></i>
+                  @else
+                    <i class="bi bi-arrow-down-up text-muted"></i>
+                  @endif
+                </a>
               </th>
+
               <th style="width:120px;" class="text-center">Aksi</th>
             </tr>
           </thead>
@@ -353,7 +534,9 @@
                 <td class="text-end text-success fw-bold">{{ number_format($row->total_closing) }}</td>
                 <td class="text-end text-danger fw-bold">{{ number_format($row->total_rejected) }}</td>
                 <td class="text-center">
-                  <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" wire:click="openDetailPegawai({{ $row->id }})">
+                  <button type="button"
+                          class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                          wire:click="openDetailPegawai({{ $row->id }})">
                     <i class="bi bi-eye me-1"></i> Detail
                   </button>
                 </td>
@@ -611,19 +794,14 @@ document.addEventListener('livewire:init', function () {
         if (modal) modal.show();
     });
 
-    const modalPegawaiEl = document.getElementById('modalDetailPegawai');
-    if (modalPegawaiEl) {
-        modalPegawaiEl.addEventListener('hidden.bs.modal', function () {
+    document.addEventListener('hidden.bs.modal', function (event) {
+        if (event.target && event.target.id === 'modalDetailPegawai') {
             Livewire.dispatch('closeDetailPegawaiModal');
-        });
-    }
-
-    const modalKcEl = document.getElementById('modalDetailKc');
-    if (modalKcEl) {
-        modalKcEl.addEventListener('hidden.bs.modal', function () {
+        }
+        if (event.target && event.target.id === 'modalDetailKc') {
             Livewire.dispatch('closeDetailKcModal');
-        });
-    }
+        }
+    });
 });
 </script>
 @endpush
