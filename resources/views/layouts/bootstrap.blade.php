@@ -462,6 +462,9 @@
   $canUsers             = $isAdmin;
   $canKontenApp         = $isAdmin;
   $canSimulasiKredit    = auth()->check();
+
+  $displayName = auth()->user()->nama_lengkap ?: auth()->user()->name ?: 'User';
+  $displayInitial = strtoupper(substr($displayName, 0, 1));
 @endphp
   <div class="app-shell" id="appShell">
 
@@ -553,9 +556,9 @@
 
       <div class="userbox">
         <div class="u">
-          <div class="avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U',0,1)) }}</div>
+          <div class="avatar">{{ $displayInitial }}</div>
           <div class="meta">
-            <div class="n">{{ auth()->user()->name ?? 'User' }}</div>
+            <div class="n">{{ $displayName }}</div>
             <div class="r">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
           </div>
         </div>
@@ -588,9 +591,9 @@
 
             <div class="profile-dropdown-wrap" id="desktopProfileWrap">
               <button class="profilebtn" type="button" id="desktopProfileBtn">
-                <div class="pava">{{ strtoupper(substr(auth()->user()->name ?? 'A',0,1)) }}</div>
+                <div class="pava">{{ $displayInitial }}</div>
                 <div class="txt text-start">
-                  <div class="n">{{ auth()->user()->name ?? 'User' }}</div>
+                  <div class="n">{{ $displayName }}</div>
                   <div class="r">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
                 </div>
                 <i class="bi bi-chevron-down ms-1"></i>
@@ -598,7 +601,7 @@
 
               <div class="profile-menu" id="desktopProfileMenu">
                 <div class="head">
-                  <div class="fw-bold">{{ auth()->user()->name ?? 'User' }}</div>
+                  <div class="fw-bold">{{ $displayName }}</div>
                   <div class="text-muted small">{{ auth()->user()->email ?? '' }}</div>
                 </div>
 
@@ -660,13 +663,13 @@
             <div class="profile-dropdown-wrap" id="mobileProfileWrap">
               <button class="profilebtn mobile-profile-btn" type="button" id="mobileProfileBtn">
                 <div class="pava">
-                  {{ strtoupper(substr(auth()->user()->name ?? 'A',0,1)) }}
+                  {{ $displayInitial }}
                 </div>
               </button>
 
               <div class="profile-menu" id="mobileProfileMenu">
                 <div class="head">
-                  <div class="fw-bold">{{ auth()->user()->name ?? 'User' }}</div>
+                  <div class="fw-bold">{{ $displayName }}</div>
                   <div class="text-muted small">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
                   <div class="text-muted small">{{ auth()->user()->email ?? '' }}</div>
                 </div>
