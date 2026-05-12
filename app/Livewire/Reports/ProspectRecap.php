@@ -470,8 +470,21 @@ class ProspectRecap extends Component
     public function sortBy(string $field): void
     {
         if ($this->activeTab === 'kc') {
-            $allowed = ['kode_cabang', 'nama_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
-            if (!in_array($field, $allowed, true)) return;
+            $allowed = [
+                'kode_cabang',
+                'nama_cabang',
+                'total_pengajuan',
+                'total_pengajuan_ao',
+                'total_pengajuan_non_ao',
+                'total_open',
+                'total_follow_up',
+                'total_closing',
+                'total_rejected',
+            ];
+
+            if (!in_array($field, $allowed, true)) {
+                return;
+            }
 
             if ($this->sortFieldKc === $field) {
                 $this->sortDirectionKc = $this->sortDirectionKc === 'asc' ? 'desc' : 'asc';
@@ -480,8 +493,21 @@ class ProspectRecap extends Component
                 $this->sortDirectionKc = in_array($field, ['kode_cabang', 'nama_cabang'], true) ? 'asc' : 'desc';
             }
         } elseif ($this->activeTab === 'pengaju') {
-            $allowed = ['kode_cabang', 'nama_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
-            if (!in_array($field, $allowed, true)) return;
+            $allowed = [
+                'kode_cabang',
+                'nama_cabang',
+                'total_pengajuan',
+                'total_pengajuan_ao',
+                'total_pengajuan_non_ao',
+                'total_open',
+                'total_follow_up',
+                'total_closing',
+                'total_rejected',
+            ];
+
+            if (!in_array($field, $allowed, true)) {
+                return;
+            }
 
             if ($this->sortFieldPengaju === $field) {
                 $this->sortDirectionPengaju = $this->sortDirectionPengaju === 'asc' ? 'desc' : 'asc';
@@ -490,8 +516,22 @@ class ProspectRecap extends Component
                 $this->sortDirectionPengaju = in_array($field, ['kode_cabang', 'nama_cabang'], true) ? 'asc' : 'desc';
             }
         } else {
-            $allowed = ['name', 'nama_lengkap', 'role', 'job_position', 'kode_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
-            if (!in_array($field, $allowed, true)) return;
+            $allowed = [
+                'name',
+                'nama_lengkap',
+                'role',
+                'job_position',
+                'kode_cabang',
+                'total_pengajuan',
+                'total_open',
+                'total_follow_up',
+                'total_closing',
+                'total_rejected',
+            ];
+
+            if (!in_array($field, $allowed, true)) {
+                return;
+            }
 
             if ($this->sortFieldPegawai === $field) {
                 $this->sortDirectionPegawai = $this->sortDirectionPegawai === 'asc' ? 'desc' : 'asc';
@@ -506,27 +546,54 @@ class ProspectRecap extends Component
 
     protected function getPegawaiOrderField(): string
     {
-        $allowed = ['name', 'nama_lengkap', 'role', 'job_position', 'kode_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
+        $allowed = [
+            'name',
+            'nama_lengkap',
+            'role',
+            'job_position',
+            'kode_cabang',
+            'total_pengajuan',
+            'total_open',
+            'total_follow_up',
+            'total_closing',
+            'total_rejected',
+        ];
+
         return in_array($this->sortFieldPegawai, $allowed, true) ? $this->sortFieldPegawai : 'total_pengajuan';
     }
 
     protected function getKcOrderField(): string
     {
-        $allowed = ['kode_cabang', 'nama_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
+        $allowed = [
+            'kode_cabang',
+            'nama_cabang',
+            'total_pengajuan',
+            'total_pengajuan_ao',
+            'total_pengajuan_non_ao',
+            'total_open',
+            'total_follow_up',
+            'total_closing',
+            'total_rejected',
+        ];
+
         return in_array($this->sortFieldKc, $allowed, true) ? $this->sortFieldKc : 'kode_cabang';
     }
 
     protected function getPengajuOrderField(): string
     {
-        $allowed = ['kode_cabang', 'nama_cabang', 'total_pengajuan', 'total_open', 'total_follow_up', 'total_closing', 'total_rejected'];
-        return in_array($this->sortFieldPengaju, $allowed, true) ? $this->sortFieldPengaju : 'kode_cabang';
-    }
+        $allowed = [
+            'kode_cabang',
+            'nama_cabang',
+            'total_pengajuan',
+            'total_pengajuan_ao',
+            'total_pengajuan_non_ao',
+            'total_open',
+            'total_follow_up',
+            'total_closing',
+            'total_rejected',
+        ];
 
-    protected function applySpecialKodeCabangOrdering($query, string $column = 'cabangs.kode_cabang')
-    {
-        return $query
-            ->orderByRaw("CASE WHEN {$column} = '000' THEN 0 ELSE 1 END ASC")
-            ->orderByRaw("CASE WHEN {$column} = '000' THEN -1 ELSE CAST({$column} AS UNSIGNED) END ASC");
+        return in_array($this->sortFieldPengaju, $allowed, true) ? $this->sortFieldPengaju : 'kode_cabang';
     }
 
     protected function getKcBaseQuery()
@@ -547,6 +614,7 @@ class ProspectRecap extends Component
                     $this->filterTanggalAkhir
                 );
             })
+            ->leftJoin('users as input_users', 'input_users.id', '=', 'prospects.input_by')
             ->where('cabangs.aktif', 1)
             ->where(function ($q) {
                 $q->where('cabangs.kode_cabang', '000')
@@ -569,6 +637,8 @@ class ProspectRecap extends Component
                 'cabangs.kode_cabang',
                 'cabangs.nama_cabang',
                 DB::raw('COUNT(prospects.id) as total_pengajuan'),
+                DB::raw("SUM(CASE WHEN input_users.role = 'AO' THEN 1 ELSE 0 END) as total_pengajuan_ao"),
+                DB::raw("SUM(CASE WHEN input_users.role = 'PEGAWAI' THEN 1 ELSE 0 END) as total_pengajuan_non_ao"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as total_open"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as total_follow_up"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as total_closing"),
@@ -620,6 +690,8 @@ class ProspectRecap extends Component
                 'cabangs.kode_cabang',
                 'cabangs.nama_cabang',
                 DB::raw('COUNT(prospects.id) as total_pengajuan'),
+                DB::raw("SUM(CASE WHEN users.role = 'AO' THEN 1 ELSE 0 END) as total_pengajuan_ao"),
+                DB::raw("SUM(CASE WHEN users.role = 'PEGAWAI' THEN 1 ELSE 0 END) as total_pengajuan_non_ao"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as total_open"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as total_follow_up"),
                 DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as total_closing"),
@@ -847,14 +919,27 @@ class ProspectRecap extends Component
 
             return response()->streamDownload(function () use ($rows, $periodeLabel) {
                 echo '<html><head><meta charset="UTF-8"></head><body><table border="1">';
-                echo '<tr><th colspan="8" style="font-weight:bold;">Rekap Prospek Per KC - ' . e($periodeLabel) . '</th></tr>';
-                echo '<tr><th>No</th><th>Kode Cabang</th><th>Nama Cabang</th><th>Jumlah Pengajuan</th><th>Open</th><th>Follow Up</th><th>Closing</th><th>Rejected</th></tr>';
+                echo '<tr><th colspan="10" style="font-weight:bold;">Rekap Prospek Per KC - ' . e($periodeLabel) . '</th></tr>';
+                echo '<tr>
+                        <th>No</th>
+                        <th>Kode Cabang</th>
+                        <th>Nama Cabang</th>
+                        <th>Jumlah Pengajuan</th>
+                        <th>AO</th>
+                        <th>NON AO</th>
+                        <th>Open</th>
+                        <th>Follow Up</th>
+                        <th>Closing</th>
+                        <th>Rejected</th>
+                      </tr>';
                 foreach ($rows as $i => $row) {
                     echo '<tr>';
                     echo '<td>' . ($i + 1) . '</td>';
                     echo '<td>' . e($row->kode_cabang) . '</td>';
                     echo '<td>' . e($row->nama_cabang) . '</td>';
                     echo '<td>' . (int) $row->total_pengajuan . '</td>';
+                    echo '<td>' . (int) ($row->total_pengajuan_ao ?? 0) . '</td>';
+                    echo '<td>' . (int) ($row->total_pengajuan_non_ao ?? 0) . '</td>';
                     echo '<td>' . (int) $row->total_open . '</td>';
                     echo '<td>' . (int) $row->total_follow_up . '</td>';
                     echo '<td>' . (int) $row->total_closing . '</td>';
@@ -883,14 +968,27 @@ class ProspectRecap extends Component
 
             return response()->streamDownload(function () use ($rows, $periodeLabel) {
                 echo '<html><head><meta charset="UTF-8"></head><body><table border="1">';
-                echo '<tr><th colspan="8" style="font-weight:bold;">Rekap Pengaju Per Cabang - ' . e($periodeLabel) . '</th></tr>';
-                echo '<tr><th>No</th><th>Kode Cabang</th><th>Nama Cabang</th><th>Jumlah Pengaju</th><th>Open</th><th>Follow Up</th><th>Closing</th><th>Rejected</th></tr>';
+                echo '<tr><th colspan="10" style="font-weight:bold;">Rekap Pengaju Per Cabang - ' . e($periodeLabel) . '</th></tr>';
+                echo '<tr>
+                        <th>No</th>
+                        <th>Kode Cabang</th>
+                        <th>Nama Cabang</th>
+                        <th>Jumlah Pengaju</th>
+                        <th>AO</th>
+                        <th>NON AO</th>
+                        <th>Open</th>
+                        <th>Follow Up</th>
+                        <th>Closing</th>
+                        <th>Rejected</th>
+                      </tr>';
                 foreach ($rows as $i => $row) {
                     echo '<tr>';
                     echo '<td>' . ($i + 1) . '</td>';
                     echo '<td>' . e($row->kode_cabang) . '</td>';
                     echo '<td>' . e($row->nama_cabang) . '</td>';
                     echo '<td>' . (int) $row->total_pengajuan . '</td>';
+                    echo '<td>' . (int) ($row->total_pengajuan_ao ?? 0) . '</td>';
+                    echo '<td>' . (int) ($row->total_pengajuan_non_ao ?? 0) . '</td>';
                     echo '<td>' . (int) $row->total_open . '</td>';
                     echo '<td>' . (int) $row->total_follow_up . '</td>';
                     echo '<td>' . (int) $row->total_closing . '</td>';
