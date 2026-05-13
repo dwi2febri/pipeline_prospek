@@ -840,6 +840,75 @@
         font-size:1.55rem;
       }
     }
+    .mobile-fab-stack{
+  position:fixed;
+  right:16px;
+  bottom:88px;
+  z-index:1045;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.mobile-fab-stack .mobile-fab-add,
+.mobile-fab-stack .mobile-fab-ai{
+  position:static !important;
+  width:62px;
+  height:62px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  text-decoration:none;
+  box-shadow:0 18px 30px rgba(37,99,235,.28);
+}
+
+.mobile-fab-stack .mobile-fab-add{
+  background:linear-gradient(135deg,#14b8a6 0%,#3b82f6 100%);
+}
+
+.mobile-fab-stack .mobile-fab-ai{
+  background:linear-gradient(135deg,#7c3aed 0%,#2563eb 100%);
+}
+
+.mobile-fab-stack .mobile-fab-add i,
+.mobile-fab-stack .mobile-fab-ai i{
+  font-size:1.45rem;
+}
+
+.desktop-ai-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border-radius:999px;
+  padding:12px 18px;
+  font-weight:800;
+  text-decoration:none;
+  color:#fff;
+  background:linear-gradient(135deg,#7c3aed 0%,#2563eb 100%);
+  box-shadow:0 16px 28px rgba(37,99,235,.24);
+  border:0;
+  white-space:nowrap;
+  transition:all .18s ease;
+}
+
+.desktop-ai-btn:hover{
+  color:#fff;
+  transform:translateY(-1px);
+}
+
+@media (max-width: 767.98px){
+  .desktop-ai-btn{
+    display:none !important;
+  }
+}
+
+@media (min-width: 768px){
+  .mobile-fab-stack{
+    display:none !important;
+  }
+}
   </style>
 
   @if(session('ok'))
@@ -1253,7 +1322,13 @@
     @endif
   </div>
 
-  <a href="{{ route('prospects.create') }}" class="mobile-fab-add d-md-none" aria-label="Tambah Prospek">
+<div class="mobile-fab-stack d-md-none">
+  <a href="{{ route('ai.chat.index') }}" class="mobile-fab-ai" aria-label="Chat AI">
+    <i class="bi bi-robot"></i>
+  </a>
+
+  <a href="{{ route('prospects.create') }}" class="mobile-fab-add" aria-label="Tambah Prospek">
     <i class="bi bi-plus-lg"></i>
   </a>
+</div>
 </div>

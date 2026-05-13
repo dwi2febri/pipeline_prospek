@@ -26,6 +26,7 @@ use App\Livewire\Reports\ProspectRecap as ProspectRecapReport;
 use App\Livewire\Contents\Manager as ContentManager;
 use App\Livewire\Contents\Show as ContentShow;
 use App\Livewire\SimulasiKredit\Index as SimulasiKreditIndex;
+use App\Http\Controllers\AiChatController;
 
 // Homepage
 Route::get('/', function () {
@@ -244,4 +245,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/contents/{jenis}/{slug}', ContentShow::class)
         ->name('contents.show');
+
+    // ===== AI CHAT =====
+    Route::get('/ai-chat', [AiChatController::class, 'index'])
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->name('ai.chat.index');
+
+    Route::post('/ai-chat/ask', [AiChatController::class, 'ask'])
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->name('ai.chat.ask');
 });
