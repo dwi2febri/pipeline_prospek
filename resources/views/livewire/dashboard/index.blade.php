@@ -8,16 +8,94 @@
       color:#1e293b;
       line-height:1.1;
     }
+
     .dash-subtitle{
       color:#64748b;
       font-size:1rem;
     }
+
+    .dash-top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .desktop-ai-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      padding:12px 18px;
+      font-weight:800;
+      text-decoration:none;
+      color:#fff;
+      background:linear-gradient(135deg,#7c3aed 0%,#2563eb 100%);
+      box-shadow:0 16px 28px rgba(37,99,235,.24);
+      border:0;
+      white-space:nowrap;
+      transition:all .18s ease;
+    }
+
+    .desktop-ai-btn:hover{
+      color:#fff;
+      transform:translateY(-1px);
+    }
+
+    .mobile-inline-actions{
+      display:none;
+    }
+
+    .mobile-inline-ai{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      justify-content:center;
+    }
+
+    .mobile-fab-stack{
+      position:fixed;
+      right:16px;
+      bottom:88px;
+      z-index:1045;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .mobile-fab-stack .mobile-fab-ai,
+    .mobile-fab-stack .mobile-fab-dashboard-add{
+      width:62px;
+      height:62px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      text-decoration:none;
+      box-shadow:0 18px 30px rgba(37,99,235,.28);
+    }
+
+    .mobile-fab-stack .mobile-fab-ai{
+      background:linear-gradient(135deg,#7c3aed 0%,#2563eb 100%);
+    }
+
+    .mobile-fab-stack .mobile-fab-dashboard-add{
+      background:linear-gradient(135deg,#14b8a6 0%,#3b82f6 100%);
+    }
+
+    .mobile-fab-stack .mobile-fab-ai i,
+    .mobile-fab-stack .mobile-fab-dashboard-add i{
+      font-size:1.45rem;
+    }
+
     .dash-filter-card{
       border:1px solid #e9eef5;
       border-radius:26px;
       background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
       box-shadow:0 14px 34px rgba(15,23,42,.06);
     }
+
     .dash-stat-card{
       position:relative;
       overflow:hidden;
@@ -28,18 +106,21 @@
       min-height:140px;
       box-shadow:0 18px 38px rgba(15,23,42,.12);
     }
+
     .dash-stat-card .label{
       font-size:.98rem;
       font-weight:700;
       opacity:.95;
       margin-bottom:8px;
     }
+
     .dash-stat-card .value{
       font-size:2.5rem;
       font-weight:900;
       line-height:1;
       letter-spacing:-.03em;
     }
+
     .dash-stat-card .icon{
       position:absolute;
       right:16px;
@@ -61,19 +142,23 @@
       box-shadow:0 14px 34px rgba(15,23,42,.06);
       overflow:hidden;
     }
+
     .dash-panel .panel-head{
       padding:18px 20px 0 20px;
     }
+
     .dash-panel .panel-title{
       font-size:1.12rem;
       font-weight:800;
       color:#1f2937;
       margin-bottom:4px;
     }
+
     .dash-panel .panel-sub{
       font-size:.88rem;
       color:#64748b;
     }
+
     .dash-panel .panel-body{
       padding:16px 20px 20px 20px;
     }
@@ -100,10 +185,12 @@
       white-space:nowrap;
       vertical-align:middle;
     }
+
     .modern-table tbody td{
       border-color:#eef2f7 !important;
       vertical-align:middle;
     }
+
     .modern-table tbody tr:hover{
       background:#fbfdff;
     }
@@ -132,19 +219,23 @@
       letter-spacing:.02em;
       white-space:nowrap;
     }
+
     .status-open{
       background:linear-gradient(180deg,#f8fafc 0%,#e2e8f0 100%);
       color:#475569;
       border:1px solid #cbd5e1;
     }
+
     .status-follow{
       background:linear-gradient(135deg,#fde68a 0%,#fbbf24 100%);
       color:#4b3a00;
     }
+
     .status-rejected{
       background:linear-gradient(135deg,#fda4af 0%,#f43f5e 100%);
       color:#fff;
     }
+
     .status-closing{
       background:linear-gradient(135deg,#86efac 0%,#22c55e 100%);
       color:#14532d;
@@ -162,6 +253,7 @@
       white-space:nowrap;
       color:#fff;
     }
+
     .produk-kredit{ background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%); }
     .produk-tabungan{ background:linear-gradient(135deg,#22c55e 0%,#15803d 100%); }
     .produk-deposito{ background:linear-gradient(135deg,#facc15 0%,#eab308 100%); color:#4b3a00; }
@@ -174,18 +266,21 @@
       border:1px solid #e5e7eb;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
     }
+
     .map-panel{
-      background: linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%);
-      border-radius: 24px;
-      padding: 12px;
-      border: 1px solid #e5e7eb;
+      background:linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%);
+      border-radius:24px;
+      padding:12px;
+      border:1px solid #e5e7eb;
     }
+
     .legend-wrap{
       background:#f8fafc;
       border:1px solid #e5e7eb;
       border-radius:20px;
       padding:14px 16px;
     }
+
     .legend-chip{
       display:inline-flex;
       align-items:center;
@@ -198,6 +293,7 @@
       font-weight:600;
       box-shadow:0 1px 2px rgba(15,23,42,.04);
     }
+
     .legend-dot{
       width:12px;
       height:12px;
@@ -205,23 +301,28 @@
       display:inline-block;
       flex:0 0 auto;
     }
+
     .leaflet-popup-content-wrapper{
       border-radius:16px;
     }
+
     .leaflet-popup-content{
       margin:14px 16px;
     }
+
     .map-popup-title{
       font-weight:700;
       font-size:14px;
       margin-bottom:8px;
       color:#0f172a;
     }
+
     .map-popup-row{
       margin-bottom:4px;
       font-size:13px;
       color:#334155;
     }
+
     .map-popup-badge{
       display:inline-block;
       padding:4px 10px;
@@ -233,6 +334,7 @@
       border:1px solid rgba(15,23,42,.08);
       background:#f8fafc;
     }
+
     .map-popup-photo{
       margin-top:10px;
       border-radius:12px;
@@ -245,19 +347,66 @@
 
     @media (max-width: 767.98px){
       .dash-title{ font-size:1.7rem; }
+
+      .desktop-ai-btn{
+        display:none !important;
+      }
+
+      .mobile-inline-actions{
+        display:flex;
+        gap:10px;
+        margin-top:12px;
+        flex-wrap:wrap;
+      }
+
+      .mobile-inline-actions .mobile-inline-ai,
+      .mobile-inline-actions .mobile-inline-add{
+        flex:1 1 calc(50% - 5px);
+        justify-content:center;
+      }
+
       .dash-stat-card{
         min-height:124px;
         border-radius:22px;
       }
-      .dash-stat-card .value{ font-size:2.15rem; }
-      .dashboard-map{ height:360px; }
+
+      .dash-stat-card .value{
+        font-size:2.15rem;
+      }
+
+      .dashboard-map{
+        height:360px;
+      }
+    }
+
+    @media (min-width: 768px){
+      .mobile-fab-stack,
+      .mobile-inline-actions{
+        display:none !important;
+      }
     }
   </style>
 
-  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
     <div>
       <div class="dash-title">Dashboard CRM Prospek</div>
       <div class="dash-subtitle">Ringkasan prospek, status, produk, jenis usaha, dan peta persebaran Jawa Tengah</div>
+
+      <div class="mobile-inline-actions">
+        <a href="{{ route('ai.chat.index') }}" class="desktop-ai-btn mobile-inline-ai">
+          <i class="bi bi-robot"></i> Chat AI
+        </a>
+
+
+      </div>
+    </div>
+
+    <div class="dash-top-actions d-none d-md-flex">
+      <a href="{{ route('ai.chat.index') }}" class="desktop-ai-btn">
+        <i class="bi bi-robot"></i> Chat AI
+      </a>
+
+
     </div>
   </div>
 
@@ -275,6 +424,7 @@
             </option>
           @endforeach
         </select>
+
         @if($lockCabangFilter)
           <div class="small text-muted mt-1">
             Filter cabang otomatis mengikuti cabang user supervisor.
@@ -386,7 +536,7 @@
             <select class="form-select form-select-sm" wire:model.live="filterGrafikClosingMode">
               <option value="closing">Per KC (Closing)</option>
               <option value="pengaju">Per KC By Pengajuan</option>
-              <option value="per_kc_non_closing_rejected">Per KC (Open + Follow up)</option>
+              <option value="per_kc_non_closing_rejected">Per KC (Open + Follow Up)</option>
               <option value="per_kc_follow_up">Per KC (Follow Up)</option>
               <option value="per_kc_rejected">Per KC (Rejected)</option>
             </select>
@@ -695,6 +845,14 @@
   <script type="application/json" id="dashboard-data-map-items">@json($mapItems)</script>
   <script type="application/json" id="dashboard-data-usaha-color-map">@json($usahaColorMap)</script>
 
+  <div class="mobile-fab-stack d-md-none">
+    <a href="{{ route('ai.chat.index') }}" class="mobile-fab-ai" aria-label="Chat AI">
+      <i class="bi bi-robot"></i>
+    </a>
+
+
+  </div>
+
   @push('scripts')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -886,14 +1044,12 @@
             datasets: [{
               label: 'Pengajuan',
               data: data.trendValues,
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37,99,235,.15)',
               fill: true,
-              tension: 0.32,
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59,130,246,.12)',
-              pointBackgroundColor: '#3b82f6',
-              pointBorderColor: '#ffffff',
-              pointBorderWidth: 2,
-              pointRadius: 4
+              tension: .35,
+              pointRadius: 3,
+              pointBackgroundColor: '#2563eb'
             }]
           },
           options: {
@@ -906,123 +1062,96 @@
                 ticks: { precision: 0 },
                 grid: { color: 'rgba(148,163,184,.18)' }
               },
-              x: { grid: { display: false } }
+              x: {
+                grid: { display: false }
+              }
             }
           }
         });
       }
 
-      function destroyMap() {
-        if (mapLayerGroup) {
-          mapLayerGroup.clearLayers();
-          mapLayerGroup = null;
-        }
-        if (mapInstance) {
-          mapInstance.off();
-          mapInstance.remove();
-          mapInstance = null;
-        }
-      }
-
       function renderMap() {
-        const data = getDashboardPayload();
+        const payload = getDashboardPayload();
+        const items = payload.mapItems || [];
         const mapEl = document.getElementById('jatengMap');
-        if (!mapEl || typeof L === 'undefined') return;
+        if (!mapEl) return;
 
-        destroyMap();
+        if (!mapInstance) {
+          mapInstance = L.map('jatengMap').setView([-7.150975, 110.140259], 8);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+          }).addTo(mapInstance);
 
-        mapInstance = L.map(mapEl, {
-          zoomControl: true,
-          scrollWheelZoom: true
-        }).setView([-7.150975, 110.140259], 8);
+          mapLayerGroup = L.layerGroup().addTo(mapInstance);
+        }
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap'
-        }).addTo(mapInstance);
-
-        mapLayerGroup = L.layerGroup().addTo(mapInstance);
+        mapLayerGroup.clearLayers();
 
         const bounds = [];
-        const mapItems = Array.isArray(data.mapItems) ? data.mapItems : [];
 
-        mapItems.forEach(function(item) {
-          if (!item.lat || !item.lng) return;
+        items.forEach(item => {
+          const lat = parseFloat(item.latitude ?? item.lat ?? 0);
+          const lng = parseFloat(item.longitude ?? item.lng ?? 0);
 
-          const color = getUsahaColor(item.jenis_usaha_kode, data);
+          if (!lat || !lng) return;
 
-          let fotoHtml = '';
-          if (item.photo_url) {
-            fotoHtml = '<div><a href="' + esc(item.photo_url) + '" target="_blank"><img src="' + esc(item.photo_url) + '" class="map-popup-photo"></a></div>';
-          }
+          const color = getUsahaColor(item.kode_jenis_usaha || item.jenis_usaha_kode || item.jenis_usaha, payload);
+
+          const marker = L.marker([lat, lng], {
+            icon: makeCircleIcon(color)
+          });
+
+          const foto = item.foto_url
+            ? '<img class="map-popup-photo" src="' + esc(item.foto_url) + '" alt="Foto">'
+            : '';
 
           const popupHtml =
-            '<div style="min-width:250px;max-width:290px;">' +
-              '<div class="map-popup-title">' + esc(item.nama || '-') + '</div>' +
-              '<div class="map-popup-row">' +
-                '<span class="map-popup-badge">' + esc(item.status || '-') + '</span>' +
-                '<span class="map-popup-badge">' + esc(item.jenis_produk || '-') + '</span>' +
-              '</div>' +
-              '<div class="map-popup-row"><b>Jenis Usaha:</b> ' + esc(item.jenis_usaha_label || '-') + '</div>' +
-              '<div class="map-popup-row"><b>KC:</b> ' + esc(item.cabang || '-') + '</div>' +
-              '<div class="map-popup-row"><b>Wilayah:</b> ' + esc(item.kab_kota || '-') + ' , ' + esc(item.kecamatan || '-') + ' , ' + esc(item.desa || '-') + '</div>' +
-              '<div class="map-popup-row"><b>Alamat:</b> ' + esc(item.alamat || '-') + '</div>' +
-              '<div class="map-popup-row"><b>Keterangan:</b> ' + esc(item.keterangan_usaha || '-') + '</div>' +
-              fotoHtml +
-            '</div>';
+            '<div class="map-popup-title">' + esc(item.nama || '-') + '</div>' +
+            '<div class="map-popup-row"><strong>Cabang:</strong> ' + esc(item.nama_cabang || '-') + '</div>' +
+            '<div class="map-popup-row"><strong>No HP:</strong> ' + esc(item.no_hp || '-') + '</div>' +
+            '<div class="map-popup-row"><strong>Status:</strong> ' + esc(item.status || '-') + '</div>' +
+            '<div class="map-popup-row"><strong>Produk:</strong> ' + esc(item.jenis_produk || '-') + '</div>' +
+            '<div class="map-popup-row"><strong>Usaha:</strong> ' + esc(item.jenis_usaha || '-') + '</div>' +
+            '<div class="map-popup-badge">' + esc(item.status || '-') + '</div>' +
+            '<div class="map-popup-badge">' + esc(item.jenis_produk || '-') + '</div>' +
+            foto;
 
-          const marker = L.marker([item.lat, item.lng], {
-            icon: makeCircleIcon(color)
-          }).bindPopup(popupHtml);
-
-          mapLayerGroup.addLayer(marker);
-          bounds.push([item.lat, item.lng]);
+          marker.bindPopup(popupHtml);
+          marker.addTo(mapLayerGroup);
+          bounds.push([lat, lng]);
         });
 
-        setTimeout(function () {
-          if (!mapInstance) return;
+        if (bounds.length > 0) {
+          mapInstance.fitBounds(bounds, { padding: [30, 30] });
+        } else {
+          mapInstance.setView([-7.150975, 110.140259], 8);
+        }
 
-          if (bounds.length > 0) {
-            mapInstance.fitBounds(bounds, { padding: [20, 20] });
-          } else {
-            mapInstance.setView([-7.150975, 110.140259], 8);
-          }
-
-          mapInstance.invalidateSize();
-        }, 250);
+        setTimeout(() => {
+          if (mapInstance) mapInstance.invalidateSize();
+        }, 200);
       }
 
-      function renderAllDashboard() {
+      function renderAll() {
         renderCharts();
         renderMap();
       }
 
-      document.addEventListener('DOMContentLoaded', function () {
-        setTimeout(renderAllDashboard, 300);
-      });
-
       document.addEventListener('livewire:navigated', function () {
-        setTimeout(renderAllDashboard, 300);
+        setTimeout(renderAll, 50);
       });
 
-      document.addEventListener('livewire:init', function () {
-        if (!window.Livewire) return;
+      document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(renderAll, 50);
+      });
 
-        Livewire.on('dashboard-refresh', function () {
-          setTimeout(function () {
-            renderAllDashboard();
-          }, 350);
+      if (window.Livewire) {
+        Livewire.hook('message.processed', () => {
+          setTimeout(renderAll, 50);
         });
-      });
-
-      window.addEventListener('resize', function () {
-        if (mapInstance) {
-          setTimeout(function () {
-            mapInstance.invalidateSize();
-          }, 150);
-        }
-      });
+      }
     })();
     </script>
   @endpush
-
 </div>

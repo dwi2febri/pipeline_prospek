@@ -99,6 +99,45 @@
       transform:translateY(-1px);
     }
 
+    .prospek-top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .desktop-ai-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      padding:12px 18px;
+      font-weight:800;
+      text-decoration:none;
+      color:#fff;
+      background:linear-gradient(135deg,#7c3aed 0%,#2563eb 100%);
+      box-shadow:0 16px 28px rgba(37,99,235,.24);
+      border:0;
+      white-space:nowrap;
+      transition:all .18s ease;
+    }
+
+    .desktop-ai-btn:hover{
+      color:#fff;
+      transform:translateY(-1px);
+    }
+
+    .mobile-inline-actions{
+      display:none;
+    }
+
+    .mobile-inline-ai{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      justify-content:center;
+    }
+
     .glass-head{
       border-radius:30px;
       background:
@@ -262,7 +301,6 @@
       border:1px solid transparent;
     }
 
-    /* WARNA STATUS DISAMAKAN DENGAN KOTAK SUMMARY ATAS */
     .status-open{
       background:linear-gradient(135deg,#f6c0c0 0%,#efaaaa 100%);
       color:#fff;
@@ -577,8 +615,7 @@
       background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
     }
 
-    .mobile-flyer-wrap,
-    .mobile-fab-add{
+    .mobile-flyer-wrap{
       display:none;
     }
 
@@ -607,6 +644,43 @@
       z-index:3;
     }
 
+    .mobile-fab-stack{
+      position:fixed;
+      right:16px;
+      bottom:88px;
+      z-index:1045;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .mobile-fab-stack .mobile-fab-add,
+    .mobile-fab-stack .mobile-fab-ai{
+      position:static !important;
+      width:62px;
+      height:62px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      text-decoration:none;
+      box-shadow:0 18px 30px rgba(37,99,235,.28);
+    }
+
+    .mobile-fab-stack .mobile-fab-add{
+      background:linear-gradient(135deg,#14b8a6 0%,#3b82f6 100%);
+    }
+
+    .mobile-fab-stack .mobile-fab-ai{
+      background:linear-gradient(135deg,#7c3aed 0%,#2563eb 100%);
+    }
+
+    .mobile-fab-stack .mobile-fab-add i,
+    .mobile-fab-stack .mobile-fab-ai i{
+      font-size:1.45rem;
+    }
+
     @media (min-width: 768px){
       .mobile-scroll-row{
         overflow-x:visible;
@@ -623,6 +697,11 @@
         width:100%;
         flex:auto;
       }
+
+      .mobile-fab-stack,
+      .mobile-inline-actions{
+        display:none !important;
+      }
     }
 
     @media (max-width: 767.98px){
@@ -635,8 +714,22 @@
         margin-bottom:10px;
       }
 
-      .desktop-add-btn{
+      .desktop-add-btn,
+      .desktop-ai-btn{
         display:none !important;
+      }
+
+      .mobile-inline-actions{
+        display:flex;
+        gap:10px;
+        margin-top:12px;
+        flex-wrap:wrap;
+      }
+
+      .mobile-inline-actions .btn-add-modern,
+      .mobile-inline-actions .mobile-inline-ai{
+        flex:1 1 calc(50% - 5px);
+        justify-content:center;
       }
 
       .mobile-flyer-wrap{
@@ -818,97 +911,7 @@
         border-radius:26px;
         padding:15px;
       }
-
-      .mobile-fab-add{
-        position:fixed;
-        right:16px;
-        bottom:88px;
-        z-index:1045;
-        width:62px;
-        height:62px;
-        border-radius:999px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        color:#fff;
-        text-decoration:none;
-        background:linear-gradient(135deg,#14b8a6 0%,#3b82f6 100%);
-        box-shadow:0 18px 30px rgba(37,99,235,.28);
-      }
-
-      .mobile-fab-add i{
-        font-size:1.55rem;
-      }
     }
-    .mobile-fab-stack{
-  position:fixed;
-  right:16px;
-  bottom:88px;
-  z-index:1045;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-.mobile-fab-stack .mobile-fab-add,
-.mobile-fab-stack .mobile-fab-ai{
-  position:static !important;
-  width:62px;
-  height:62px;
-  border-radius:999px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  text-decoration:none;
-  box-shadow:0 18px 30px rgba(37,99,235,.28);
-}
-
-.mobile-fab-stack .mobile-fab-add{
-  background:linear-gradient(135deg,#14b8a6 0%,#3b82f6 100%);
-}
-
-.mobile-fab-stack .mobile-fab-ai{
-  background:linear-gradient(135deg,#7c3aed 0%,#2563eb 100%);
-}
-
-.mobile-fab-stack .mobile-fab-add i,
-.mobile-fab-stack .mobile-fab-ai i{
-  font-size:1.45rem;
-}
-
-.desktop-ai-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  border-radius:999px;
-  padding:12px 18px;
-  font-weight:800;
-  text-decoration:none;
-  color:#fff;
-  background:linear-gradient(135deg,#7c3aed 0%,#2563eb 100%);
-  box-shadow:0 16px 28px rgba(37,99,235,.24);
-  border:0;
-  white-space:nowrap;
-  transition:all .18s ease;
-}
-
-.desktop-ai-btn:hover{
-  color:#fff;
-  transform:translateY(-1px);
-}
-
-@media (max-width: 767.98px){
-  .desktop-ai-btn{
-    display:none !important;
-  }
-}
-
-@media (min-width: 768px){
-  .mobile-fab-stack{
-    display:none !important;
-  }
-}
   </style>
 
   @if(session('ok'))
@@ -985,11 +988,25 @@
     <div class="app-page-head mb-0">
       <div class="app-title">Prospek Saya</div>
       <div class="app-subtitle">Pantau prospek, jelajahi katalog produk, dan lihat tips cepat untuk meningkatkan follow up.</div>
+
+      <div class="mobile-inline-actions">
+        <a href="{{ route('ai.chat.index') }}" class="desktop-ai-btn mobile-inline-ai">
+          <i class="bi bi-robot"></i> Chat AI
+        </a>
+
+
+      </div>
     </div>
 
-    <a href="{{ route('prospects.create') }}" class="btn-add-modern desktop-add-btn d-none d-md-inline-flex">
-      <i class="bi bi-plus-lg"></i> Tambah Prospek
-    </a>
+    <div class="prospek-top-actions d-none d-md-flex">
+      <a href="{{ route('ai.chat.index') }}" class="desktop-ai-btn">
+        <i class="bi bi-robot"></i> Chat AI
+      </a>
+
+      <a href="{{ route('prospects.create') }}" class="btn-add-modern desktop-add-btn">
+        <i class="bi bi-plus-lg"></i> Tambah Prospek
+      </a>
+    </div>
   </div>
 
   <div class="mobile-flyer-wrap d-md-none">
@@ -1322,13 +1339,14 @@
     @endif
   </div>
 
-<div class="mobile-fab-stack d-md-none">
-  <a href="{{ route('ai.chat.index') }}" class="mobile-fab-ai" aria-label="Chat AI">
-    <i class="bi bi-robot"></i>
-  </a>
+  <div class="mobile-fab-stack d-md-none">
+    <a href="{{ route('ai.chat.index') }}" class="mobile-fab-ai" aria-label="Chat AI">
+      <i class="bi bi-robot"></i>
+    </a>
 
-  <a href="{{ route('prospects.create') }}" class="mobile-fab-add" aria-label="Tambah Prospek">
-    <i class="bi bi-plus-lg"></i>
-  </a>
+    <a href="{{ route('prospects.create') }}" class="mobile-fab-add" aria-label="Tambah Prospek">
+      <i class="bi bi-plus-lg"></i>
+    </a>
+  </div>
 </div>
-</div>
+
