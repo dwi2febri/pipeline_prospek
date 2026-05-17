@@ -53,7 +53,7 @@ KONTEKS DATA APLIKASI E-PROSPEK:
 ATURAN:
 - Prioritaskan konteks data aplikasi di atas.
 - Jika data aplikasi tidak cukup, katakan dengan jujur bahwa data aplikasi yang tersedia belum cukup.
-- Jangan mengarang angka, nama, status, atau cabang yang tidak ada pada konteks.
+- Jangan mengarang angka, nama, status, cabang, produk, atau jenis usaha yang tidak ada pada konteks.
 - Jika diminta ringkasan atau analisa, jawab singkat, jelas, dan langsung ke inti.
 TXT;
             } else {
@@ -122,6 +122,14 @@ TXT;
             'jumlah prospek',
             'jumlah pengajuan',
             'data prospek',
+            'jenis usaha',
+            'produk',
+            'tren',
+            'top cabang',
+            'top pegawai',
+            'top closing',
+            'peta',
+            'map',
             'aplikasi ini',
             'di aplikasi',
             'di sistem',
@@ -139,20 +147,10 @@ TXT;
     protected function sanitizeAnswer(string $answer): string
     {
         $answer = str_replace(["\r\n", "\r"], "\n", $answer);
-
-        // hapus heading markdown
         $answer = preg_replace('/^\s{0,3}#{1,6}\s*/m', '', $answer);
-
-        // hapus bullet markdown di awal baris
         $answer = preg_replace('/^\s*[-*+]\s+/m', '', $answer);
-
-        // hapus numbering markdown sederhana
         $answer = preg_replace('/^\s*\d+\.\s+/m', '', $answer);
-
-        // hapus bold / italic markdown
         $answer = str_replace(['**', '__', '*', '`'], '', $answer);
-
-        // rapikan baris kosong berlebih
         $answer = preg_replace("/\n{3,}/", "\n\n", $answer);
 
         return trim($answer);
@@ -162,7 +160,11 @@ TXT;
     {
         $role = strtoupper(trim((string) ($user->role ?? '')));
         $baseQuery = $this->visibleProspectsQuery($user);
+        $keyword = Str::lower($question);
 
+        // =========================
+        // SUMMARY UTAMA
+        // =========================
         $summary = (clone $baseQuery)
             ->selectRaw("
                 COUNT(prospects.id) as total,
@@ -173,6 +175,120 @@ TXT;
             ")
             ->first();
 
+        // =========================
+        // PRODUK
+        // =========================
+        $produkRows = (clone $baseQuery)
+            ->select('prospects.jenis_produk', DB::raw('COUNT(*) as total'))
+            ->groupBy('prospects.jenis_produk')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        // =========================
+        // JENIS USAHA
+        // =========================
+        $usahaRows = (clone $baseQuery)
+            ->select('prospects.jenis_usaha', DB::raw('COUNT(*) as total'))
+            ->groupBy('prospects.jenis_usaha')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        // =========================
+        // TOP CABANG
+        // =========================
+        $topCabang = Prospect::query()
+            ->select('cabangs.kode_cabang', 'cabangs.nama_cabang', DB::raw('COUNT(prospects.id) as total'))
+            ->join('cabangs', 'cabangs.id', '=', 'prospects.cabang_id')
+            ->whereNull('prospects.deleted_at');
+
+        $this->applyVisibleProspectsScope($topCabang, $user);
+
+        $topCabang = $topCabang
+            ->groupBy('cabangs.kode_cabang', 'cabangs.nama_cabang')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        // =========================
+        // TOP CLOSING CABANG
+        // =========================
+        $topClosingCabang = Prospect::query()
+            ->select('cabangs.kode_cabang', 'cabangs.nama_cabang', DB::raw('COUNT(prospects.id) as total'))
+            ->join('cabangs', 'cabangs.id', '=', 'prospects.cabang_id')
+            ->whereNull('prospects.deleted_at')
+            ->where('prospects.status', 'CLOSING');
+
+        $this->applyVisibleProspectsScope($topClosingCabang, $user);
+
+        $topClosingCabang = $topClosingCabang
+            ->groupBy('cabangs.kode_cabang', 'cabangs.nama_cabang')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        // =========================
+        // TOP PEGAWAI / AO
+        // =========================
+        $topPegawai = Prospect::query()
+            ->select('users.name', 'users.nama_lengkap', DB::raw('COUNT(prospects.id) as total'))
+            ->join('users', 'users.id', '=', 'prospects.input_by')
+            ->whereNull('prospects.deleted_at');
+
+        $this->applyVisibleProspectsScope($topPegawai, $user);
+
+        $topPegawai = $topPegawai
+            ->groupBy('users.name', 'users.nama_lengkap')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        // =========================
+        // RINGKASAN PER CABANG
+        // =========================
+        $needCabang = Str::contains($keyword, ['cabang', 'kc', 'kanwil', 'rekap']);
+        $perCabang = collect();
+
+        if ($needCabang || in_array($role, ['ADMIN', 'MANAJEMEN', 'MANAJEMEN KANWIL', 'SUPERVISOR'], true)) {
+            $perCabang = (clone $baseQuery)
+                ->groupBy('cabangs.kode_cabang', 'cabangs.nama_cabang')
+                ->orderBy('cabangs.kode_cabang')
+                ->limit(20)
+                ->get([
+                    'cabangs.kode_cabang',
+                    'cabangs.nama_cabang',
+                    DB::raw('COUNT(prospects.id) as total'),
+                    DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as open_total"),
+                    DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as follow_total"),
+                    DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as closing_total"),
+                    DB::raw("SUM(CASE WHEN prospects.status = 'REJECTED' THEN 1 ELSE 0 END) as rejected_total"),
+                ]);
+        }
+
+        // =========================
+        // TREN BULANAN
+        // =========================
+        $trendRows = (clone $baseQuery)
+            ->selectRaw("DATE_FORMAT(prospects.tanggal_prospek, '%Y-%m') as ym, COUNT(*) as total")
+            ->whereNotNull('prospects.tanggal_prospek')
+            ->groupBy('ym')
+            ->orderBy('ym')
+            ->limit(12)
+            ->get();
+
+        // =========================
+        // DATA MAP / GEO
+        // =========================
+        $mapSummary = (clone $baseQuery)
+            ->whereNotNull('prospects.lokasi_lat')
+            ->whereNotNull('prospects.lokasi_lng')
+            ->selectRaw('COUNT(prospects.id) as total_map')
+            ->first();
+
+        // =========================
+        // PROSPEK TERBARU
+        // =========================
         $recentProspects = (clone $baseQuery)
             ->orderByDesc('prospects.tanggal_prospek')
             ->orderByDesc('prospects.id')
@@ -188,35 +304,37 @@ TXT;
                 'cabangs.nama_cabang',
             ]);
 
-        $keyword = Str::lower($question);
-        $needCabang = Str::contains($keyword, ['cabang', 'kc', 'kanwil', 'rekap']);
-        $perCabang = collect();
-
-        if ($needCabang || in_array($role, ['ADMIN', 'MANAJEMEN', 'MANAJEMEN KANWIL', 'SUPERVISOR'], true)) {
-            $perCabang = (clone $baseQuery)
-                ->groupBy('cabangs.kode_cabang', 'cabangs.nama_cabang')
-                ->orderBy('cabangs.kode_cabang')
-                ->limit(15)
-                ->get([
-                    'cabangs.kode_cabang',
-                    'cabangs.nama_cabang',
-                    DB::raw('COUNT(prospects.id) as total'),
-                    DB::raw("SUM(CASE WHEN prospects.status = 'OPEN' THEN 1 ELSE 0 END) as open_total"),
-                    DB::raw("SUM(CASE WHEN prospects.status = 'FOLLOW UP' THEN 1 ELSE 0 END) as follow_total"),
-                    DB::raw("SUM(CASE WHEN prospects.status = 'CLOSING' THEN 1 ELSE 0 END) as closing_total"),
-                    DB::raw("SUM(CASE WHEN prospects.status = 'REJECTED' THEN 1 ELSE 0 END) as rejected_total"),
-                ]);
-        }
-
+        // =========================
+        // BANGUN TEKS KONTEKS
+        // =========================
         $text = [];
         $text[] = "User login: {$user->name}";
         $text[] = "Role: {$role}";
-        $text[] = "Ringkasan data:";
+        $text[] = "Ringkasan dashboard:";
         $text[] = "Total Pengajuan: " . (int) ($summary->total ?? 0);
         $text[] = "Open: " . (int) ($summary->total_open ?? 0);
         $text[] = "Follow Up: " . (int) ($summary->total_follow ?? 0);
         $text[] = "Closing: " . (int) ($summary->total_closing ?? 0);
         $text[] = "Rejected: " . (int) ($summary->total_rejected ?? 0);
+        $text[] = "Jumlah titik map valid: " . (int) ($mapSummary->total_map ?? 0);
+
+        if ($produkRows->isNotEmpty()) {
+            $text[] = "";
+            $text[] = "Rekap produk:";
+            foreach ($produkRows as $row) {
+                $label = trim((string) ($row->jenis_produk ?: '-'));
+                $text[] = "{$label}: {$row->total}";
+            }
+        }
+
+        if ($usahaRows->isNotEmpty()) {
+            $text[] = "";
+            $text[] = "Rekap jenis usaha:";
+            foreach ($usahaRows as $row) {
+                $label = trim((string) ($row->jenis_usaha ?: '-'));
+                $text[] = "{$label}: {$row->total}";
+            }
+        }
 
         if ($perCabang->isNotEmpty()) {
             $text[] = "";
@@ -226,12 +344,45 @@ TXT;
             }
         }
 
+        if ($topCabang->isNotEmpty()) {
+            $text[] = "";
+            $text[] = "Top cabang pengajuan:";
+            foreach ($topCabang as $row) {
+                $text[] = "{$row->kode_cabang} - {$row->nama_cabang}: {$row->total}";
+            }
+        }
+
+        if ($topClosingCabang->isNotEmpty()) {
+            $text[] = "";
+            $text[] = "Top cabang closing:";
+            foreach ($topClosingCabang as $row) {
+                $text[] = "{$row->kode_cabang} - {$row->nama_cabang}: {$row->total}";
+            }
+        }
+
+        if ($topPegawai->isNotEmpty()) {
+            $text[] = "";
+            $text[] = "Top pegawai atau AO berdasarkan input:";
+            foreach ($topPegawai as $row) {
+                $nama = trim((string) ($row->nama_lengkap ?: $row->name ?: '-'));
+                $text[] = "{$nama}: {$row->total}";
+            }
+        }
+
+        if ($trendRows->isNotEmpty()) {
+            $text[] = "";
+            $text[] = "Tren bulanan:";
+            foreach ($trendRows as $row) {
+                $text[] = "{$row->ym}: {$row->total}";
+            }
+        }
+
         if ($recentProspects->isNotEmpty()) {
             $text[] = "";
             $text[] = "Prospek terbaru:";
             foreach ($recentProspects as $row) {
                 $tgl = $row->tanggal_prospek ? date('d/m/Y', strtotime($row->tanggal_prospek)) : '-';
-                $text[] = "{$tgl} | {$row->nama} | {$row->jenis_produk} | {$row->status} | {$row->kode_cabang} - {$row->nama_cabang} | HP: " . ($row->no_hp ?: '-');
+                $text[] = "{$tgl} | {$row->nama} | {$row->jenis_produk} | {$row->jenis_usaha} | {$row->status} | {$row->kode_cabang} - {$row->nama_cabang} | HP: " . ($row->no_hp ?: '-');
             }
         }
 
@@ -272,6 +423,41 @@ TXT;
             }
 
             return $query;
+        }
+
+        return $query;
+    }
+
+    protected function applyVisibleProspectsScope($query, $user)
+    {
+        $role = strtoupper(trim((string) ($user->role ?? '')));
+
+        if (in_array($role, ['PEGAWAI', 'AO', 'AO_KREDIT', 'AO_DANA', 'AO_REMEDIAL'], true)) {
+            $query->where('prospects.input_by', $user->id);
+            return $query;
+        }
+
+        if ($role === 'SUPERVISOR') {
+            $query->where('prospects.cabang_id', $user->cabang_id);
+            return $query;
+        }
+
+        if ($role === 'MANAJEMEN KANWIL') {
+            $kodeCabang = optional(Cabang::find($user->cabang_id))->kode_cabang;
+
+            if ($kodeCabang === '100') {
+                $ids = $this->idsByKodeRange(1, 7);
+                if (!empty($ids)) $query->whereIn('prospects.cabang_id', $ids);
+            } elseif ($kodeCabang === '200') {
+                $ids = $this->idsByKodeRange(8, 14);
+                if (!empty($ids)) $query->whereIn('prospects.cabang_id', $ids);
+            } elseif ($kodeCabang === '300') {
+                $ids = $this->idsByKodeRange(15, 21);
+                if (!empty($ids)) $query->whereIn('prospects.cabang_id', $ids);
+            } elseif ($kodeCabang === '400') {
+                $ids = $this->idsByKodeRange(22, 28);
+                if (!empty($ids)) $query->whereIn('prospects.cabang_id', $ids);
+            }
         }
 
         return $query;
