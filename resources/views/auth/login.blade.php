@@ -8,7 +8,80 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        .wa-admin-float{
+            position:fixed;
+            right:22px;
+            bottom:22px;
+            width:58px;
+            height:58px;
+            border-radius:50%;
+            background:#25D366;
+            color:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-decoration:none;
+            box-shadow:0 12px 30px rgba(37,211,102,.35);
+            z-index:9999;
+            transition:all .2s ease;
+        }
+
+        .wa-admin-float:hover{
+            color:#fff;
+            background:#1ebe5d;
+            transform:translateY(-3px);
+            box-shadow:0 16px 38px rgba(37,211,102,.45);
+        }
+
+        .wa-admin-float i{
+            font-size:30px;
+            line-height:1;
+        }
+
+        .wa-admin-tooltip{
+            position:absolute;
+            right:68px;
+            top:50%;
+            transform:translateY(-50%);
+            background:#ffffff;
+            color:#0f172a;
+            font-size:13px;
+            font-weight:700;
+            white-space:nowrap;
+            padding:8px 12px;
+            border-radius:999px;
+            box-shadow:0 10px 28px rgba(15,23,42,.18);
+            opacity:0;
+            pointer-events:none;
+            transition:all .2s ease;
+        }
+
+        .wa-admin-float:hover .wa-admin-tooltip{
+            opacity:1;
+            right:74px;
+        }
+
+        @media (max-width: 576px){
+            .wa-admin-float{
+                right:18px;
+                bottom:18px;
+                width:54px;
+                height:54px;
+            }
+
+            .wa-admin-float i{
+                font-size:28px;
+            }
+
+            .wa-admin-tooltip{
+                display:none;
+            }
+        }
+    </style>
 </head>
+
 <body style="margin:0; min-height:100vh; background: radial-gradient(1100px 520px at 50% -15%, rgba(75,123,236,.55) 0%, rgba(11,18,32,1) 55%, rgba(5,7,13,1) 100%);">
 
 <div class="min-vh-100 d-flex align-items-center">
@@ -82,6 +155,15 @@
         </div>
     </div>
 </div>
+
+<a href="https://wa.me/6282241606980?text=Halo%20Admin%20E-Prospek%2C%20saya%20membutuhkan%20bantuan."
+   target="_blank"
+   rel="noopener"
+   class="wa-admin-float"
+   aria-label="Hubungi Admin via WhatsApp">
+    <span class="wa-admin-tooltip">Hubungi Admin</span>
+    <i class="bi bi-whatsapp"></i>
+</a>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
