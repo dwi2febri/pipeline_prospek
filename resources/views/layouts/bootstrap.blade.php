@@ -17,6 +17,9 @@
       --bg: #f5f7fb;
       --shadow: 0 10px 30px rgba(15,23,42,.08);
       --radius: 18px;
+      --desktop-scale: .65;
+      --desktop-scale-width: 153.846153846vw;
+      --desktop-scale-height: 153.846153846vh;
     }
 
     html,
@@ -35,6 +38,38 @@
       min-height:100vh;
       display:flex;
       overflow:hidden;
+    }
+
+    /*
+      DESKTOP DEFAULT ZOOM OUT 65%
+      Tidak berlaku di mobile karena hanya aktif min-width 768px.
+    */
+    @media (min-width: 768px){
+      html,
+      body{
+        width:100%;
+        height:100%;
+        overflow:hidden;
+      }
+
+      .app-shell{
+        width:var(--desktop-scale-width);
+        min-height:var(--desktop-scale-height);
+        transform:scale(var(--desktop-scale));
+        transform-origin:top left;
+      }
+
+      .sidebar{
+        height:var(--desktop-scale-height) !important;
+      }
+
+      .main{
+        height:var(--desktop-scale-height) !important;
+      }
+
+      .main-scroll{
+        height:calc(var(--desktop-scale-height) - var(--header-h)) !important;
+      }
     }
 
     .sidebar{
@@ -379,25 +414,27 @@
 
     .mobile-nav-grabber{
       position:absolute;
-      top:-8px;
+      top:-28px;
       left:50%;
       transform:translateX(-50%);
-      width:66px;
-      height:16px;
+      width:150px;
+      height:34px;
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
-      z-index:2;
-      background:transparent;
+      z-index:5;
+      background:#fff;
       border:0;
       padding:0;
+      border-radius:22px 22px 0 0;
+      box-shadow:0 -8px 22px rgba(15,23,42,.08);
     }
 
     .mobile-nav-grabber::before{
       content:"";
-      width:38px;
-      height:4px;
+      width:48px;
+      height:5px;
       border-radius:999px;
       background:#cbd5e1;
       display:block;
@@ -486,12 +523,12 @@
       bottom:0;
       z-index:9001;
       background:#fff;
-      border-radius:24px 24px 0 0;
+      border-radius:26px 26px 0 0;
       box-shadow:0 -24px 70px rgba(15,23,42,.28);
       transform:translateY(105%);
       transition:transform .25s ease;
       will-change:transform;
-      max-height:82vh;
+      max-height:84vh;
       overflow:hidden;
       pointer-events:none;
     }
@@ -502,7 +539,7 @@
     }
 
     .mobile-menu-sheet .sheet-handle{
-      height:18px;
+      height:30px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -512,15 +549,15 @@
 
     .mobile-menu-sheet .sheet-handle::before{
       content:"";
-      width:42px;
-      height:5px;
+      width:54px;
+      height:6px;
       border-radius:999px;
       background:#cbd5e1;
       display:block;
     }
 
     .mobile-menu-sheet .sheet-head{
-      padding:6px 18px 14px;
+      padding:2px 18px 14px;
       border-bottom:1px solid #eef2f7;
       display:flex;
       align-items:center;
@@ -529,7 +566,7 @@
     }
 
     .mobile-menu-sheet .sheet-title{
-      font-size:1.05rem;
+      font-size:1.1rem;
       font-weight:900;
       color:#0f172a;
     }
@@ -541,9 +578,9 @@
     }
 
     .mobile-menu-sheet .sheet-close{
-      width:38px;
-      height:38px;
-      border-radius:12px;
+      width:40px;
+      height:40px;
+      border-radius:13px;
       border:1px solid #e6ebf5;
       background:#fff;
       display:flex;
@@ -553,10 +590,10 @@
     }
 
     .mobile-menu-sheet .sheet-body{
-      max-height:calc(82vh - 88px);
+      max-height:calc(84vh - 92px);
       overflow-y:auto;
       -webkit-overflow-scrolling:touch;
-      padding:16px 16px calc(26px + env(safe-area-inset-bottom, 0px));
+      padding:16px 16px 28px;
       background:#f8fafc;
     }
 
@@ -713,9 +750,10 @@
       margin:0;
     }
 
-    /* ==========================================================
-       MOBILE FIX FINAL: SCROLL AKTIF + BOTTOM NAV PAS
-       ========================================================== */
+    /*
+      MOBILE FINAL
+      Scroll aktif, bottom nav pas, dan tidak memengaruhi desktop.
+    */
     @media (max-width: 767.98px){
       html,
       body{
@@ -741,6 +779,7 @@
         overflow:hidden !important;
         padding:0 !important;
         margin:0 !important;
+        transform:none !important;
       }
 
       .main{
@@ -789,7 +828,7 @@
 
       .content-wrap{
         padding-top:0 !important;
-        padding-bottom:calc(var(--mobile-bottom-nav-h) + 30px) !important;
+        padding-bottom:calc(var(--mobile-bottom-nav-h) + 42px) !important;
       }
 
       .page-wrap{
@@ -890,14 +929,18 @@
       }
 
       .mobile-nav-grabber{
-        top:-8px !important;
-        height:12px !important;
-        z-index:3 !important;
+        top:-30px !important;
+        width:152px !important;
+        height:36px !important;
+        background:#fff !important;
+        border-radius:24px 24px 0 0 !important;
+        box-shadow:0 -10px 24px rgba(15,23,42,.08) !important;
+        z-index:5 !important;
       }
 
       .mobile-nav-grabber::before{
-        width:36px !important;
-        height:4px !important;
+        width:52px !important;
+        height:5px !important;
         background:#cbd5e1 !important;
         border-radius:999px !important;
       }
@@ -1848,7 +1891,7 @@
 
         if(!isCandidate) return false;
 
-        var nearBottom = rect.bottom > (window.innerHeight - 220);
+        var nearBottom = rect.bottom > (window.innerHeight - 240);
         var onRight = rect.left > (window.innerWidth * .45);
 
         return nearBottom && onRight;
