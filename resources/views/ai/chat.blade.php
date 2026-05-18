@@ -7,10 +7,10 @@
 
         .ai-chat-shell{
             width:100%;
-            max-width:1120px;
+            max-width:none;
             margin:0 auto;
-            padding-left:clamp(0px, 2vw, 18px);
-            padding-right:clamp(0px, 2vw, 18px);
+            padding-left:clamp(0px, 1.2vw, 14px);
+            padding-right:clamp(0px, 1.2vw, 14px);
             box-sizing:border-box;
         }
 
@@ -58,6 +58,7 @@
 
         .ai-chat-card{
             width:100%;
+            max-width:100%;
             border:1px solid #d8e5d8;
             border-radius:28px;
             background:linear-gradient(180deg,#efeae2 0%,#ece5dd 100%);
@@ -248,11 +249,23 @@
             40%{opacity:1;transform:scale(1);}
         }
 
+        @media (min-width: 1400px){
+            .ai-page{
+                padding-left:22px;
+                padding-right:22px;
+            }
+
+            .ai-chat-shell{
+                padding-left:0;
+                padding-right:0;
+            }
+        }
+
         @media (max-width: 991.98px){
             .ai-chat-shell{
                 max-width:100%;
-                padding-left:8px;
-                padding-right:8px;
+                padding-left:6px;
+                padding-right:6px;
             }
 
             .ai-bubble{
@@ -341,12 +354,7 @@
     <div class="ai-page">
         <div class="ai-chat-shell">
             <div class="ai-topbar">
-                <div class="ai-topbar-left">
-                    <div class="ai-page-title">Chat AI</div>
-                    <div class="ai-page-subtitle">
-                        Bisa jawab data aplikasi jika ditanya, dan bisa jawab pertanyaan umum seperti biasa.
-                    </div>
-                </div>
+
 
                 <div class="ai-topbar-right">
                     <a href="{{ route('prospects.index') }}" class="btn btn-light ai-back-btn">
@@ -359,7 +367,7 @@
                 <div class="ai-chat-head">
                     <div class="ai-chat-head-left">
                         <div class="ai-chat-title">E-Prospek AI Assistant</div>
-                        <div class="ai-chat-sub">Gemini API</div>
+                        <div class="ai-chat-sub"><i class="bi bi-stars"></i> Gemini</div>
                     </div>
 
                     <button type="button" class="btn ai-new-btn" id="btnNewChat">

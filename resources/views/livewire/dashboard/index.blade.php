@@ -394,7 +394,7 @@
 
       <div class="mobile-inline-actions">
         <a href="{{ route('ai.chat.index') }}" class="desktop-ai-btn mobile-inline-ai">
-          <i class="bi bi-robot"></i> Chat AI
+          <i class="bi bi-stars"></i> Chat AI
         </a>
 
 
@@ -403,7 +403,7 @@
 
     <div class="dash-top-actions d-none d-md-flex">
       <a href="{{ route('ai.chat.index') }}" class="desktop-ai-btn">
-        <i class="bi bi-robot"></i> Chat AI
+        <i class="bi bi-stars"></i> Chat AI
       </a>
 
 
@@ -847,7 +847,7 @@
 
   <div class="mobile-fab-stack d-md-none">
     <a href="{{ route('ai.chat.index') }}" class="mobile-fab-ai" aria-label="Chat AI">
-      <i class="bi bi-robot"></i>
+      <i class="bi bi-stars"></i>
     </a>
 
 
