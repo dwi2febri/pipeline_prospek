@@ -275,13 +275,20 @@
 
         @media (max-width: 767.98px){
             .ai-page{
-                padding:12px 6px 18px;
+                padding:12px 6px calc(86px + env(safe-area-inset-bottom, 0px));
+                min-height:auto;
+            }
+
+            .ai-chat-shell{
+                padding-left:0;
+                padding-right:0;
             }
 
             .ai-topbar{
                 flex-direction:column;
                 align-items:stretch;
                 gap:10px;
+                margin-bottom:10px;
             }
 
             .ai-topbar-right{
@@ -296,57 +303,135 @@
 
             .ai-chat-card{
                 border-radius:22px;
+                overflow:hidden;
             }
 
             .ai-chat-head{
                 padding:14px 14px;
                 flex-direction:column;
-                align-items:flex-start;
+                align-items:stretch;
+                gap:10px;
+            }
+
+            .ai-chat-title{
+                font-size:1.05rem;
+            }
+
+            .ai-chat-sub{
+                font-size:.8rem;
             }
 
             .ai-new-btn{
                 width:100%;
                 justify-content:center;
+                min-height:40px;
             }
 
             .ai-chat-body{
-                height:48vh;
-                min-height:280px;
+                height:42vh;
+                min-height:260px;
                 padding:12px;
             }
 
             .ai-bubble{
                 max-width:92%;
-                font-size:.93rem;
+                font-size:.91rem;
                 padding:11px 13px;
+                line-height:1.55;
             }
 
             .ai-chat-foot{
                 padding:12px;
+                position:relative;
+                z-index:2;
+            }
+
+            .ai-input-wrap{
+                border-radius:18px;
+                padding:9px 11px;
             }
 
             .ai-chat-foot textarea{
-                min-height:88px;
+                min-height:82px;
                 font-size:.92rem;
+                resize:none;
             }
 
             .ai-foot-actions{
+                display:flex;
                 flex-direction:column;
                 align-items:stretch;
-            }
-
-            .ai-btn-group{
-                width:100%;
-                margin-left:0;
-            }
-
-            .ai-btn-group .btn{
-                flex:1 1 auto;
-                min-width:0;
+                gap:10px;
+                margin-top:10px;
             }
 
             .ai-foot-hint{
-                font-size:.8rem;
+                order:2;
+                font-size:.76rem;
+                line-height:1.35;
+                text-align:left;
+                color:#64748b;
+            }
+
+            .ai-btn-group{
+                order:1;
+                width:100%;
+                margin-left:0;
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:10px;
+            }
+
+            .ai-btn-group .btn,
+            .ai-btn-light,
+            .ai-btn-send{
+                width:100%;
+                min-width:0;
+                min-height:44px;
+                padding:10px 12px;
+                font-size:.9rem;
+                border-radius:999px;
+            }
+
+            /*
+              FIX UTAMA:
+              CSS global layout sebelumnya menangkap button[class*="ai"]
+              lalu menjadikan tombol Chat Baru/Kirim/Kosongkan sebagai floating.
+              Bagian ini memaksa semua tombol di halaman AI tetap normal.
+            */
+            .ai-page .ai-back-btn,
+            .ai-page .ai-new-btn,
+            .ai-page .ai-btn-light,
+            .ai-page .ai-btn-send,
+            .ai-page button[class*="ai"],
+            .ai-page a[class*="ai"],
+            .ai-page .btn[class*="ai"]{
+                position:static !important;
+                left:auto !important;
+                right:auto !important;
+                top:auto !important;
+                bottom:auto !important;
+                transform:none !important;
+                z-index:auto !important;
+                float:none !important;
+            }
+
+            .ai-page .ai-btn-send{
+                background:#0b7a6e !important;
+                border-color:#0b7a6e !important;
+                color:#fff !important;
+            }
+
+            .ai-page .ai-btn-light{
+                background:#fff !important;
+                border-color:#e5e7eb !important;
+                color:#111827 !important;
+            }
+
+            .ai-page .ai-new-btn{
+                background:#fff !important;
+                color:#075e54 !important;
+                border-color:rgba(255,255,255,.8) !important;
             }
         }
     </style>
@@ -354,8 +439,6 @@
     <div class="ai-page">
         <div class="ai-chat-shell">
             <div class="ai-topbar">
-
-
                 <div class="ai-topbar-right">
                     <a href="{{ route('prospects.index') }}" class="btn btn-light ai-back-btn">
                         <i class="bi bi-arrow-left me-1"></i> Kembali
