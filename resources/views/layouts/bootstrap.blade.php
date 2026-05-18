@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{{ config('app.name','E-Prospek') }}</title>
 
@@ -14,81 +14,38 @@
       --sidebar-w: 280px;
       --header-h: 74px;
       --mobile-header-h: 74px;
+      --mobile-bottom-nav-h: 72px;
+      --mobile-bottom-extra: env(safe-area-inset-bottom, 0px);
       --bg: #f5f7fb;
       --shadow: 0 10px 30px rgba(15,23,42,.08);
       --radius: 18px;
-
-      --desktop-scale: .65;
-      --desktop-scale-width: 153.846153846vw;
-      --desktop-scale-height: 153.846153846vh;
     }
 
-    html, body{
-      height:100%;
+    html,
+    body{
+      width:100%;
+      min-height:100%;
       margin:0;
       background:var(--bg);
+      overscroll-behavior:none;
     }
 
     body{
       overflow:hidden;
     }
 
-    .desktop-scale-viewport{
-      width:100vw;
-      height:100vh;
-      overflow:hidden;
-      background:var(--bg);
-      position:relative;
-    }
-
-    .desktop-scale-inner{
-      width:100vw;
-      min-height:100vh;
-      transform:none;
-      transform-origin:top left;
-    }
-
-    @media (min-width: 768px){
-      .desktop-scale-inner{
-        width:var(--desktop-scale-width);
-        height:var(--desktop-scale-height);
-        transform:scale(var(--desktop-scale));
-      }
-
-      .desktop-scale-inner .app-shell{
-        width:var(--desktop-scale-width);
-        min-height:var(--desktop-scale-height);
-      }
-
-      .desktop-scale-inner .sidebar{
-        height:var(--desktop-scale-height);
-      }
-
-      .desktop-scale-inner .main{
-        height:var(--desktop-scale-height);
-      }
-
-      .desktop-scale-inner .main-scroll{
-        height:calc(var(--desktop-scale-height) - var(--header-h));
-      }
-    }
-
     @media (max-width: 767.98px){
+      html,
       body{
-        overflow:auto;
-      }
-
-      .desktop-scale-viewport{
-        width:100%;
         height:auto;
-        min-height:100vh;
-        overflow:visible;
+        min-height:100%;
+        overflow-x:hidden;
+        overflow-y:auto;
+        background:var(--bg);
       }
 
-      .desktop-scale-inner{
-        width:100%;
-        min-height:100vh;
-        transform:none;
+      body{
+        padding:0;
       }
     }
 
@@ -182,7 +139,10 @@
       border:1px solid rgba(255,255,255,.06);
     }
 
-    .sidebar .navlink i{font-size:18px;opacity:.95}
+    .sidebar .navlink i{
+      font-size:18px;
+      opacity:.95;
+    }
 
     .sidebar.collapsed .navlink span,
     .sidebar.collapsed .section-title,
@@ -223,7 +183,9 @@
       flex:0 0 40px;
     }
 
-    .userbox .meta{min-width:0}
+    .userbox .meta{
+      min-width:0;
+    }
 
     .userbox .meta .n{
       font-weight:800;
@@ -304,7 +266,9 @@
       box-shadow:0 10px 18px rgba(15,23,42,.06);
     }
 
-    .iconbtn i{font-size:18px}
+    .iconbtn i{
+      font-size:18px;
+    }
 
     .profilebtn{
       display:flex;
@@ -336,7 +300,9 @@
       min-width:0;
     }
 
-    .profilebtn .txt .n{font-weight:900}
+    .profilebtn .txt .n{
+      font-weight:900;
+    }
 
     .profilebtn .txt .r{
       font-size:12px;
@@ -413,9 +379,23 @@
       background:#fff;
       border-top:1px solid #e9edf5;
       box-shadow:0 -8px 30px rgba(15,23,42,.08);
-      padding-top:8px;
-      padding-bottom:max(8px, env(safe-area-inset-bottom));
+      padding-top:7px;
+      padding-bottom:calc(7px + env(safe-area-inset-bottom, 0px));
+      min-height:calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px));
       transition:all .25s ease;
+      transform:translateZ(0);
+      -webkit-transform:translateZ(0);
+    }
+
+    .bottom-nav::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:-80px;
+      height:80px;
+      background:#fff;
+      pointer-events:none;
     }
 
     .bottom-nav .nav-inner{
@@ -425,15 +405,18 @@
       align-items:stretch;
       justify-content:space-between;
       gap:0;
-      min-height:64px;
+      min-height:58px;
+      padding-left:0;
+      padding-right:0;
+      z-index:1;
     }
 
     .mobile-nav-grabber{
       position:absolute;
-      top:-6px;
+      top:-8px;
       left:50%;
       transform:translateX(-50%);
-      width:64px;
+      width:66px;
       height:16px;
       display:flex;
       align-items:center;
@@ -466,8 +449,8 @@
       flex:1 1 auto;
       text-decoration:none;
       color:#6b7280;
-      padding:8px 2px 6px;
-      font-size:12px;
+      padding:8px 2px 5px;
+      font-size:11.5px;
       background:transparent;
       border:0;
       display:flex;
@@ -494,8 +477,8 @@
     }
 
     .mobile-svg-icon{
-      width:22px;
-      height:22px;
+      width:21px;
+      height:21px;
       display:block;
       color:currentColor;
       flex:0 0 auto;
@@ -607,7 +590,7 @@
       max-height:calc(82vh - 88px);
       overflow-y:auto;
       -webkit-overflow-scrolling:touch;
-      padding:16px 16px calc(26px + env(safe-area-inset-bottom));
+      padding:16px 16px calc(26px + env(safe-area-inset-bottom, 0px));
       background:#f8fafc;
     }
 
@@ -666,36 +649,14 @@
     }
 
     @media (max-width: 767.98px){
-      body.mobile-sheet-open{
-        overflow:hidden !important;
-        touch-action:none;
-      }
-
-      body.mobile-sheet-open .bottom-nav{
-        transform:translateY(110%);
-        opacity:0;
-        pointer-events:none;
-      }
-
-      body.mobile-sheet-open .fab,
-      body.mobile-sheet-open .floating-action,
-      body.mobile-sheet-open .floating-btn,
-      body.mobile-sheet-open .btn-floating,
-      body.mobile-sheet-open [class*="floating"],
-      body.mobile-sheet-open [class*="fab"]{
-        opacity:0 !important;
-        pointer-events:none !important;
-        transform:scale(.85) !important;
-      }
-
       .app-shell{
         display:block;
-        min-height:100vh;
+        min-height:100dvh;
         overflow:visible;
       }
 
       .main{
-        min-height:100vh;
+        min-height:100dvh;
         height:auto;
         overflow:visible;
       }
@@ -726,7 +687,7 @@
 
       .content-wrap{
         padding-top:0;
-        padding-bottom:96px;
+        padding-bottom:calc(var(--mobile-bottom-nav-h) + 28px + env(safe-area-inset-bottom, 0px));
       }
 
       .mobile-profile-btn{
@@ -743,6 +704,96 @@
 
       .profile-menu{
         min-width:220px;
+      }
+
+      body.mobile-sheet-open{
+        overflow:hidden !important;
+        touch-action:none;
+      }
+
+      body.mobile-sheet-open .bottom-nav{
+        transform:translateY(110%);
+        opacity:0;
+        pointer-events:none;
+      }
+
+      body.mobile-sheet-open .fab,
+      body.mobile-sheet-open .floating-action,
+      body.mobile-sheet-open .floating-btn,
+      body.mobile-sheet-open .btn-floating,
+      body.mobile-sheet-open [class*="floating"],
+      body.mobile-sheet-open [class*="fab"]{
+        opacity:0 !important;
+        pointer-events:none !important;
+        transform:scale(.85) !important;
+      }
+
+      /*
+        FIX UTAMA:
+        Tombol tambah prospek (+) dan AI dibuat selalu naik di atas bottom nav.
+        Class dibuat umum supaya tetap kena walaupun nama class tombol di halaman berbeda.
+      */
+      .btn-add-prospect,
+      .add-prospect-btn,
+      .btn-create-prospect,
+      .create-prospect-btn,
+      .prospect-add-btn,
+      .floating-add,
+      .floating-plus,
+      .btn-ai,
+      .ai-btn,
+      .ai-assistant-btn,
+      .floating-ai,
+      .chat-ai-btn,
+      .assistant-ai-btn,
+      .fab,
+      .floating-action,
+      .floating-btn,
+      .btn-floating,
+      button[class*="ai"],
+      a[class*="ai"],
+      div[class*="ai"][role="button"],
+      button[class*="AI"],
+      a[class*="AI"],
+      div[class*="AI"][role="button"]{
+        z-index:2999 !important;
+      }
+
+      .btn-add-prospect,
+      .add-prospect-btn,
+      .btn-create-prospect,
+      .create-prospect-btn,
+      .prospect-add-btn,
+      .floating-add,
+      .floating-plus,
+      .fab,
+      .floating-action,
+      .floating-btn,
+      .btn-floating{
+        bottom:calc(var(--mobile-bottom-nav-h) + 18px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+
+      .btn-ai,
+      .ai-btn,
+      .ai-assistant-btn,
+      .floating-ai,
+      .chat-ai-btn,
+      .assistant-ai-btn,
+      button[class*="ai"],
+      a[class*="ai"],
+      div[class*="ai"][role="button"],
+      button[class*="AI"],
+      a[class*="AI"],
+      div[class*="AI"][role="button"]{
+        bottom:calc(var(--mobile-bottom-nav-h) + 86px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+
+      /*
+        Jika tombol AI dan + posisinya absolute/fixed dari halaman,
+        script di bawah juga akan bantu menggeser otomatis.
+      */
+      .bottom-nav-space{
+        height:calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px));
       }
     }
 
@@ -766,6 +817,63 @@
     .notif-wrap{
       position: relative;
       z-index: 7000;
+    }
+
+    @media (max-width: 767.98px){
+      .notif-wrap{
+        position:relative !important;
+        z-index:9500 !important;
+      }
+
+      .notif-wrap .dropdown-menu.show,
+      .notif-wrap .dropdown-menu,
+      .notif-wrap > div > div:not(:first-child){
+        position:fixed !important;
+        top:88px !important;
+        left:10px !important;
+        right:10px !important;
+        width:auto !important;
+        max-width:calc(100vw - 20px) !important;
+        min-width:0 !important;
+        max-height:58vh !important;
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+        border-radius:18px !important;
+        box-shadow:0 18px 50px rgba(15,23,42,.22) !important;
+        z-index:9600 !important;
+      }
+
+      .notif-wrap h1,
+      .notif-wrap h2,
+      .notif-wrap h3,
+      .notif-wrap h4,
+      .notif-wrap .fw-bold,
+      .notif-wrap strong{
+        font-size:.9rem !important;
+        line-height:1.25 !important;
+      }
+
+      .notif-wrap p,
+      .notif-wrap span,
+      .notif-wrap div,
+      .notif-wrap a,
+      .notif-wrap button{
+        font-size:.82rem;
+      }
+
+      .notif-wrap [class*="item"],
+      .notif-wrap li,
+      .notif-wrap .list-group-item{
+        padding:10px 12px !important;
+      }
+
+      .notif-wrap small{
+        font-size:.74rem !important;
+      }
+
+      .notif-wrap .badge{
+        font-size:.68rem !important;
+      }
     }
 
     .session-expired-modal .modal-content{
@@ -843,74 +951,6 @@
       font-size:.9rem;
       color:#64748b;
       margin:0;
-    }
-
-    @media (max-width: 767.98px){
-      .notif-wrap{
-        position:relative !important;
-        z-index:9500 !important;
-      }
-
-      .notif-wrap .dropdown-menu.show,
-      .notif-wrap .dropdown-menu,
-      .notif-wrap > div > div:not(:first-child){
-        position:fixed !important;
-        top:88px !important;
-        left:10px !important;
-        right:10px !important;
-        width:auto !important;
-        max-width:calc(100vw - 20px) !important;
-        min-width:0 !important;
-        max-height:58vh !important;
-        overflow-y:auto !important;
-        overflow-x:hidden !important;
-        border-radius:18px !important;
-        box-shadow:0 18px 50px rgba(15,23,42,.22) !important;
-        z-index:9600 !important;
-      }
-
-      .notif-wrap h1,
-      .notif-wrap h2,
-      .notif-wrap h3,
-      .notif-wrap h4,
-      .notif-wrap .fw-bold,
-      .notif-wrap strong{
-        font-size:.9rem !important;
-        line-height:1.25 !important;
-      }
-
-      .notif-wrap p,
-      .notif-wrap span,
-      .notif-wrap div,
-      .notif-wrap a,
-      .notif-wrap button{
-        font-size:.82rem;
-      }
-
-      .notif-wrap [class*="item"],
-      .notif-wrap li,
-      .notif-wrap .list-group-item{
-        padding:10px 12px !important;
-      }
-
-      .notif-wrap small{
-        font-size:.74rem !important;
-      }
-
-      .notif-wrap .badge{
-        font-size:.68rem !important;
-      }
-
-      .notif-wrap::-webkit-scrollbar,
-      .notif-wrap *::-webkit-scrollbar{
-        width:5px;
-      }
-
-      .notif-wrap::-webkit-scrollbar-thumb,
-      .notif-wrap *::-webkit-scrollbar-thumb{
-        background:#cbd5e1;
-        border-radius:999px;
-      }
     }
   </style>
 </head>
@@ -1103,323 +1143,317 @@
   };
 @endphp
 
-<div class="desktop-scale-viewport">
-  <div class="desktop-scale-inner">
+  <div class="app-shell" id="appShell">
 
-    <div class="app-shell" id="appShell">
-
-      <aside class="sidebar d-none d-md-flex" id="sidebar">
-        <div class="brand">
-          <div class="logo"><i class="bi bi-people-fill fs-4"></i></div>
-          <div class="title">
-            <div class="h">E-Prospek</div>
-            <div class="s">App Pipeline Prospek</div>
-          </div>
+    <aside class="sidebar d-none d-md-flex" id="sidebar">
+      <div class="brand">
+        <div class="logo"><i class="bi bi-people-fill fs-4"></i></div>
+        <div class="title">
+          <div class="h">E-Prospek</div>
+          <div class="s">App Pipeline Prospek</div>
         </div>
-
-        <div class="sidebar-scroll">
-          <div class="section-title">Menu</div>
-          <div class="navwrap">
-
-            @if($canDashboard)
-              <a href="/dashboard" class="navlink {{ request()->is('dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i><span>Dashboard</span>
-              </a>
-            @endif
-
-            @if($canProspects)
-              <a href="/prospects" class="navlink {{ request()->is('prospects') || request()->is('prospects/create') || request()->is('prospects/*/edit') ? 'active' : '' }}">
-                <i class="bi bi-grid"></i><span>Prospek Saya</span>
-              </a>
-            @endif
-
-            @if($canRekapProspek)
-              <a href="/rekap-prospek" class="navlink {{ request()->is('rekap-prospek') ? 'active' : '' }}">
-                <i class="bi bi-table"></i><span>Rekap Prospek</span>
-              </a>
-            @endif
-
-            @if($canProspectsDiajukan)
-              <a href="/prospects-diajukan" class="navlink {{ request()->is('prospects-diajukan') ? 'active' : '' }}">
-                <i class="bi bi-send-check"></i><span>Prospek Diajukan</span>
-              </a>
-            @endif
-
-            @if($canSimulasiKredit)
-              <a href="{{ route('simulasi-kredit.index') }}" class="navlink {{ request()->is('simulasi-kredit') ? 'active' : '' }}">
-                <i class="bi bi-calculator"></i><span>Simulasi Kredit</span>
-              </a>
-            @endif
-
-            @if($canAuditLog)
-              <a href="/audit-logs" class="navlink {{ request()->is('audit-logs') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-text"></i><span>Audit Log</span>
-              </a>
-            @endif
-
-            @if($canRecycleBin)
-              <a href="/recycle-bin/prospects" class="navlink {{ request()->is('recycle-bin/prospects') ? 'active' : '' }}">
-                <i class="bi bi-trash3"></i><span>Recycle Bin</span>
-              </a>
-            @endif
-
-            @if($canProfile)
-              <a href="{{ route('profile.index') }}" class="navlink {{ request()->is('profile') ? 'active' : '' }}">
-                <i class="bi bi-person-circle"></i><span>Profil Saya</span>
-              </a>
-            @endif
-          </div>
-
-          @if($canMasterCabang || $canUsers || $canKontenApp)
-            <div class="section-title">Admin</div>
-            <div class="navwrap">
-              @if($canMasterCabang)
-                <a href="/cabangs" class="navlink {{ request()->is('cabangs*') ? 'active' : '' }}">
-                  <i class="bi bi-building"></i><span>Master Cabang</span>
-                </a>
-              @endif
-
-              @if($canUsers)
-                <a href="/users" class="navlink {{ request()->is('users*') ? 'active' : '' }}">
-                  <i class="bi bi-person-gear"></i><span>Manajemen User</span>
-                </a>
-              @endif
-
-              @if($canKontenApp)
-                <a href="{{ route('contents.manager') }}" class="navlink {{ request()->routeIs('contents.manager') ? 'active' : '' }}">
-                  <i class="bi bi-images"></i><span>Konten App</span>
-                </a>
-              @endif
-            </div>
-          @endif
-        </div>
-
-        <div class="userbox">
-          <div class="u">
-            <div class="avatar">{{ $displayInitial }}</div>
-            <div class="meta">
-              <div class="n">{{ $displayName }}</div>
-              <div class="r">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
-            </div>
-          </div>
-          <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="btn btn-light btn-sm rounded-circle" title="Logout">
-              <i class="bi bi-box-arrow-right"></i>
-            </button>
-          </form>
-        </div>
-      </aside>
-
-      <main class="main">
-
-        <div class="header d-none d-md-block">
-          <div class="inner">
-            <div class="d-flex align-items-center gap-2">
-              <button class="iconbtn" type="button" id="btnToggleSidebar" title="Toggle Sidebar">
-                <i class="bi bi-list"></i>
-              </button>
-              <div class="chip">
-                <i class="bi bi-lightning-charge-fill"></i> Pipeline Prospek Nasabah
-              </div>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-              <div class="notif-wrap" data-notif-redirect="{{ $notificationRedirectUrl }}">
-                @livewire('notifications.bell', [], key('desktop-bell-' . auth()->id()))
-              </div>
-
-              <div class="profile-dropdown-wrap" id="desktopProfileWrap">
-                <button class="profilebtn" type="button" id="desktopProfileBtn">
-                  <div class="pava">{{ $displayInitial }}</div>
-                  <div class="txt text-start">
-                    <div class="n">{{ $displayName }}</div>
-                    <div class="r">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
-                  </div>
-                  <i class="bi bi-chevron-down ms-1"></i>
-                </button>
-
-                <div class="profile-menu" id="desktopProfileMenu">
-                  <div class="head">
-                    <div class="fw-bold">{{ $displayName }}</div>
-                    <div class="text-muted small">{{ auth()->user()->email ?? '' }}</div>
-                  </div>
-
-                  @if($canProfile)
-                    <a class="item" href="{{ route('profile.index') }}">
-                      <i class="bi bi-person-circle me-2"></i> Profil Saya
-                    </a>
-                  @endif
-
-                  @if($canProspects)
-                    <a class="item" href="/prospects">
-                      <i class="bi bi-grid me-2"></i> Prospek
-                    </a>
-                  @endif
-
-                  @if($canSimulasiKredit)
-                    <a class="item" href="{{ route('simulasi-kredit.index') }}">
-                      <i class="bi bi-calculator me-2"></i> Simulasi Kredit
-                    </a>
-                  @endif
-
-                  @if($canKontenApp)
-                    <a class="item" href="{{ route('contents.manager') }}">
-                      <i class="bi bi-images me-2"></i> Konten App
-                    </a>
-                  @endif
-
-                  <div class="px-3 py-2 border-top">
-                    <form method="POST" action="{{ route('logout') }}">
-                      @csrf
-                      <button type="submit" class="btn btn-outline-danger w-100 rounded-pill">
-                        <i class="bi bi-box-arrow-right me-1"></i> Logout
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="header d-md-none" style="background:#fff;">
-          <div class="inner" style="padding:14px 14px;height:auto;">
-            <div class="d-flex align-items-center gap-2">
-              <div class="logo" style="width:42px;height:42px;border-radius:14px;">
-                <i class="bi bi-people-fill fs-5 text-white"></i>
-              </div>
-              <div>
-                <div class="fw-bold">E-Prospek</div>
-                <div class="text-muted small">Pipeline Prospek Nasabah</div>
-              </div>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-              <div class="notif-wrap" data-notif-redirect="{{ $notificationRedirectUrl }}">
-                @livewire('notifications.bell', [], key('mobile-bell-' . auth()->id()))
-              </div>
-
-              <div class="profile-dropdown-wrap" id="mobileProfileWrap">
-                <button class="profilebtn mobile-profile-btn" type="button" id="mobileProfileBtn">
-                  <div class="pava">{{ $displayInitial }}</div>
-                </button>
-
-                <div class="profile-menu" id="mobileProfileMenu">
-                  <div class="head">
-                    <div class="fw-bold">{{ $displayName }}</div>
-                    <div class="text-muted small">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
-                    <div class="text-muted small">{{ auth()->user()->email ?? '' }}</div>
-                  </div>
-
-                  @if($canProfile)
-                    <a class="item" href="{{ route('profile.index') }}">
-                      <i class="bi bi-person-circle me-2"></i> Profil Saya
-                    </a>
-                  @endif
-
-                  @if($canProspects)
-                    <a class="item" href="/prospects">
-                      <i class="bi bi-grid me-2"></i> Prospek Saya
-                    </a>
-                  @endif
-
-                  @if($canSimulasiKredit)
-                    <a class="item" href="{{ route('simulasi-kredit.index') }}">
-                      <i class="bi bi-calculator me-2"></i> Simulasi Kredit
-                    </a>
-                  @endif
-
-                  @if($canKontenApp)
-                    <a class="item" href="{{ route('contents.manager') }}">
-                      <i class="bi bi-images me-2"></i> Konten App
-                    </a>
-                  @endif
-
-                  <div class="px-3 py-2 border-top">
-                    <form method="POST" action="{{ route('logout') }}">
-                      @csrf
-                      <button type="submit" class="btn btn-outline-danger w-100 rounded-pill">
-                        <i class="bi bi-box-arrow-right me-1"></i> Logout
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="main-scroll content-wrap">
-          <div class="page-wrap">
-            {{ $slot }}
-          </div>
-        </div>
-      </main>
-    </div>
-
-    <nav class="bottom-nav d-md-none">
-      <div class="container nav-inner">
-        <button type="button" class="mobile-nav-grabber" id="mobileNavGrabber" aria-label="Buka semua menu"></button>
-
-        @foreach($mobilePrimaryMenus as $item)
-          @if($item['type'] === 'logout')
-            <form method="POST" action="{{ route('logout') }}" class="mobile-nav-form">
-              @csrf
-              <button type="submit">
-                {!! $mobileIcon($item['icon']) !!}
-                <span class="mobile-nav-label">{{ $item['label'] }}</span>
-              </button>
-            </form>
-          @else
-            <div class="mobile-nav-item">
-              <a href="{{ $item['url'] }}" class="{{ $item['active'] ? 'active' : '' }}">
-                {!! $mobileIcon($item['icon']) !!}
-                <span class="mobile-nav-label">{{ $item['label'] }}</span>
-              </a>
-            </div>
-          @endif
-        @endforeach
-      </div>
-    </nav>
-
-    <div class="mobile-menu-sheet-backdrop d-md-none" id="mobileMenuSheetBackdrop"></div>
-
-    <div class="mobile-menu-sheet d-md-none" id="mobileMenuSheet">
-      <div class="sheet-handle" id="mobileMenuSheetHandle"></div>
-
-      <div class="sheet-head">
-        <div>
-          <div class="sheet-title">Semua Menu</div>
-          <div class="sheet-sub">Swipe ke bawah untuk menutup</div>
-        </div>
-        <button type="button" class="sheet-close" id="mobileMenuSheetClose" aria-label="Tutup menu">
-          <i class="bi bi-x-lg"></i>
-        </button>
       </div>
 
-      <div class="sheet-body">
-        <div class="mobile-menu-grid">
-          @foreach($mobileAllMenus as $item)
-            <a href="{{ $item['url'] }}" class="mobile-menu-link {{ $item['active'] ? 'active' : '' }}">
-              {!! $mobileIcon($item['icon']) !!}
-              <span>{{ $item['label'] }}</span>
+      <div class="sidebar-scroll">
+        <div class="section-title">Menu</div>
+        <div class="navwrap">
+
+          @if($canDashboard)
+            <a href="/dashboard" class="navlink {{ request()->is('dashboard') ? 'active' : '' }}">
+              <i class="bi bi-speedometer2"></i><span>Dashboard</span>
             </a>
-          @endforeach
+          @endif
 
-          <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="mobile-menu-logout">
-              {!! $mobileIcon('logout') !!}
-              <span>Logout</span>
+          @if($canProspects)
+            <a href="/prospects" class="navlink {{ request()->is('prospects') || request()->is('prospects/create') || request()->is('prospects/*/edit') ? 'active' : '' }}">
+              <i class="bi bi-grid"></i><span>Prospek Saya</span>
+            </a>
+          @endif
+
+          @if($canRekapProspek)
+            <a href="/rekap-prospek" class="navlink {{ request()->is('rekap-prospek') ? 'active' : '' }}">
+              <i class="bi bi-table"></i><span>Rekap Prospek</span>
+            </a>
+          @endif
+
+          @if($canProspectsDiajukan)
+            <a href="/prospects-diajukan" class="navlink {{ request()->is('prospects-diajukan') ? 'active' : '' }}">
+              <i class="bi bi-send-check"></i><span>Prospek Diajukan</span>
+            </a>
+          @endif
+
+          @if($canSimulasiKredit)
+            <a href="{{ route('simulasi-kredit.index') }}" class="navlink {{ request()->is('simulasi-kredit') ? 'active' : '' }}">
+              <i class="bi bi-calculator"></i><span>Simulasi Kredit</span>
+            </a>
+          @endif
+
+          @if($canAuditLog)
+            <a href="/audit-logs" class="navlink {{ request()->is('audit-logs') ? 'active' : '' }}">
+              <i class="bi bi-file-earmark-text"></i><span>Audit Log</span>
+            </a>
+          @endif
+
+          @if($canRecycleBin)
+            <a href="/recycle-bin/prospects" class="navlink {{ request()->is('recycle-bin/prospects') ? 'active' : '' }}">
+              <i class="bi bi-trash3"></i><span>Recycle Bin</span>
+            </a>
+          @endif
+
+          @if($canProfile)
+            <a href="{{ route('profile.index') }}" class="navlink {{ request()->is('profile') ? 'active' : '' }}">
+              <i class="bi bi-person-circle"></i><span>Profil Saya</span>
+            </a>
+          @endif
+        </div>
+
+        @if($canMasterCabang || $canUsers || $canKontenApp)
+          <div class="section-title">Admin</div>
+          <div class="navwrap">
+            @if($canMasterCabang)
+              <a href="/cabangs" class="navlink {{ request()->is('cabangs*') ? 'active' : '' }}">
+                <i class="bi bi-building"></i><span>Master Cabang</span>
+              </a>
+            @endif
+
+            @if($canUsers)
+              <a href="/users" class="navlink {{ request()->is('users*') ? 'active' : '' }}">
+                <i class="bi bi-person-gear"></i><span>Manajemen User</span>
+              </a>
+            @endif
+
+            @if($canKontenApp)
+              <a href="{{ route('contents.manager') }}" class="navlink {{ request()->routeIs('contents.manager') ? 'active' : '' }}">
+                <i class="bi bi-images"></i><span>Konten App</span>
+              </a>
+            @endif
+          </div>
+        @endif
+      </div>
+
+      <div class="userbox">
+        <div class="u">
+          <div class="avatar">{{ $displayInitial }}</div>
+          <div class="meta">
+            <div class="n">{{ $displayName }}</div>
+            <div class="r">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
+          </div>
+        </div>
+        <form method="POST" action="{{ route('logout') }}">
+          @csrf
+          <button type="submit" class="btn btn-light btn-sm rounded-circle" title="Logout">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="header d-none d-md-block">
+        <div class="inner">
+          <div class="d-flex align-items-center gap-2">
+            <button class="iconbtn" type="button" id="btnToggleSidebar" title="Toggle Sidebar">
+              <i class="bi bi-list"></i>
             </button>
-          </form>
+            <div class="chip">
+              <i class="bi bi-lightning-charge-fill"></i> Pipeline Prospek Nasabah
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <div class="notif-wrap" data-notif-redirect="{{ $notificationRedirectUrl }}">
+              @livewire('notifications.bell', [], key('desktop-bell-' . auth()->id()))
+            </div>
+
+            <div class="profile-dropdown-wrap" id="desktopProfileWrap">
+              <button class="profilebtn" type="button" id="desktopProfileBtn">
+                <div class="pava">{{ $displayInitial }}</div>
+                <div class="txt text-start">
+                  <div class="n">{{ $displayName }}</div>
+                  <div class="r">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
+                </div>
+                <i class="bi bi-chevron-down ms-1"></i>
+              </button>
+
+              <div class="profile-menu" id="desktopProfileMenu">
+                <div class="head">
+                  <div class="fw-bold">{{ $displayName }}</div>
+                  <div class="text-muted small">{{ auth()->user()->email ?? '' }}</div>
+                </div>
+
+                @if($canProfile)
+                  <a class="item" href="{{ route('profile.index') }}">
+                    <i class="bi bi-person-circle me-2"></i> Profil Saya
+                  </a>
+                @endif
+
+                @if($canProspects)
+                  <a class="item" href="/prospects">
+                    <i class="bi bi-grid me-2"></i> Prospek
+                  </a>
+                @endif
+
+                @if($canSimulasiKredit)
+                  <a class="item" href="{{ route('simulasi-kredit.index') }}">
+                    <i class="bi bi-calculator me-2"></i> Simulasi Kredit
+                  </a>
+                @endif
+
+                @if($canKontenApp)
+                  <a class="item" href="{{ route('contents.manager') }}">
+                    <i class="bi bi-images me-2"></i> Konten App
+                  </a>
+                @endif
+
+                <div class="px-3 py-2 border-top">
+                  <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger w-100 rounded-pill">
+                      <i class="bi bi-box-arrow-right me-1"></i> Logout
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <div class="header d-md-none" style="background:#fff;">
+        <div class="inner" style="padding:14px 14px;height:auto;">
+          <div class="d-flex align-items-center gap-2">
+            <div class="logo" style="width:42px;height:42px;border-radius:14px;">
+              <i class="bi bi-people-fill fs-5 text-white"></i>
+            </div>
+            <div>
+              <div class="fw-bold">E-Prospek</div>
+              <div class="text-muted small">Pipeline Prospek Nasabah</div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <div class="notif-wrap" data-notif-redirect="{{ $notificationRedirectUrl }}">
+              @livewire('notifications.bell', [], key('mobile-bell-' . auth()->id()))
+            </div>
+
+            <div class="profile-dropdown-wrap" id="mobileProfileWrap">
+              <button class="profilebtn mobile-profile-btn" type="button" id="mobileProfileBtn">
+                <div class="pava">{{ $displayInitial }}</div>
+              </button>
+
+              <div class="profile-menu" id="mobileProfileMenu">
+                <div class="head">
+                  <div class="fw-bold">{{ $displayName }}</div>
+                  <div class="text-muted small">{{ strtoupper(auth()->user()->role ?? '-') }}</div>
+                  <div class="text-muted small">{{ auth()->user()->email ?? '' }}</div>
+                </div>
+
+                @if($canProfile)
+                  <a class="item" href="{{ route('profile.index') }}">
+                    <i class="bi bi-person-circle me-2"></i> Profil Saya
+                  </a>
+                @endif
+
+                @if($canProspects)
+                  <a class="item" href="/prospects">
+                    <i class="bi bi-grid me-2"></i> Prospek Saya
+                  </a>
+                @endif
+
+                @if($canSimulasiKredit)
+                  <a class="item" href="{{ route('simulasi-kredit.index') }}">
+                    <i class="bi bi-calculator me-2"></i> Simulasi Kredit
+                  </a>
+                @endif
+
+                @if($canKontenApp)
+                  <a class="item" href="{{ route('contents.manager') }}">
+                    <i class="bi bi-images me-2"></i> Konten App
+                  </a>
+                @endif
+
+                <div class="px-3 py-2 border-top">
+                  <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger w-100 rounded-pill">
+                      <i class="bi bi-box-arrow-right me-1"></i> Logout
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-scroll content-wrap">
+        <div class="page-wrap">
+          {{ $slot }}
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="bottom-nav d-md-none" id="mobileBottomNav">
+    <div class="container nav-inner">
+      <button type="button" class="mobile-nav-grabber" id="mobileNavGrabber" aria-label="Buka semua menu"></button>
+
+      @foreach($mobilePrimaryMenus as $item)
+        @if($item['type'] === 'logout')
+          <form method="POST" action="{{ route('logout') }}" class="mobile-nav-form">
+            @csrf
+            <button type="submit">
+              {!! $mobileIcon($item['icon']) !!}
+              <span class="mobile-nav-label">{{ $item['label'] }}</span>
+            </button>
+          </form>
+        @else
+          <div class="mobile-nav-item">
+            <a href="{{ $item['url'] }}" class="{{ $item['active'] ? 'active' : '' }}">
+              {!! $mobileIcon($item['icon']) !!}
+              <span class="mobile-nav-label">{{ $item['label'] }}</span>
+            </a>
+          </div>
+        @endif
+      @endforeach
+    </div>
+  </nav>
+
+  <div class="mobile-menu-sheet-backdrop d-md-none" id="mobileMenuSheetBackdrop"></div>
+
+  <div class="mobile-menu-sheet d-md-none" id="mobileMenuSheet">
+    <div class="sheet-handle" id="mobileMenuSheetHandle"></div>
+
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-title">Semua Menu</div>
+        <div class="sheet-sub">Swipe ke bawah untuk menutup</div>
+      </div>
+      <button type="button" class="sheet-close" id="mobileMenuSheetClose" aria-label="Tutup menu">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
 
+    <div class="sheet-body">
+      <div class="mobile-menu-grid">
+        @foreach($mobileAllMenus as $item)
+          <a href="{{ $item['url'] }}" class="mobile-menu-link {{ $item['active'] ? 'active' : '' }}">
+            {!! $mobileIcon($item['icon']) !!}
+            <span>{{ $item['label'] }}</span>
+          </a>
+        @endforeach
+
+        <form method="POST" action="{{ route('logout') }}">
+          @csrf
+          <button type="submit" class="mobile-menu-logout">
+            {!! $mobileIcon('logout') !!}
+            <span>Logout</span>
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
-</div>
 
   <div class="modal fade session-expired-modal" id="sessionExpiredModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -1680,6 +1714,97 @@
           window.location.href = url;
         }
       }, true);
+    })();
+
+    (function(){
+      function isMobile(){
+        return window.matchMedia && window.matchMedia('(max-width: 767.98px)').matches;
+      }
+
+      function getBottomNavHeight(){
+        var nav = document.getElementById('mobileBottomNav');
+        if(!nav) return 78;
+        return Math.ceil(nav.getBoundingClientRect().height || 78);
+      }
+
+      function looksLikeFloating(el){
+        if(!el || el === document.body || el === document.documentElement) return false;
+
+        var cs = window.getComputedStyle(el);
+        var pos = cs.position;
+        if(pos !== 'fixed' && pos !== 'absolute') return false;
+
+        var rect = el.getBoundingClientRect();
+        if(rect.width < 38 || rect.height < 38) return false;
+
+        var text = (el.innerText || el.textContent || '').trim().toLowerCase();
+        var cls = String(el.className || '').toLowerCase();
+        var id = String(el.id || '').toLowerCase();
+        var aria = String(el.getAttribute('aria-label') || '').toLowerCase();
+        var title = String(el.getAttribute('title') || '').toLowerCase();
+
+        var key = cls + ' ' + id + ' ' + aria + ' ' + title + ' ' + text;
+
+        var isCandidate =
+          key.indexOf('ai') !== -1 ||
+          key.indexOf('assistant') !== -1 ||
+          key.indexOf('chat') !== -1 ||
+          key.indexOf('tambah') !== -1 ||
+          key.indexOf('prospek') !== -1 ||
+          key.indexOf('add') !== -1 ||
+          key.indexOf('plus') !== -1 ||
+          key === '+' ||
+          text === '+';
+
+        if(!isCandidate) return false;
+
+        var nearBottom = rect.bottom > (window.innerHeight - 190);
+        var onRight = rect.left > (window.innerWidth * .45);
+
+        return nearBottom && onRight;
+      }
+
+      function fixFloatingButtons(){
+        if(!isMobile()) return;
+
+        var navH = getBottomNavHeight();
+        var candidates = document.querySelectorAll('a, button, div[role="button"], .fab, .floating-action, .floating-btn, .btn-floating, [class*="floating"], [class*="fab"], [class*="ai"], [class*="AI"]');
+
+        var found = [];
+
+        candidates.forEach(function(el){
+          if(looksLikeFloating(el)){
+            found.push(el);
+          }
+        });
+
+        found.sort(function(a,b){
+          return b.getBoundingClientRect().bottom - a.getBoundingClientRect().bottom;
+        });
+
+        found.forEach(function(el, index){
+          var extra = index === 0 ? 18 : 84;
+          el.style.setProperty('bottom', 'calc(' + (navH + extra) + 'px + env(safe-area-inset-bottom, 0px))', 'important');
+          el.style.setProperty('z-index', '2999', 'important');
+        });
+      }
+
+      window.addEventListener('load', fixFloatingButtons);
+      window.addEventListener('resize', fixFloatingButtons);
+      window.addEventListener('orientationchange', function(){
+        setTimeout(fixFloatingButtons, 300);
+      });
+
+      document.addEventListener('livewire:navigated', function(){
+        setTimeout(fixFloatingButtons, 150);
+      });
+
+      document.addEventListener('livewire:init', function(){
+        setTimeout(fixFloatingButtons, 150);
+      });
+
+      setTimeout(fixFloatingButtons, 400);
+      setTimeout(fixFloatingButtons, 1000);
     })();
 
     (function(){
