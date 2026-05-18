@@ -414,30 +414,33 @@
 
     .mobile-nav-grabber{
       position:absolute;
-      top:-28px;
-      left:50%;
-      transform:translateX(-50%);
-      width:150px;
-      height:34px;
+      top:-16px;
+      left:0;
+      right:0;
+      transform:none;
+      width:100%;
+      height:18px;
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
       z-index:5;
-      background:#fff;
+      background:transparent;
       border:0;
       padding:0;
-      border-radius:22px 22px 0 0;
-      box-shadow:0 -8px 22px rgba(15,23,42,.08);
+      margin:0;
+      border-radius:0;
+      box-shadow:none;
     }
 
     .mobile-nav-grabber::before{
       content:"";
-      width:48px;
-      height:5px;
+      width:42px;
+      height:4px;
       border-radius:999px;
       background:#cbd5e1;
       display:block;
+      box-shadow:none;
     }
 
     .mobile-nav-item,
@@ -928,21 +931,48 @@
         max-width:100% !important;
       }
 
+      .bottom-nav{
+        overflow:visible !important;
+      }
+
+      .bottom-nav .nav-inner{
+        overflow:visible !important;
+      }
+
       .mobile-nav-grabber{
-        top:-30px !important;
-        width:152px !important;
-        height:36px !important;
-        background:#fff !important;
-        border-radius:24px 24px 0 0 !important;
-        box-shadow:0 -10px 24px rgba(15,23,42,.08) !important;
+        position:absolute !important;
+        top:-16px !important;
+        left:0 !important;
+        right:0 !important;
+        transform:none !important;
+        width:100% !important;
+        height:18px !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        background:transparent !important;
+        border:0 !important;
+        padding:0 !important;
+        margin:0 !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        cursor:pointer !important;
         z-index:5 !important;
       }
 
       .mobile-nav-grabber::before{
-        width:52px !important;
-        height:5px !important;
+        content:"" !important;
+        width:42px !important;
+        height:4px !important;
         background:#cbd5e1 !important;
         border-radius:999px !important;
+        display:block !important;
+        box-shadow:none !important;
+      }
+
+      .mobile-nav-grabber::after{
+        content:none !important;
+        display:none !important;
       }
 
       .mobile-profile-btn{
