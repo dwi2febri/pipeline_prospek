@@ -60,7 +60,9 @@ class Form extends Component
             'name' => ['required', 'string', 'max:150'],
             'nama_lengkap' => ['nullable', 'string', 'max:150'],
             'email' => [
-                'required', 'email', 'max:255',
+                'required',
+                'email',
+                'max:255',
                 Rule::unique('users', 'email')->ignore($this->id)
             ],
             'role' => ['required', 'in:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,PEGAWAI'],
@@ -126,15 +128,11 @@ class Form extends Component
         $this->job_position = $this->normalizeText($this->job_position);
         $this->level = $this->normalizeText($this->level);
         $this->group_jabatan = $this->normalizeText($this->group_jabatan);
+        $this->name = trim((string) $this->name);
+        $this->email = trim((string) $this->email);
+        $this->role = strtoupper(trim((string) $this->role));
 
-        $this->role = $this->deriveRole(
-            $this->kode,
-            $this->job_position,
-            $this->level,
-            $this->branch_name,
-            $this->unit_kerja
-        );
-
+        // PAKAI ROLE DARI FORM, JANGAN DITIMPA LAGI OLEH deriveRole()
         $this->validate();
 
         DB::beginTransaction();
