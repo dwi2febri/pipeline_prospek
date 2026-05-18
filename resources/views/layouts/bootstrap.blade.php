@@ -13,9 +13,7 @@
     :root{
       --sidebar-w: 280px;
       --header-h: 74px;
-      --mobile-header-h: 74px;
-      --mobile-bottom-nav-h: 72px;
-      --mobile-bottom-extra: env(safe-area-inset-bottom, 0px);
+      --mobile-bottom-nav-h: 64px;
       --bg: #f5f7fb;
       --shadow: 0 10px 30px rgba(15,23,42,.08);
       --radius: 18px;
@@ -24,29 +22,13 @@
     html,
     body{
       width:100%;
-      min-height:100%;
+      height:100%;
       margin:0;
       background:var(--bg);
-      overscroll-behavior:none;
     }
 
     body{
       overflow:hidden;
-    }
-
-    @media (max-width: 767.98px){
-      html,
-      body{
-        height:auto;
-        min-height:100%;
-        overflow-x:hidden;
-        overflow-y:auto;
-        background:var(--bg);
-      }
-
-      body{
-        padding:0;
-      }
     }
 
     .app-shell{
@@ -379,23 +361,7 @@
       background:#fff;
       border-top:1px solid #e9edf5;
       box-shadow:0 -8px 30px rgba(15,23,42,.08);
-      padding-top:7px;
-      padding-bottom:calc(7px + env(safe-area-inset-bottom, 0px));
-      min-height:calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px));
       transition:all .25s ease;
-      transform:translateZ(0);
-      -webkit-transform:translateZ(0);
-    }
-
-    .bottom-nav::after{
-      content:"";
-      position:absolute;
-      left:0;
-      right:0;
-      bottom:-80px;
-      height:80px;
-      background:#fff;
-      pointer-events:none;
     }
 
     .bottom-nav .nav-inner{
@@ -405,7 +371,7 @@
       align-items:stretch;
       justify-content:space-between;
       gap:0;
-      min-height:58px;
+      min-height:64px;
       padding-left:0;
       padding-right:0;
       z-index:1;
@@ -648,155 +614,6 @@
       background:#fff;
     }
 
-    @media (max-width: 767.98px){
-      .app-shell{
-        display:block;
-        min-height:100dvh;
-        overflow:visible;
-      }
-
-      .main{
-        min-height:100dvh;
-        height:auto;
-        overflow:visible;
-      }
-
-      .header{
-        height:auto;
-      }
-
-      .header.d-md-none{
-        position:sticky;
-        top:0;
-        z-index:1040;
-        background:#fff;
-        box-shadow:0 6px 18px rgba(15,23,42,.08);
-      }
-
-      .page-wrap{
-        max-width:100%;
-        margin:0;
-        padding:14px;
-      }
-
-      .main-scroll{
-        height:auto;
-        overflow:visible;
-        padding-bottom:0;
-      }
-
-      .content-wrap{
-        padding-top:0;
-        padding-bottom:calc(var(--mobile-bottom-nav-h) + 28px + env(safe-area-inset-bottom, 0px));
-      }
-
-      .mobile-profile-btn{
-        padding:0;
-        border:0;
-        background:transparent;
-        box-shadow:none;
-      }
-
-      .mobile-profile-btn .pava{
-        width:42px;
-        height:42px;
-      }
-
-      .profile-menu{
-        min-width:220px;
-      }
-
-      body.mobile-sheet-open{
-        overflow:hidden !important;
-        touch-action:none;
-      }
-
-      body.mobile-sheet-open .bottom-nav{
-        transform:translateY(110%);
-        opacity:0;
-        pointer-events:none;
-      }
-
-      body.mobile-sheet-open .fab,
-      body.mobile-sheet-open .floating-action,
-      body.mobile-sheet-open .floating-btn,
-      body.mobile-sheet-open .btn-floating,
-      body.mobile-sheet-open [class*="floating"],
-      body.mobile-sheet-open [class*="fab"]{
-        opacity:0 !important;
-        pointer-events:none !important;
-        transform:scale(.85) !important;
-      }
-
-      /*
-        FIX UTAMA:
-        Tombol tambah prospek (+) dan AI dibuat selalu naik di atas bottom nav.
-        Class dibuat umum supaya tetap kena walaupun nama class tombol di halaman berbeda.
-      */
-      .btn-add-prospect,
-      .add-prospect-btn,
-      .btn-create-prospect,
-      .create-prospect-btn,
-      .prospect-add-btn,
-      .floating-add,
-      .floating-plus,
-      .btn-ai,
-      .ai-btn,
-      .ai-assistant-btn,
-      .floating-ai,
-      .chat-ai-btn,
-      .assistant-ai-btn,
-      .fab,
-      .floating-action,
-      .floating-btn,
-      .btn-floating,
-      button[class*="ai"],
-      a[class*="ai"],
-      div[class*="ai"][role="button"],
-      button[class*="AI"],
-      a[class*="AI"],
-      div[class*="AI"][role="button"]{
-        z-index:2999 !important;
-      }
-
-      .btn-add-prospect,
-      .add-prospect-btn,
-      .btn-create-prospect,
-      .create-prospect-btn,
-      .prospect-add-btn,
-      .floating-add,
-      .floating-plus,
-      .fab,
-      .floating-action,
-      .floating-btn,
-      .btn-floating{
-        bottom:calc(var(--mobile-bottom-nav-h) + 18px + env(safe-area-inset-bottom, 0px)) !important;
-      }
-
-      .btn-ai,
-      .ai-btn,
-      .ai-assistant-btn,
-      .floating-ai,
-      .chat-ai-btn,
-      .assistant-ai-btn,
-      button[class*="ai"],
-      a[class*="ai"],
-      div[class*="ai"][role="button"],
-      button[class*="AI"],
-      a[class*="AI"],
-      div[class*="AI"][role="button"]{
-        bottom:calc(var(--mobile-bottom-nav-h) + 86px + env(safe-area-inset-bottom, 0px)) !important;
-      }
-
-      /*
-        Jika tombol AI dan + posisinya absolute/fixed dari halaman,
-        script di bawah juga akan bantu menggeser otomatis.
-      */
-      .bottom-nav-space{
-        height:calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px));
-      }
-    }
-
     .modal-backdrop.show{
       z-index:2000 !important;
     }
@@ -817,63 +634,6 @@
     .notif-wrap{
       position: relative;
       z-index: 7000;
-    }
-
-    @media (max-width: 767.98px){
-      .notif-wrap{
-        position:relative !important;
-        z-index:9500 !important;
-      }
-
-      .notif-wrap .dropdown-menu.show,
-      .notif-wrap .dropdown-menu,
-      .notif-wrap > div > div:not(:first-child){
-        position:fixed !important;
-        top:88px !important;
-        left:10px !important;
-        right:10px !important;
-        width:auto !important;
-        max-width:calc(100vw - 20px) !important;
-        min-width:0 !important;
-        max-height:58vh !important;
-        overflow-y:auto !important;
-        overflow-x:hidden !important;
-        border-radius:18px !important;
-        box-shadow:0 18px 50px rgba(15,23,42,.22) !important;
-        z-index:9600 !important;
-      }
-
-      .notif-wrap h1,
-      .notif-wrap h2,
-      .notif-wrap h3,
-      .notif-wrap h4,
-      .notif-wrap .fw-bold,
-      .notif-wrap strong{
-        font-size:.9rem !important;
-        line-height:1.25 !important;
-      }
-
-      .notif-wrap p,
-      .notif-wrap span,
-      .notif-wrap div,
-      .notif-wrap a,
-      .notif-wrap button{
-        font-size:.82rem;
-      }
-
-      .notif-wrap [class*="item"],
-      .notif-wrap li,
-      .notif-wrap .list-group-item{
-        padding:10px 12px !important;
-      }
-
-      .notif-wrap small{
-        font-size:.74rem !important;
-      }
-
-      .notif-wrap .badge{
-        font-size:.68rem !important;
-      }
     }
 
     .session-expired-modal .modal-content{
@@ -951,6 +711,317 @@
       font-size:.9rem;
       color:#64748b;
       margin:0;
+    }
+
+    /* ==========================================================
+       MOBILE FIX FINAL: SCROLL AKTIF + BOTTOM NAV PAS
+       ========================================================== */
+    @media (max-width: 767.98px){
+      html,
+      body{
+        width:100% !important;
+        height:100% !important;
+        min-height:100dvh !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
+        background:#f5f7fb !important;
+        touch-action:auto !important;
+      }
+
+      body{
+        position:relative !important;
+      }
+
+      .app-shell{
+        display:block !important;
+        width:100% !important;
+        height:100dvh !important;
+        min-height:100dvh !important;
+        overflow:hidden !important;
+        padding:0 !important;
+        margin:0 !important;
+      }
+
+      .main{
+        display:flex !important;
+        flex-direction:column !important;
+        width:100% !important;
+        height:100dvh !important;
+        min-height:100dvh !important;
+        overflow:hidden !important;
+        padding:0 !important;
+        margin:0 !important;
+      }
+
+      .header{
+        height:auto !important;
+      }
+
+      .header.d-md-none{
+        position:relative !important;
+        top:auto !important;
+        flex:0 0 auto !important;
+        width:100% !important;
+        z-index:1040 !important;
+        background:#fff !important;
+        box-shadow:0 6px 18px rgba(15,23,42,.08) !important;
+      }
+
+      .header.d-md-none .inner{
+        min-height:74px !important;
+        height:auto !important;
+        padding:14px 14px !important;
+      }
+
+      .main-scroll{
+        flex:1 1 auto !important;
+        height:auto !important;
+        min-height:0 !important;
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+        -webkit-overflow-scrolling:touch !important;
+        overscroll-behavior-y:contain !important;
+        padding:0 !important;
+        margin:0 !important;
+        touch-action:pan-y !important;
+      }
+
+      .content-wrap{
+        padding-top:0 !important;
+        padding-bottom:calc(var(--mobile-bottom-nav-h) + 30px) !important;
+      }
+
+      .page-wrap{
+        width:100% !important;
+        max-width:100% !important;
+        padding:14px 14px 24px 14px !important;
+        margin:0 !important;
+      }
+
+      .bottom-nav{
+        position:fixed !important;
+        left:0 !important;
+        right:0 !important;
+        bottom:0 !important;
+        width:100% !important;
+        height:64px !important;
+        min-height:64px !important;
+        padding:0 !important;
+        margin:0 !important;
+        background:#fff !important;
+        border-top:1px solid #e5e7eb !important;
+        box-shadow:0 -10px 28px rgba(15,23,42,.08) !important;
+        z-index:3000 !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        transform:none !important;
+      }
+
+      .bottom-nav::before,
+      .bottom-nav::after{
+        display:none !important;
+        content:none !important;
+      }
+
+      .bottom-nav .container,
+      .bottom-nav .nav-inner{
+        width:100% !important;
+        max-width:100% !important;
+        height:64px !important;
+        min-height:64px !important;
+        padding:0 6px !important;
+        margin:0 !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:space-between !important;
+      }
+
+      .mobile-nav-item,
+      .bottom-nav form.mobile-nav-form{
+        height:64px !important;
+        flex:1 1 0 !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        margin:0 !important;
+        padding:0 !important;
+      }
+
+      .mobile-nav-item a,
+      .bottom-nav form.mobile-nav-form button{
+        height:64px !important;
+        padding:6px 2px 5px !important;
+        margin:0 !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:3px !important;
+        font-size:11px !important;
+        line-height:1.1 !important;
+        color:#6b7280 !important;
+        background:transparent !important;
+        border:0 !important;
+        text-decoration:none !important;
+      }
+
+      .mobile-nav-item a.active,
+      .bottom-nav form.mobile-nav-form button.active{
+        color:#111827 !important;
+        font-weight:800 !important;
+      }
+
+      .mobile-svg-icon{
+        width:20px !important;
+        height:20px !important;
+        margin:0 !important;
+        padding:0 !important;
+      }
+
+      .mobile-nav-label{
+        font-size:11px !important;
+        line-height:1.1 !important;
+        white-space:nowrap !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+        max-width:100% !important;
+      }
+
+      .mobile-nav-grabber{
+        top:-8px !important;
+        height:12px !important;
+        z-index:3 !important;
+      }
+
+      .mobile-nav-grabber::before{
+        width:36px !important;
+        height:4px !important;
+        background:#cbd5e1 !important;
+        border-radius:999px !important;
+      }
+
+      .mobile-profile-btn{
+        padding:0 !important;
+        border:0 !important;
+        background:transparent !important;
+        box-shadow:none !important;
+      }
+
+      .mobile-profile-btn .pava{
+        width:42px !important;
+        height:42px !important;
+      }
+
+      .profile-menu{
+        min-width:220px !important;
+      }
+
+      .notif-wrap{
+        position:relative !important;
+        z-index:9500 !important;
+      }
+
+      .notif-wrap .dropdown-menu.show,
+      .notif-wrap .dropdown-menu,
+      .notif-wrap > div > div:not(:first-child){
+        position:fixed !important;
+        top:88px !important;
+        left:10px !important;
+        right:10px !important;
+        width:auto !important;
+        max-width:calc(100vw - 20px) !important;
+        min-width:0 !important;
+        max-height:58vh !important;
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+        border-radius:18px !important;
+        box-shadow:0 18px 50px rgba(15,23,42,.22) !important;
+        z-index:9600 !important;
+      }
+
+      .notif-wrap h1,
+      .notif-wrap h2,
+      .notif-wrap h3,
+      .notif-wrap h4,
+      .notif-wrap .fw-bold,
+      .notif-wrap strong{
+        font-size:.9rem !important;
+        line-height:1.25 !important;
+      }
+
+      .notif-wrap p,
+      .notif-wrap span,
+      .notif-wrap div,
+      .notif-wrap a,
+      .notif-wrap button{
+        font-size:.82rem;
+      }
+
+      .notif-wrap [class*="item"],
+      .notif-wrap li,
+      .notif-wrap .list-group-item{
+        padding:10px 12px !important;
+      }
+
+      .notif-wrap small{
+        font-size:.74rem !important;
+      }
+
+      .notif-wrap .badge{
+        font-size:.68rem !important;
+      }
+
+      .btn-add-prospect,
+      .add-prospect-btn,
+      .btn-create-prospect,
+      .create-prospect-btn,
+      .prospect-add-btn,
+      .floating-add,
+      .floating-plus,
+      .fab,
+      .floating-action,
+      .floating-btn,
+      .btn-floating{
+        position:fixed !important;
+        right:18px !important;
+        bottom:86px !important;
+        z-index:2999 !important;
+      }
+
+      .btn-ai,
+      .ai-btn,
+      .ai-assistant-btn,
+      .floating-ai,
+      .chat-ai-btn,
+      .assistant-ai-btn,
+      button[class*="ai"],
+      a[class*="ai"],
+      div[class*="ai"][role="button"],
+      button[class*="AI"],
+      a[class*="AI"],
+      div[class*="AI"][role="button"]{
+        position:fixed !important;
+        right:18px !important;
+        bottom:154px !important;
+        z-index:2999 !important;
+      }
+
+      body.mobile-sheet-open{
+        overflow:hidden !important;
+        touch-action:none !important;
+      }
+
+      body.mobile-sheet-open .main-scroll{
+        overflow:hidden !important;
+      }
+
+      body.mobile-sheet-open .bottom-nav{
+        transform:translateY(110%) !important;
+        opacity:0 !important;
+        pointer-events:none !important;
+      }
     }
   </style>
 </head>
@@ -1723,8 +1794,27 @@
 
       function getBottomNavHeight(){
         var nav = document.getElementById('mobileBottomNav');
-        if(!nav) return 78;
-        return Math.ceil(nav.getBoundingClientRect().height || 78);
+        if(!nav) return 64;
+        return Math.ceil(nav.getBoundingClientRect().height || 64);
+      }
+
+      function enableMobileScroll(){
+        if(!isMobile()) return;
+
+        var mainScroll = document.querySelector('.main-scroll');
+        var bottomNav = document.getElementById('mobileBottomNav');
+
+        if(mainScroll){
+          mainScroll.style.setProperty('overflow-y', 'auto', 'important');
+          mainScroll.style.setProperty('overflow-x', 'hidden', 'important');
+          mainScroll.style.setProperty('-webkit-overflow-scrolling', 'touch', 'important');
+          mainScroll.style.setProperty('touch-action', 'pan-y', 'important');
+        }
+
+        if(bottomNav){
+          var navHeight = getBottomNavHeight();
+          document.documentElement.style.setProperty('--mobile-bottom-nav-h', navHeight + 'px');
+        }
       }
 
       function looksLikeFloating(el){
@@ -1758,7 +1848,7 @@
 
         if(!isCandidate) return false;
 
-        var nearBottom = rect.bottom > (window.innerHeight - 190);
+        var nearBottom = rect.bottom > (window.innerHeight - 220);
         var onRight = rect.left > (window.innerWidth * .45);
 
         return nearBottom && onRight;
@@ -1784,27 +1874,32 @@
 
         found.forEach(function(el, index){
           var extra = index === 0 ? 18 : 84;
-          el.style.setProperty('bottom', 'calc(' + (navH + extra) + 'px + env(safe-area-inset-bottom, 0px))', 'important');
+          el.style.setProperty('bottom', (navH + extra) + 'px', 'important');
           el.style.setProperty('z-index', '2999', 'important');
         });
       }
 
-      window.addEventListener('load', fixFloatingButtons);
-      window.addEventListener('resize', fixFloatingButtons);
-      window.addEventListener('orientationchange', function(){
-        setTimeout(fixFloatingButtons, 300);
-      });
+      function refreshMobileLayout(){
+        enableMobileScroll();
+        fixFloatingButtons();
+      }
 
-      document.addEventListener('livewire:navigated', function(){
-        setTimeout(fixFloatingButtons, 150);
+      window.addEventListener('load', refreshMobileLayout);
+      window.addEventListener('resize', refreshMobileLayout);
+      window.addEventListener('orientationchange', function(){
+        setTimeout(refreshMobileLayout, 250);
       });
 
       document.addEventListener('livewire:init', function(){
-        setTimeout(fixFloatingButtons, 150);
+        setTimeout(refreshMobileLayout, 150);
       });
 
-      setTimeout(fixFloatingButtons, 400);
-      setTimeout(fixFloatingButtons, 1000);
+      document.addEventListener('livewire:navigated', function(){
+        setTimeout(refreshMobileLayout, 150);
+      });
+
+      setTimeout(refreshMobileLayout, 300);
+      setTimeout(refreshMobileLayout, 900);
     })();
 
     (function(){
