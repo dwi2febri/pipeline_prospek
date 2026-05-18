@@ -1096,6 +1096,135 @@
         pointer-events:none !important;
       }
     }
+
+    /* ==========================================================
+       FIX FINAL MODAL / POPUP
+       - Modal dipindah ke body lewat script agar tidak ikut transform zoom desktop
+       - Background modal dibuat solid putih agar tidak transparan/blank
+       - Aman untuk mobile dan desktop
+       ========================================================== */
+    body.modal-open{
+      overflow:hidden !important;
+      padding-right:0 !important;
+    }
+
+    .modal{
+      position:fixed !important;
+      inset:0 !important;
+      z-index:12000 !important;
+      overflow-x:hidden !important;
+      overflow-y:auto !important;
+      background:transparent !important;
+      pointer-events:none;
+    }
+
+    .modal.show{
+      display:block !important;
+      pointer-events:auto !important;
+    }
+
+    .modal-backdrop{
+      position:fixed !important;
+      inset:0 !important;
+      width:100vw !important;
+      height:100vh !important;
+      z-index:11990 !important;
+      background:#0f172a !important;
+    }
+
+    .modal-backdrop.show{
+      opacity:.56 !important;
+    }
+
+    .modal-dialog{
+      position:relative !important;
+      z-index:12001 !important;
+      pointer-events:auto !important;
+      transform:none !important;
+      opacity:1 !important;
+    }
+
+    .modal.fade .modal-dialog{
+      transition:transform .18s ease-out, opacity .18s ease-out !important;
+      transform:translateY(8px) scale(.98) !important;
+    }
+
+    .modal.show .modal-dialog{
+      transform:translateY(0) scale(1) !important;
+    }
+
+    .modal-content{
+      background:#ffffff !important;
+      color:#0f172a !important;
+      opacity:1 !important;
+      visibility:visible !important;
+      border:0 !important;
+      border-radius:22px !important;
+      box-shadow:0 28px 90px rgba(15,23,42,.32) !important;
+      overflow:hidden !important;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer{
+      background:#ffffff !important;
+      opacity:1 !important;
+      color:#0f172a !important;
+    }
+
+    .modal .btn-close{
+      opacity:.75 !important;
+      z-index:2 !important;
+    }
+
+    @media (max-width: 767.98px){
+      .modal{
+        z-index:12000 !important;
+        padding:10px 0 calc(var(--mobile-bottom-nav-h) + 18px) !important;
+      }
+
+      .modal-backdrop{
+        z-index:11990 !important;
+      }
+
+      .modal-dialog{
+        width:auto !important;
+        max-width:calc(100vw - 20px) !important;
+        margin:10px auto calc(var(--mobile-bottom-nav-h) + 18px) !important;
+      }
+
+      .modal-dialog.modal-lg,
+      .modal-dialog.modal-xl,
+      .modal-lg,
+      .modal-xl{
+        max-width:calc(100vw - 20px) !important;
+      }
+
+      .modal-dialog-scrollable{
+        height:calc(100dvh - var(--mobile-bottom-nav-h) - 38px) !important;
+        max-height:calc(100dvh - var(--mobile-bottom-nav-h) - 38px) !important;
+      }
+
+      .modal-dialog-scrollable .modal-content{
+        max-height:calc(100dvh - var(--mobile-bottom-nav-h) - 38px) !important;
+      }
+
+      .modal-body{
+        max-height:calc(100dvh - var(--mobile-bottom-nav-h) - 150px) !important;
+        overflow-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .modal table{
+        font-size:.82rem !important;
+      }
+
+      .modal .table-responsive{
+        overflow-x:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+    }
+
   </style>
 </head>
 
@@ -2102,6 +2231,108 @@
       });
     })();
   </script>
+
+
+    (function(){
+      function moveModalToBody(modal){
+        if(!modal || modal.parentNode === document.body) return;
+        document.body.appendChild(modal);
+      }
+
+      function fixBackdrops(){
+        document.querySelectorAll('.modal-backdrop').forEach(function(backdrop){
+          if(backdrop.parentNode !== document.body){
+            document.body.appendChild(backdrop);
+          }
+          backdrop.style.setProperty('position', 'fixed', 'important');
+          backdrop.style.setProperty('inset', '0', 'important');
+          backdrop.style.setProperty('z-index', '11990', 'important');
+          backdrop.style.setProperty('background', '#0f172a', 'important');
+        });
+      }
+
+      function fixModal(modal){
+        if(!modal) return;
+        moveModalToBody(modal);
+        modal.style.setProperty('position', 'fixed', 'important');
+        modal.style.setProperty('inset', '0', 'important');
+        modal.style.setProperty('z-index', '12000', 'important');
+        modal.style.setProperty('overflow-y', 'auto', 'important');
+
+        var dialog = modal.querySelector('.modal-dialog');
+        if(dialog){
+          dialog.style.setProperty('position', 'relative', 'important');
+          dialog.style.setProperty('z-index', '12001', 'important');
+          dialog.style.setProperty('opacity', '1', 'important');
+        }
+
+        var content = modal.querySelector('.modal-content');
+        if(content){
+          content.style.setProperty('background', '#ffffff', 'important');
+          content.style.setProperty('opacity', '1', 'important');
+          content.style.setProperty('visibility', 'visible', 'important');
+          content.style.setProperty('box-shadow', '0 28px 90px rgba(15,23,42,.32)', 'important');
+        }
+      }
+
+      function fixAllModals(){
+        document.querySelectorAll('.modal').forEach(function(modal){
+          fixModal(modal);
+        });
+        fixBackdrops();
+      }
+
+      document.addEventListener('show.bs.modal', function(e){
+        fixModal(e.target);
+        setTimeout(fixBackdrops, 0);
+        setTimeout(fixAllModals, 30);
+      }, true);
+
+      document.addEventListener('shown.bs.modal', function(e){
+        fixModal(e.target);
+        fixBackdrops();
+      }, true);
+
+      document.addEventListener('hide.bs.modal', function(){
+        setTimeout(fixBackdrops, 10);
+      }, true);
+
+      document.addEventListener('hidden.bs.modal', function(){
+        setTimeout(function(){
+          var anyOpen = document.querySelector('.modal.show');
+          if(!anyOpen){
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+          }
+        }, 80);
+      }, true);
+
+      var observer = new MutationObserver(function(mutations){
+        var shouldFix = false;
+        mutations.forEach(function(mutation){
+          mutation.addedNodes.forEach(function(node){
+            if(node.nodeType !== 1) return;
+            if(
+              node.classList &&
+              (node.classList.contains('modal') || node.classList.contains('modal-backdrop') || node.querySelector('.modal'))
+            ){
+              shouldFix = true;
+            }
+          });
+        });
+
+        if(shouldFix){
+          setTimeout(fixAllModals, 0);
+        }
+      });
+
+      observer.observe(document.documentElement, {childList:true, subtree:true});
+
+      window.addEventListener('load', function(){
+        setTimeout(fixAllModals, 120);
+      });
+    })();
+
 
   @stack('scripts')
 </body>
