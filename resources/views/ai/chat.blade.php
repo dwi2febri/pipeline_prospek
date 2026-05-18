@@ -440,16 +440,16 @@
         <div class="ai-chat-shell">
             <div class="ai-topbar">
                 <div class="ai-topbar-right">
-                    <a href="{{ route('prospects.index') }}" class="btn btn-light ai-back-btn">
-                        <i class="bi bi-arrow-left me-1"></i> Kembali
-                    </a>
+
                 </div>
             </div>
 
             <div class="ai-chat-card">
                 <div class="ai-chat-head">
                     <div class="ai-chat-head-left">
-                        <div class="ai-chat-title">E-Prospek AI Assistant</div>
+                        <div class="ai-chat-title">E-Prospek AI Assistant <a href="{{ route('prospects.index') }}" class="btn btn-light ai-back-btn">
+                        <i class="bi bi-arrow-left me-1"></i> Kembali
+                    </a></div>
                         <div class="ai-chat-sub"><i class="bi bi-stars"></i> Gemini</div>
                     </div>
 
