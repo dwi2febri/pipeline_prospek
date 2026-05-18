@@ -2230,9 +2230,12 @@
         } catch (e) {}
       });
     })();
-  </script>
 
-
+    /* ==========================================================
+       FIX MODAL DESKTOP ZOOM 65%
+       Modal Bootstrap harus keluar dari .app-shell karena .app-shell memakai transform:scale(.65).
+       Jika tidak, backdrop menutup modal sehingga modal terlihat transparan/blank.
+       ========================================================== */
     (function(){
       function moveModalToBody(modal){
         if(!modal || modal.parentNode === document.body) return;
@@ -2332,7 +2335,7 @@
         setTimeout(fixAllModals, 120);
       });
     })();
-
+  </script>
 
   @stack('scripts')
 </body>
