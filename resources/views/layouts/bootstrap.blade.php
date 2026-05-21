@@ -52,23 +52,33 @@
         overflow:hidden;
       }
 
+      /*
+        DESKTOP ZOOM 65% YANG AMAN UNTUK LIVEWIRE
+        Jangan pakai transform:scale pada .app-shell karena membuat modal Bootstrap
+        dan wire:click/wire:model Livewire sering bermasalah.
+      */
+      body{
+        zoom:65%;
+        width:153.846153846%;
+        height:153.846153846%;
+      }
+
       .app-shell{
-        width:var(--desktop-scale-width);
-        min-height:var(--desktop-scale-height);
-        transform:scale(var(--desktop-scale));
-        transform-origin:top left;
+        width:100%;
+        min-height:153.846153846vh;
+        transform:none !important;
       }
 
       .sidebar{
-        height:var(--desktop-scale-height) !important;
+        height:153.846153846vh !important;
       }
 
       .main{
-        height:var(--desktop-scale-height) !important;
+        height:153.846153846vh !important;
       }
 
       .main-scroll{
-        height:calc(var(--desktop-scale-height) - var(--header-h)) !important;
+        height:calc(153.846153846vh - var(--header-h)) !important;
       }
     }
 
@@ -1099,7 +1109,7 @@
 
     /* ==========================================================
        FIX FINAL MODAL / POPUP
-       - Modal dipindah ke body lewat script agar tidak ikut transform zoom desktop
+       - Modal tetap di root Livewire supaya wire:click / wire:model tetap aktif
        - Background modal dibuat solid putih agar tidak transparan/blank
        - Aman untuk mobile dan desktop
        ========================================================== */
@@ -1144,13 +1154,10 @@
       opacity:1 !important;
     }
 
-    .modal.fade .modal-dialog{
-      transition:transform .18s ease-out, opacity .18s ease-out !important;
-      transform:translateY(8px) scale(.98) !important;
-    }
-
+    .modal.fade .modal-dialog,
     .modal.show .modal-dialog{
-      transform:translateY(0) scale(1) !important;
+      transition:none !important;
+      transform:none !important;
     }
 
     .modal-content{
@@ -1176,6 +1183,7 @@
       opacity:.75 !important;
       z-index:2 !important;
     }
+
 
     @media (max-width: 767.98px){
       .modal{
@@ -1267,11 +1275,156 @@
         opacity:.56 !important;
       }
 
-      body.modal-open .app-shell{
+    }
+
+
+    /* ==========================================================
+       FIX FINAL DESKTOP ZOOM 65% TANPA POTONG & TANPA RUSAK LIVEWIRE
+       Catatan:
+       - Jangan zoom BODY, karena membuat sidebar/area konten bergeser.
+       - Zoom hanya app-shell, lalu lebar app-shell diperbesar agar hasil visual tetap full layar.
+       - Modal tetap di dalam root Livewire dan dinormalkan ukurannya.
+       - Mobile dipaksa normal 100%.
+       ========================================================== */
+    @media (min-width: 768px){
+      html,
+      body{
+        width:100vw !important;
+        height:100vh !important;
+        min-width:100vw !important;
+        min-height:100vh !important;
+        max-width:100vw !important;
+        max-height:100vh !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
+        zoom:1 !important;
+        background:var(--bg) !important;
+      }
+
+      .app-shell{
+        zoom:65% !important;
+        width:153.846153846vw !important;
+        min-width:153.846153846vw !important;
+        max-width:153.846153846vw !important;
+        height:153.846153846vh !important;
+        min-height:153.846153846vh !important;
+        max-height:153.846153846vh !important;
         transform:none !important;
+        overflow:hidden !important;
+      }
+
+      .sidebar{
+        height:153.846153846vh !important;
+        min-height:153.846153846vh !important;
+        max-height:153.846153846vh !important;
+        flex:0 0 var(--sidebar-w) !important;
+      }
+
+      .sidebar.collapsed{
+        flex:0 0 88px !important;
+      }
+
+      .main{
+        height:153.846153846vh !important;
+        min-height:153.846153846vh !important;
+        max-height:153.846153846vh !important;
+        width:auto !important;
+        min-width:0 !important;
+        flex:1 1 auto !important;
+        overflow:hidden !important;
+      }
+
+      .main-scroll{
+        height:calc(153.846153846vh - var(--header-h)) !important;
+        min-height:0 !important;
+        overflow-y:auto !important;
+        overflow-x:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .page-wrap{
+        width:100% !important;
+        max-width:none !important;
+        min-width:0 !important;
+        box-sizing:border-box !important;
+      }
+
+      .content-wrap{
+        padding-bottom:0 !important;
+      }
+
+      .table-responsive,
+      .table-wrap,
+      .data-table-wrap,
+      .table-container,
+      .card-soft,
+      .page-wrap > div{
+        max-width:100% !important;
+      }
+
+      .table-responsive,
+      .table-wrap,
+      .data-table-wrap,
+      .table-container{
+        overflow-x:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      /* Modal dinormalkan karena parent .app-shell dizoom 65%. */
+      .modal,
+      .modal-backdrop{
+        zoom:153.846153846% !important;
+      }
+
+      .modal{
+        position:fixed !important;
+        inset:0 !important;
+        z-index:12000 !important;
+        overflow-y:auto !important;
+        background:transparent !important;
+      }
+
+      .modal-backdrop{
+        position:fixed !important;
+        inset:0 !important;
+        width:100vw !important;
+        height:100vh !important;
+        z-index:11990 !important;
+        background:#0f172a !important;
+      }
+
+      .modal-backdrop.show{
+        opacity:.56 !important;
+      }
+
+      .modal-dialog{
+        transform:none !important;
+        opacity:1 !important;
+      }
+
+      .modal-content{
+        background:#fff !important;
+        opacity:1 !important;
+        visibility:visible !important;
       }
     }
-</style>
+
+    @media (max-width: 767.98px){
+      html,
+      body,
+      .app-shell{
+        zoom:1 !important;
+        max-width:none !important;
+      }
+
+      .modal,
+      .modal-backdrop{
+        zoom:1 !important;
+      }
+    }
+
+  </style>
 </head>
 
 <body>
@@ -2277,379 +2430,239 @@
       });
     })();
 
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script>
     /* ==========================================================
-       FIX MODAL DESKTOP ZOOM 65%
-       Modal Bootstrap harus keluar dari .app-shell karena .app-shell memakai transform:scale(.65).
-       Jika tidak, backdrop menutup modal sehingga modal terlihat transparan/blank.
+       FIX MODAL STABIL UNTUK LIVEWIRE
+       - Tidak memindahkan modal dari root Livewire.
+       - Tidak membuat input No Rekening via JS.
+       - Tidak mencegat tombol Simpan Status.
        ========================================================== */
     (function(){
-      function isMobile(){
-        return window.matchMedia && window.matchMedia('(max-width: 767.98px)').matches;
-      }
-
-      function removeMobileModalBlink(modal){
-        if(!isMobile() || !modal) return;
-
-        modal.classList.remove('fade');
-        modal.style.setProperty('transition', 'none', 'important');
-        modal.style.setProperty('animation', 'none', 'important');
-
-        var dialog = modal.querySelector('.modal-dialog');
-        if(dialog){
-          dialog.style.setProperty('transition', 'none', 'important');
-          dialog.style.setProperty('animation', 'none', 'important');
-          dialog.style.setProperty('transform', 'none', 'important');
-          dialog.style.setProperty('opacity', '1', 'important');
-          dialog.style.setProperty('will-change', 'auto', 'important');
-        }
-
-        var content = modal.querySelector('.modal-content');
-        if(content){
-          content.style.setProperty('transition', 'none', 'important');
-          content.style.setProperty('animation', 'none', 'important');
-          content.style.setProperty('transform', 'none', 'important');
-          content.style.setProperty('opacity', '1', 'important');
-          content.style.setProperty('visibility', 'visible', 'important');
-          content.style.setProperty('background', '#ffffff', 'important');
-          content.style.setProperty('will-change', 'auto', 'important');
-        }
-      }
-
-      function removeBackdropBlink(){
-        if(!isMobile()) return;
+      function fixBackdrop(){
         document.querySelectorAll('.modal-backdrop').forEach(function(backdrop){
-          backdrop.classList.remove('fade');
-          backdrop.style.setProperty('transition', 'none', 'important');
-          backdrop.style.setProperty('animation', 'none', 'important');
-          backdrop.style.setProperty('opacity', '.56', 'important');
+          backdrop.style.setProperty('position','fixed','important');
+          backdrop.style.setProperty('inset','0','important');
+          backdrop.style.setProperty('z-index','11990','important');
+          backdrop.style.setProperty('background','#0f172a','important');
+          backdrop.style.setProperty('opacity','.56','important');
         });
       }
 
-      function moveModalToBody(modal){
-        if(!modal || modal.parentNode === document.body) return;
-        document.body.appendChild(modal);
-      }
-
-      function fixBackdrops(){
-        document.querySelectorAll('.modal-backdrop').forEach(function(backdrop){
-          if(backdrop.parentNode !== document.body){
-            document.body.appendChild(backdrop);
-          }
-          backdrop.style.setProperty('position', 'fixed', 'important');
-          backdrop.style.setProperty('inset', '0', 'important');
-          backdrop.style.setProperty('z-index', '11990', 'important');
-          backdrop.style.setProperty('background', '#0f172a', 'important');
-        });
-      }
-
-      function fixModal(modal){
+      function fixOpenModal(modal){
         if(!modal) return;
-        moveModalToBody(modal);
-        removeMobileModalBlink(modal);
-
-        if(!modal.dataset.fixedOnce){
-          modal.dataset.fixedOnce = '1';
-          modal.style.setProperty('position', 'fixed', 'important');
-          modal.style.setProperty('inset', '0', 'important');
-          modal.style.setProperty('z-index', '12000', 'important');
-          modal.style.setProperty('overflow-y', 'auto', 'important');
-        }
+        modal.style.setProperty('position','fixed','important');
+        modal.style.setProperty('inset','0','important');
+        modal.style.setProperty('z-index','12000','important');
+        modal.style.setProperty('overflow-y','auto','important');
+        modal.style.setProperty('background','transparent','important');
 
         var dialog = modal.querySelector('.modal-dialog');
         if(dialog){
-          dialog.style.setProperty('position', 'relative', 'important');
-          dialog.style.setProperty('z-index', '12001', 'important');
-          dialog.style.setProperty('opacity', '1', 'important');
+          dialog.style.setProperty('z-index','12001','important');
+          dialog.style.setProperty('transform','none','important');
+          dialog.style.setProperty('opacity','1','important');
         }
 
         var content = modal.querySelector('.modal-content');
         if(content){
-          content.style.setProperty('background', '#ffffff', 'important');
-          content.style.setProperty('opacity', '1', 'important');
-          content.style.setProperty('visibility', 'visible', 'important');
-          content.style.setProperty('box-shadow', '0 28px 90px rgba(15,23,42,.32)', 'important');
+          content.style.setProperty('background','#ffffff','important');
+          content.style.setProperty('opacity','1','important');
+          content.style.setProperty('visibility','visible','important');
         }
-      }
-
-      function fixAllModals(){
-        document.querySelectorAll('.modal').forEach(function(modal){
-          fixModal(modal);
-        });
-        fixBackdrops();
-        removeBackdropBlink();
       }
 
       document.addEventListener('show.bs.modal', function(e){
-        fixModal(e.target);
-        removeBackdropBlink();
-        setTimeout(function(){ fixBackdrops(); removeBackdropBlink(); }, 0);
-        setTimeout(fixAllModals, 30);
+        fixOpenModal(e.target);
+        setTimeout(fixBackdrop, 0);
       }, true);
 
       document.addEventListener('shown.bs.modal', function(e){
-        fixModal(e.target);
-        fixBackdrops();
-        removeBackdropBlink();
-      }, true);
-
-      document.addEventListener('hide.bs.modal', function(){
-        setTimeout(fixBackdrops, 10);
+        fixOpenModal(e.target);
+        fixBackdrop();
       }, true);
 
       document.addEventListener('hidden.bs.modal', function(){
         setTimeout(function(){
-          var anyOpen = document.querySelector('.modal.show');
-          if(!anyOpen){
+          if(!document.querySelector('.modal.show')){
             document.body.classList.remove('modal-open');
             document.body.style.removeProperty('padding-right');
           }
         }, 80);
       }, true);
-
-      var observer = new MutationObserver(function(mutations){
-        var shouldFix = false;
-        mutations.forEach(function(mutation){
-          mutation.addedNodes.forEach(function(node){
-            if(node.nodeType !== 1) return;
-            if(
-              node.classList &&
-              (node.classList.contains('modal') || node.classList.contains('modal-backdrop') || node.querySelector('.modal'))
-            ){
-              shouldFix = true;
-            }
-          });
-        });
-
-        if(shouldFix){
-          setTimeout(fixAllModals, 0);
-        }
-      });
-
-      observer.observe(document.documentElement, {childList:true, subtree:true});
-
-      window.addEventListener('load', function(){
-        setTimeout(fixAllModals, 120);
-      });
     })();
   </script>
 
 
+
+
   <script>
     /* ==========================================================
-       FIX INPUT NO REKENING SAAT STATUS CLOSING
-       - Berlaku untuk modal Detail Prospek Diajukan
-       - Jika pilih status CLOSING, form No Rekening otomatis muncul
-       - Tidak mengganggu mobile, modal, dan zoom desktop
+       FIX POPUP DETAIL KOSONG SETELAH SIMPAN STATUS/PENGAMBILAN
+       Penyebab: setelah Livewire update, property detail kadang di-reset
+       sementara modal Bootstrap masih terbuka, sehingga muncul:
+       "ID Prospek: -" / "Data detail tidak ditemukan".
+       Solusi: setelah tombol simpan diklik, modal detail ditutup bersih.
+       Jika modal kosong tetap muncul, otomatis ditutup.
        ========================================================== */
     (function(){
-      function normalizeText(value){
-        return String(value || '').replace(/\s+/g, ' ').trim().toUpperCase();
+      var closeAfterSaveTimer = null;
+
+      function textOf(el){
+        return String((el && (el.innerText || el.textContent)) || '')
+          .replace(/\s+/g, ' ')
+          .trim();
       }
 
-      function isClosing(value){
-        return normalizeText(value) === 'CLOSING';
+      function isDetailProspekModal(modal){
+        if(!modal) return false;
+        var txt = textOf(modal).toLowerCase();
+        return txt.indexOf('detail prospek diajukan') !== -1 ||
+               txt.indexOf('detail pengajuan pegawai') !== -1 ||
+               txt.indexOf('detail prospek') !== -1;
       }
 
-      function closestFieldWrapper(el){
-        if(!el) return null;
-        return el.closest('.mb-2, .mb-3, .form-group, .form-floating, .col, .col-md-6, .closing-field-wrapper, div');
+      function isEmptyDetailModal(modal){
+        if(!isDetailProspekModal(modal)) return false;
+        var txt = textOf(modal).toLowerCase();
+        return txt.indexOf('data detail tidak ditemukan') !== -1 ||
+               txt.indexOf('id prospek: -') !== -1 ||
+               txt.indexOf('id prospek:-') !== -1;
       }
 
-      function findUpdateStatusBox(scope){
-        var root = scope || document;
-        var boxes = root.querySelectorAll('.card, .bg-white, .modal-content, .modal-body, div');
+      function getBootstrapModal(modal){
+        if(!modal || typeof bootstrap === 'undefined' || !bootstrap.Modal) return null;
+        return bootstrap.Modal.getInstance(modal) || bootstrap.Modal.getOrCreateInstance(modal);
+      }
 
-        for(var i = 0; i < boxes.length; i++){
-          var txt = normalizeText(boxes[i].innerText || '');
-          if(txt.indexOf('UPDATE STATUS') !== -1 && txt.indexOf('PILIH STATUS') !== -1){
-            return boxes[i];
+      function hardHideModal(modal){
+        if(!modal) return;
+
+        try{
+          var instance = getBootstrapModal(modal);
+          if(instance){
+            instance.hide();
           }
-        }
+        }catch(e){}
 
-        return root;
+        modal.classList.remove('show');
+        modal.style.setProperty('display', 'none', 'important');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.removeAttribute('aria-modal');
+        modal.removeAttribute('role');
+
+        document.querySelectorAll('.modal-backdrop').forEach(function(backdrop){
+          backdrop.parentNode && backdrop.parentNode.removeChild(backdrop);
+        });
+
+        if(!document.querySelector('.modal.show')){
+          document.body.classList.remove('modal-open');
+          document.body.style.removeProperty('overflow');
+          document.body.style.removeProperty('padding-right');
+        }
       }
 
-      function findStatusSelect(scope){
-        var box = findUpdateStatusBox(scope);
-        var selects = box.querySelectorAll('select');
-
-        for(var i = 0; i < selects.length; i++){
-          var select = selects[i];
-          var options = Array.from(select.options || []).map(function(opt){
-            return normalizeText((opt.value || '') + ' ' + (opt.textContent || ''));
-          }).join(' ');
-
-          var parentText = normalizeText((closestFieldWrapper(select) || select.parentNode || select).innerText || '');
-
-          if(options.indexOf('CLOSING') !== -1 || parentText.indexOf('PILIH STATUS') !== -1){
-            return select;
+      function closeDetailModals(){
+        document.querySelectorAll('.modal.show, .modal').forEach(function(modal){
+          if(isDetailProspekModal(modal)){
+            hardHideModal(modal);
           }
-        }
-
-        return null;
-      }
-
-      function findExistingRekeningInput(scope){
-        var root = scope || document;
-        return root.querySelector(
-          'input[name="no_rekening"], input[name="no_rek"], input[name="rekening"], input[id*="rekening" i], input[class*="rekening" i], input[wire\\:model*="rekening"], input[wire\\:model\\.defer*="rekening"], input[x-model*="rekening"]'
-        );
-      }
-
-      function makeRekeningField(statusSelect){
-        var wrap = document.createElement('div');
-        wrap.className = 'mb-3 closing-no-rekening-wrapper';
-        wrap.setAttribute('data-closing-rekening-auto', '1');
-        wrap.style.display = 'none';
-
-        wrap.innerHTML = ''
-          + '<label class="form-label fw-semibold">No Rekening</label>'
-          + '<input type="text" '
-          + 'name="no_rekening" '
-          + 'class="form-control closing-no-rekening-input" '
-          + 'placeholder="Masukkan No Rekening" '
-          + 'autocomplete="off" '
-          + 'inputmode="numeric">';
-
-        var statusWrapper = closestFieldWrapper(statusSelect) || statusSelect.parentNode;
-        if(statusWrapper && statusWrapper.parentNode){
-          statusWrapper.parentNode.insertBefore(wrap, statusWrapper.nextSibling);
-        }else{
-          statusSelect.insertAdjacentElement('afterend', wrap);
-        }
-
-        return wrap.querySelector('input');
-      }
-
-      function getRekeningField(scope, statusSelect){
-        var input = findExistingRekeningInput(scope);
-
-        if(!input && statusSelect){
-          input = makeRekeningField(statusSelect);
-        }
-
-        if(!input) return null;
-
-        var wrapper = input.closest('.closing-no-rekening-wrapper, .no-rekening-wrapper, .rekening-wrapper, .mb-2, .mb-3, .form-group, .form-floating, div') || input;
-
-        return { input: input, wrapper: wrapper };
-      }
-
-      function fireInputEvents(input){
-        if(!input) return;
-        ['input','change','blur'].forEach(function(type){
-          input.dispatchEvent(new Event(type, {bubbles:true}));
         });
       }
 
-      function toggleNoRekening(scope){
-        var root = scope || document;
-        var statusSelect = findStatusSelect(root);
-        if(!statusSelect) return;
+      function closeEmptyDetailModals(){
+        document.querySelectorAll('.modal.show, .modal').forEach(function(modal){
+          if(isEmptyDetailModal(modal)){
+            hardHideModal(modal);
+          }
+        });
+      }
 
-        var selectedOptionText = '';
-        if(statusSelect.options && statusSelect.selectedIndex >= 0){
-          selectedOptionText = statusSelect.options[statusSelect.selectedIndex].textContent || '';
-        }
+      function scheduleCloseAfterSave(){
+        clearTimeout(closeAfterSaveTimer);
 
-        var selectedValue = statusSelect.value || selectedOptionText;
-        var closing = isClosing(selectedValue) || isClosing(selectedOptionText);
-        var rekening = getRekeningField(root, statusSelect);
-
-        if(!rekening || !rekening.input || !rekening.wrapper) return;
-
-        if(closing){
-          rekening.wrapper.classList.remove('d-none');
-          rekening.wrapper.hidden = false;
-          rekening.wrapper.style.setProperty('display', 'block', 'important');
-          rekening.input.disabled = false;
-          rekening.input.required = true;
-          rekening.input.removeAttribute('disabled');
-
+        [80, 250, 600, 1200].forEach(function(ms){
           setTimeout(function(){
-            try { rekening.input.focus({preventScroll:true}); } catch(e) {}
-          }, 120);
-        }else{
-          rekening.input.required = false;
-          rekening.input.value = '';
-          rekening.input.disabled = true;
-          rekening.input.setAttribute('disabled', 'disabled');
-          rekening.wrapper.style.setProperty('display', 'none', 'important');
-          rekening.wrapper.classList.add('d-none');
-          fireInputEvents(rekening.input);
-        }
-      }
-
-      function bindModal(scope){
-        var root = scope || document;
-        var statusSelect = findStatusSelect(root);
-        if(!statusSelect) return;
-
-        if(statusSelect.dataset.closingRekeningBound !== '1'){
-          statusSelect.dataset.closingRekeningBound = '1';
-          statusSelect.addEventListener('change', function(){
-            toggleNoRekening(root);
-          });
-          statusSelect.addEventListener('input', function(){
-            toggleNoRekening(root);
-          });
-        }
-
-        toggleNoRekening(root);
-      }
-
-      function scanOpenModals(){
-        var modals = document.querySelectorAll('.modal.show, .modal');
-        modals.forEach(function(modal){
-          var text = normalizeText(modal.innerText || '');
-          if(text.indexOf('DETAIL PROSPEK DIAJUKAN') !== -1 || text.indexOf('UPDATE STATUS') !== -1){
-            bindModal(modal);
-          }
+            closeDetailModals();
+            closeEmptyDetailModals();
+          }, ms);
         });
+
+        closeAfterSaveTimer = setTimeout(function(){
+          closeEmptyDetailModals();
+        }, 1800);
       }
 
-      document.addEventListener('change', function(e){
-        if(e.target && e.target.tagName === 'SELECT'){
-          var modal = e.target.closest('.modal') || document;
-          toggleNoRekening(modal);
-        }
-      }, true);
+      document.addEventListener('click', function(e){
+        var btn = e.target.closest('button, a');
+        if(!btn) return;
 
-      document.addEventListener('show.bs.modal', function(e){
-        setTimeout(function(){ bindModal(e.target); }, 80);
-        setTimeout(function(){ bindModal(e.target); }, 250);
+        var txt = textOf(btn).toLowerCase();
+        var attr = String(
+          (btn.getAttribute('wire:click') || '') + ' ' +
+          (btn.getAttribute('wire:submit') || '') + ' ' +
+          (btn.getAttribute('onclick') || '') + ' ' +
+          (btn.getAttribute('id') || '') + ' ' +
+          (btn.className || '')
+        ).toLowerCase();
+
+        var isSaveButton =
+          txt.indexOf('simpan status') !== -1 ||
+          txt.indexOf('simpan pengambilan') !== -1 ||
+          attr.indexOf('updatestatus') !== -1 ||
+          attr.indexOf('updatepengambilan') !== -1 ||
+          attr.indexOf('simpanstatus') !== -1;
+
+        if(isSaveButton){
+          scheduleCloseAfterSave();
+        }
       }, true);
 
       document.addEventListener('shown.bs.modal', function(e){
-        setTimeout(function(){ bindModal(e.target); }, 80);
-        setTimeout(function(){ bindModal(e.target); }, 300);
+        setTimeout(function(){
+          if(isEmptyDetailModal(e.target)){
+            hardHideModal(e.target);
+          }
+        }, 50);
       }, true);
 
       document.addEventListener('livewire:init', function(){
-        setTimeout(scanOpenModals, 150);
         try{
-          Livewire.hook('morph.updated', function(){
-            setTimeout(scanOpenModals, 80);
+          Livewire.hook('commit', function(){
+            setTimeout(closeEmptyDetailModals, 120);
+            setTimeout(closeEmptyDetailModals, 500);
           });
         }catch(e){}
       });
 
       document.addEventListener('livewire:navigated', function(){
-        setTimeout(scanOpenModals, 150);
+        setTimeout(closeEmptyDetailModals, 150);
       });
 
       var observer = new MutationObserver(function(){
-        var openModal = document.querySelector('.modal.show');
-        if(openModal){
-          clearTimeout(window.__closingRekeningTimer);
-          window.__closingRekeningTimer = setTimeout(scanOpenModals, 120);
-        }
+        closeEmptyDetailModals();
       });
 
-      observer.observe(document.documentElement, {childList:true, subtree:true});
-
       window.addEventListener('load', function(){
-        setTimeout(scanOpenModals, 300);
+        observer.observe(document.body, {
+          childList:true,
+          subtree:true,
+          characterData:true
+        });
+        setTimeout(closeEmptyDetailModals, 300);
       });
     })();
   </script>

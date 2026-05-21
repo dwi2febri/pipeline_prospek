@@ -1114,6 +1114,70 @@ class Submissions extends Component
         $this->closeDetail();
     }
 
+
+    public function updateAmbilStatus(): void
+    {
+        $role = $this->currentUserRole();
+
+        if (!$this->detailId || !$this->canViewDetail || $this->hideActionForm) {
+            session()->flash('ok', 'Data prospek tidak dapat diperbarui.');
+            return;
+        }
+
+        $this->validate([
+            'ambilStatus' => ['required', 'in:0,1'],
+        ], [
+            'ambilStatus.required' => 'Status pengambilan wajib dipilih.',
+            'ambilStatus.in' => 'Status pengambilan tidak valid.',
+        ]);
+
+        $u = auth()->user();
+        $prospect = Prospect::findOrFail($this->detailId);
+
+        $allowedProduk = $this->getAllowedProdukByUser();
+        if (!empty($allowedProduk) && !in_array((string) $prospect->jenis_produk, $allowedProduk, true)) {
+            session()->flash('ok', 'Anda tidak berhak mengubah pengambilan prospek dengan rekomendasi produk tersebut.');
+            return;
+        }
+
+        if ($this->isAoViewerRole($role) && (string) $prospect->diambil_oleh !== (string) $u->name) {
+            session()->flash('ok', 'Anda hanya bisa mengubah prospek yang ditugaskan ke Anda.');
+            return;
+        }
+
+        if ($this->isManagementKanwilRole($role)) {
+            $allowedCabangIds = $this->getAllowedCabangIdsForManagementKanwil();
+
+            if (!in_array((int) $prospect->cabang_id, $allowedCabangIds, true)) {
+                session()->flash('ok', 'Anda tidak berhak mengubah prospek di luar wilayah kanwil Anda.');
+                return;
+            }
+        }
+
+        $isDiambil = (int) $this->ambilStatus === 1;
+
+        $prospect->is_diambil = $isDiambil ? 1 : 0;
+
+        if (!$isDiambil) {
+            $prospect->diambil_oleh = null;
+        } else {
+            if (empty($prospect->diambil_oleh) && $this->isAoViewerRole($role)) {
+                $prospect->diambil_oleh = (string) $u->name;
+            }
+
+            if ((string) $prospect->status === 'OPEN' || empty($prospect->status)) {
+                $prospect->status = 'FOLLOW UP';
+            }
+        }
+
+        $prospect->save();
+
+        session()->flash('ok', 'Status pengambilan berhasil diperbarui.');
+        $this->dispatch('close-prospect-detail-modal');
+        $this->closeDetail();
+        $this->resetPage();
+    }
+
     public function updateStatus(): void
     {
         $role = $this->currentUserRole();
