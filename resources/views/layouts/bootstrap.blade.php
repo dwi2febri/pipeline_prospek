@@ -1424,6 +1424,35 @@
       }
     }
 
+
+    /* ==========================================================
+       FIX DASHBOARD AREA KETIKA DESKTOP ZOOM 65%
+       - Konten tidak terpotong.
+       - Chart card tetap punya tinggi minimal agar render tidak blank.
+       ========================================================== */
+    @media (min-width: 768px){
+      .main-scroll{
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+      }
+
+      .page-wrap{
+        overflow:visible !important;
+      }
+
+      canvas,
+      svg{
+        max-width:100% !important;
+      }
+
+      .chart-container,
+      .chart-card,
+      [id*="chart"],
+      [class*="chart"]{
+        min-height:1px;
+      }
+    }
+
   </style>
 </head>
 
@@ -2663,6 +2692,59 @@
           characterData:true
         });
         setTimeout(closeEmptyDetailModals, 300);
+      });
+    })();
+  </script>
+
+
+  <script>
+    /* ==========================================================
+       DASHBOARD SMOOTH REFRESH ONLY
+       Catatan penting:
+       - Jangan paksa component.$wire.set() di sini karena wire:model.live
+         sudah mengirim request sendiri. Double set itulah yang membuat filter
+         terlihat glitch/flicker.
+       - Script ini hanya memberi sinyal resize/render ulang ke chart setelah
+         Livewire selesai update.
+       ========================================================== */
+    (function(){
+      function isDashboardPage(){
+        var path = String(window.location.pathname || '').toLowerCase();
+        return path === '/dashboard' || path.indexOf('/dashboard') !== -1;
+      }
+
+      var t1 = null;
+      function scheduleSmoothDashboardRefresh(){
+        if(!isDashboardPage()) return;
+
+        clearTimeout(t1);
+        t1 = setTimeout(function(){
+          try{ window.dispatchEvent(new Event('resize')); }catch(e){}
+          try{ document.dispatchEvent(new CustomEvent('dashboard:smooth-refresh')); }catch(e){}
+        }, 120);
+      }
+
+      document.addEventListener('livewire:init', function(){
+        try{
+          Livewire.hook('commit', function(payload){
+            if(payload && typeof payload.succeed === 'function'){
+              payload.succeed(function(){
+                setTimeout(scheduleSmoothDashboardRefresh, 60);
+                setTimeout(scheduleSmoothDashboardRefresh, 220);
+              });
+            }else{
+              setTimeout(scheduleSmoothDashboardRefresh, 150);
+            }
+          });
+        }catch(e){}
+      });
+
+      document.addEventListener('livewire:navigated', function(){
+        setTimeout(scheduleSmoothDashboardRefresh, 120);
+      });
+
+      window.addEventListener('load', function(){
+        setTimeout(scheduleSmoothDashboardRefresh, 250);
       });
     })();
   </script>

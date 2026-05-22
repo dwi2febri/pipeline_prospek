@@ -345,6 +345,32 @@
       border:1px solid #e5e7eb;
     }
 
+
+
+    /* Smooth chart area saat filter Livewire berubah */
+    .dashboard-chart-box{
+      position:relative;
+      width:100%;
+      height:320px !important;
+      min-height:320px !important;
+      max-height:320px !important;
+      overflow:hidden;
+      transition:none !important;
+    }
+
+    .dashboard-chart-box canvas{
+      display:block !important;
+      width:100% !important;
+      height:100% !important;
+      max-width:100% !important;
+      max-height:100% !important;
+    }
+
+    .dashboard-chart-box.is-updating{
+      opacity:1 !important;
+      filter:none !important;
+    }
+
     @media (max-width: 767.98px){
       .dash-title{ font-size:1.7rem; }
 
@@ -544,7 +570,7 @@
         </div>
 
         <div class="panel-body">
-          <div style="position:relative;height:320px;">
+          <div wire:ignore class="dashboard-chart-box">
             <canvas id="chartClosingCabang"></canvas>
           </div>
         </div>
@@ -558,7 +584,7 @@
           <div class="panel-sub">Komposisi produk yang paling banyak diajukan</div>
         </div>
         <div class="panel-body">
-          <div style="position:relative;height:320px;">
+          <div wire:ignore class="dashboard-chart-box">
             <canvas id="chartProduk"></canvas>
           </div>
         </div>
@@ -574,7 +600,7 @@
           <div class="panel-sub">Mencakup OPEN, FOLLOW UP, REJECTED, dan CLOSING</div>
         </div>
         <div class="panel-body">
-          <div style="position:relative;height:320px;">
+          <div wire:ignore class="dashboard-chart-box">
             <canvas id="chartStatus"></canvas>
           </div>
         </div>
@@ -588,7 +614,7 @@
           <div class="panel-sub">Jenis usaha yang paling dominan</div>
         </div>
         <div class="panel-body">
-          <div style="position:relative;height:320px;">
+          <div wire:ignore class="dashboard-chart-box">
             <canvas id="chartUsaha"></canvas>
           </div>
         </div>
@@ -602,7 +628,7 @@
           <div class="panel-sub">Pergerakan jumlah input prospek per bulan</div>
         </div>
         <div class="panel-body">
-          <div style="position:relative;height:320px;">
+          <div wire:ignore class="dashboard-chart-box">
             <canvas id="chartTrend"></canvas>
           </div>
         </div>
@@ -860,8 +886,8 @@
 
     <script>
     (function () {
-      if (window.__crmDashboardBound) return;
-      window.__crmDashboardBound = true;
+      if (window.__crmDashboardSmoothBound) return;
+      window.__crmDashboardSmoothBound = true;
 
       let chartClosingCabang = null;
       let chartProduk = null;
@@ -870,6 +896,7 @@
       let chartTrend = null;
       let mapInstance = null;
       let mapLayerGroup = null;
+      let renderTimer = null;
 
       function parseJsonScript(id, fallback) {
         const el = document.getElementById(id);
@@ -881,10 +908,6 @@
         }
       }
 
-      function destroyChart(chart) {
-        if (chart) chart.destroy();
-      }
-
       function esc(v) {
         return String(v ?? '')
           .replace(/&/g, '&amp;')
@@ -892,6 +915,31 @@
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#039;');
+      }
+
+
+      function pick(item, keys, fallback = '-') {
+        if (!item) return fallback;
+
+        for (const key of keys) {
+          const parts = String(key).split('.');
+          let val = item;
+
+          for (const part of parts) {
+            if (val && Object.prototype.hasOwnProperty.call(val, part)) {
+              val = val[part];
+            } else {
+              val = undefined;
+              break;
+            }
+          }
+
+          if (val !== undefined && val !== null && String(val).trim() !== '') {
+            return val;
+          }
+        }
+
+        return fallback;
       }
 
       function getDashboardPayload() {
@@ -926,6 +974,50 @@
         });
       }
 
+      function setChartLoading(on) {
+        // No opacity/fade supaya filter tidak terlihat glitch/kedip.
+      }
+
+      function forceCanvasSize(canvas) {
+        if (!canvas) return;
+        var box = canvas.closest('.dashboard-chart-box');
+        if (!box) return;
+
+        box.style.setProperty('height', '320px', 'important');
+        box.style.setProperty('min-height', '320px', 'important');
+        box.style.setProperty('max-height', '320px', 'important');
+
+        canvas.style.setProperty('width', '100%', 'important');
+        canvas.style.setProperty('height', '100%', 'important');
+        canvas.style.setProperty('display', 'block', 'important');
+      }
+
+      function refreshChartSize(chart, canvas) {
+        forceCanvasSize(canvas);
+        if (!chart) return;
+        setTimeout(function(){ try { chart.resize(); chart.update('none'); } catch(e){} }, 30);
+        setTimeout(function(){ try { chart.resize(); chart.update('none'); } catch(e){} }, 180);
+      }
+
+      function upsertChart(current, canvas, config) {
+        if (!canvas || !window.Chart) return current;
+
+        forceCanvasSize(canvas);
+
+        if (current) {
+          current.data.labels = config.data.labels || [];
+          current.data.datasets = config.data.datasets || [];
+          current.options = config.options;
+          current.update('none');
+          refreshChartSize(current, canvas);
+          return current;
+        }
+
+        var chart = new Chart(canvas, config);
+        refreshChartSize(chart, canvas);
+        return chart;
+      }
+
       function renderCharts() {
         const data = getDashboardPayload();
 
@@ -935,15 +1027,9 @@
         const elUsaha   = document.getElementById('chartUsaha');
         const elTrend   = document.getElementById('chartTrend');
 
-        if (!elClosing || !elProduk || !elStatus || !elUsaha || !elTrend) return;
+        if (!elClosing || !elProduk || !elStatus || !elUsaha || !elTrend || !window.Chart) return;
 
-        destroyChart(chartClosingCabang);
-        destroyChart(chartProduk);
-        destroyChart(chartStatus);
-        destroyChart(chartUsaha);
-        destroyChart(chartTrend);
-
-        chartClosingCabang = new Chart(elClosing, {
+        chartClosingCabang = upsertChart(chartClosingCabang, elClosing, {
           type: 'bar',
           data: {
             labels: data.closingLabels,
@@ -964,20 +1050,13 @@
             animation: false,
             plugins: { legend: { display: true } },
             scales: {
-              y: {
-                beginAtZero: true,
-                ticks: { precision: 0 },
-                grid: { color: 'rgba(148,163,184,.18)' }
-              },
-              x: {
-                ticks: { autoSkip: false, maxRotation: 90, minRotation: 0 },
-                grid: { display: false }
-              }
+              y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(148,163,184,.18)' } },
+              x: { ticks: { autoSkip: false, maxRotation: 90, minRotation: 0 }, grid: { display: false } }
             }
           }
         });
 
-        chartProduk = new Chart(elProduk, {
+        chartProduk = upsertChart(chartProduk, elProduk, {
           type: 'doughnut',
           data: {
             labels: data.produkLabels,
@@ -986,15 +1065,10 @@
               backgroundColor: ['#38bdf8','#fb7185','#fb923c','#facc15','#34d399','#818cf8']
             }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            cutout: '55%'
-          }
+          options: { responsive: true, maintainAspectRatio: false, animation: false, cutout: '55%' }
         });
 
-        chartStatus = new Chart(elStatus, {
+        chartStatus = upsertChart(chartStatus, elStatus, {
           type: 'pie',
           data: {
             labels: data.statusLabels,
@@ -1003,23 +1077,14 @@
               backgroundColor: ['#cbd5e1','#fbbf24','#f43f5e','#22c55e']
             }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false
-          }
+          options: { responsive: true, maintainAspectRatio: false, animation: false }
         });
 
-        chartUsaha = new Chart(elUsaha, {
+        chartUsaha = upsertChart(chartUsaha, elUsaha, {
           type: 'bar',
           data: {
             labels: data.usahaLabels,
-            datasets: [{
-              label: 'Jumlah',
-              data: data.usahaValues,
-              backgroundColor: '#60a5fa',
-              borderRadius: 10
-            }]
+            datasets: [{ label: 'Jumlah', data: data.usahaValues, backgroundColor: '#60a5fa', borderRadius: 10 }]
           },
           options: {
             indexAxis: 'y',
@@ -1027,17 +1092,13 @@
             maintainAspectRatio: false,
             animation: false,
             scales: {
-              x: {
-                beginAtZero: true,
-                ticks: { precision: 0 },
-                grid: { color: 'rgba(148,163,184,.18)' }
-              },
+              x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(148,163,184,.18)' } },
               y: { grid: { display: false } }
             }
           }
         });
 
-        chartTrend = new Chart(elTrend, {
+        chartTrend = upsertChart(chartTrend, elTrend, {
           type: 'line',
           data: {
             labels: data.trendLabels,
@@ -1057,14 +1118,8 @@
             maintainAspectRatio: false,
             animation: false,
             scales: {
-              y: {
-                beginAtZero: true,
-                ticks: { precision: 0 },
-                grid: { color: 'rgba(148,163,184,.18)' }
-              },
-              x: {
-                grid: { display: false }
-              }
+              y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(148,163,184,.18)' } },
+              x: { grid: { display: false } }
             }
           }
         });
@@ -1074,7 +1129,7 @@
         const payload = getDashboardPayload();
         const items = payload.mapItems || [];
         const mapEl = document.getElementById('jatengMap');
-        if (!mapEl) return;
+        if (!mapEl || !window.L) return;
 
         if (!mapInstance) {
           mapInstance = L.map('jatengMap').setView([-7.150975, 110.140259], 8);
@@ -1097,24 +1152,60 @@
           if (!lat || !lng) return;
 
           const color = getUsahaColor(item.kode_jenis_usaha || item.jenis_usaha_kode || item.jenis_usaha, payload);
+          const marker = L.marker([lat, lng], { icon: makeCircleIcon(color) });
 
-          const marker = L.marker([lat, lng], {
-            icon: makeCircleIcon(color)
-          });
+          const nama = pick(item, ['nama', 'nama_prospek', 'prospek', 'name'], '-');
+          const cabang = pick(item, [
+            'cabang',
+            'nama_cabang',
+            'cabang_nama',
+            'branch_name',
+            'cabang.nama_cabang',
+            'cabang.nama',
+            'branch.nama_cabang'
+          ], '-');
+          const noHp = pick(item, ['no_hp', 'hp', 'phone', 'telepon', 'no_telp', 'noTelp', 'noHandphone'], '-');
+          const status = pick(item, ['status'], '-');
+          const produk = pick(item, ['jenis_produk', 'produk', 'rekomendasi_produk'], '-');
+          const usaha = pick(item, [
+            'jenis_usaha',
+            'usaha',
+            'nama_jenis_usaha',
+            'keterangan_usaha',
+            'jenisUsaha.nama',
+            'jenis_usaha_nama'
+          ], '-');
+          const alamat = pick(item, ['alamat', 'address'], '');
+          const wilayah = [
+            pick(item, ['desa'], ''),
+            pick(item, ['kecamatan'], ''),
+            pick(item, ['kab_kota', 'kabupaten', 'kota'], '')
+          ].filter(v => String(v || '').trim() !== '').join(', ');
+          const fotoUrl = pick(item, ['foto_url', 'photo_url', 'file_url', 'image_url', 'foto', 'photo'], '');
 
-          const foto = item.foto_url
-            ? '<img class="map-popup-photo" src="' + esc(item.foto_url) + '" alt="Foto">'
+          const foto = fotoUrl
+            ? '<img class="map-popup-photo" src="' + esc(fotoUrl) + '" alt="Foto">'
+            : '';
+
+          const alamatHtml = alamat
+            ? '<div class="map-popup-row"><strong>Alamat:</strong> ' + esc(alamat) + '</div>'
+            : '';
+
+          const wilayahHtml = wilayah
+            ? '<div class="map-popup-row"><strong>Wilayah:</strong> ' + esc(wilayah) + '</div>'
             : '';
 
           const popupHtml =
-            '<div class="map-popup-title">' + esc(item.nama || '-') + '</div>' +
-            '<div class="map-popup-row"><strong>Cabang:</strong> ' + esc(item.nama_cabang || '-') + '</div>' +
-            '<div class="map-popup-row"><strong>No HP:</strong> ' + esc(item.no_hp || '-') + '</div>' +
-            '<div class="map-popup-row"><strong>Status:</strong> ' + esc(item.status || '-') + '</div>' +
-            '<div class="map-popup-row"><strong>Produk:</strong> ' + esc(item.jenis_produk || '-') + '</div>' +
-            '<div class="map-popup-row"><strong>Usaha:</strong> ' + esc(item.jenis_usaha || '-') + '</div>' +
-            '<div class="map-popup-badge">' + esc(item.status || '-') + '</div>' +
-            '<div class="map-popup-badge">' + esc(item.jenis_produk || '-') + '</div>' +
+            '<div class="map-popup-title">' + esc(nama) + '</div>' +
+            '<div class="map-popup-row"><strong>Cabang:</strong> ' + esc(cabang) + '</div>' +
+            '<div class="map-popup-row"><strong>No HP:</strong> ' + esc(noHp) + '</div>' +
+            '<div class="map-popup-row"><strong>Status:</strong> ' + esc(status) + '</div>' +
+            '<div class="map-popup-row"><strong>Produk:</strong> ' + esc(produk) + '</div>' +
+            '<div class="map-popup-row"><strong>Usaha:</strong> ' + esc(usaha) + '</div>' +
+            alamatHtml +
+            wilayahHtml +
+            '<div class="map-popup-badge">' + esc(status) + '</div>' +
+            '<div class="map-popup-badge">' + esc(produk) + '</div>' +
             foto;
 
           marker.bindPopup(popupHtml);
@@ -1130,27 +1221,76 @@
 
         setTimeout(() => {
           if (mapInstance) mapInstance.invalidateSize();
-        }, 200);
+        }, 120);
       }
 
       function renderAll() {
-        renderCharts();
-        renderMap();
+        clearTimeout(renderTimer);
+        renderTimer = setTimeout(function(){
+          requestAnimationFrame(function(){
+            renderCharts();
+            renderMap();
+          });
+        }, 60);
       }
 
+      function renderAllStable() {
+        renderAll();
+        setTimeout(renderAll, 180);
+        setTimeout(renderAll, 420);
+      }
+
+      function watchDashboardJson() {
+        var targets = document.querySelectorAll('script[id^="dashboard-data-"]');
+        if (!targets.length || !window.MutationObserver) return;
+
+        if (window.__crmDashboardJsonObserver) {
+          try { window.__crmDashboardJsonObserver.disconnect(); } catch(e){}
+        }
+
+        var observer = new MutationObserver(function(){
+          renderAllStable();
+        });
+
+        targets.forEach(function(el){
+          observer.observe(el, { childList:true, characterData:true, subtree:true });
+        });
+
+        window.__crmDashboardJsonObserver = observer;
+      }
+
+      document.addEventListener('dashboard:smooth-refresh', function(){
+        setTimeout(function(){ watchDashboardJson(); renderAllStable(); }, 120);
+      });
+
       document.addEventListener('livewire:navigated', function () {
-        setTimeout(renderAll, 50);
+        setTimeout(function(){ watchDashboardJson(); renderAllStable(); }, 120);
       });
 
       document.addEventListener('DOMContentLoaded', function () {
-        setTimeout(renderAll, 50);
+        setTimeout(function(){ watchDashboardJson(); renderAllStable(); }, 120);
       });
 
-      if (window.Livewire) {
-        Livewire.hook('message.processed', () => {
-          setTimeout(renderAll, 50);
-        });
-      }
+      window.addEventListener('resize', function(){ setTimeout(renderAllStable, 120); });
+      window.addEventListener('load', function(){ setTimeout(function(){ watchDashboardJson(); renderAllStable(); }, 180); });
+
+      document.addEventListener('livewire:init', function(){
+        try{
+          Livewire.hook('commit', function(payload){
+            if(payload && typeof payload.succeed === 'function'){
+              payload.succeed(function(){
+                setTimeout(function(){ watchDashboardJson(); renderAllStable(); }, 180);
+                setTimeout(renderAllStable, 520);
+              });
+            }else{
+              setTimeout(renderAllStable, 220);
+            }
+          });
+        }catch(e){}
+
+        try{ Livewire.hook('morph.updated', function(){ setTimeout(renderAllStable, 180); }); }catch(e){}
+        try{ Livewire.hook('message.processed', function(){ setTimeout(renderAllStable, 180); }); }catch(e){}
+      });
     })();
     </script>
   @endpush
