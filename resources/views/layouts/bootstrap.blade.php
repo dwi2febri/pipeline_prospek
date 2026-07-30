@@ -1924,6 +1924,34 @@
         will-change:auto !important;
       }
 
+      body.mobile-dashboard-home.mobile-page-entering .page-wrap > *,
+      body.mobile-prospects-home.mobile-page-entering .page-wrap > *{
+        animation:mobilePageSlideIn .38s cubic-bezier(.2,.82,.24,1);
+        will-change:transform,opacity;
+        backface-visibility:hidden;
+      }
+
+      @media (prefers-reduced-motion:reduce){
+        body.mobile-dashboard-home.mobile-page-entering .page-wrap > *,
+        body.mobile-prospects-home.mobile-page-entering .page-wrap > *{
+          animation:none !important;
+        }
+      }
+
+      body.mobile-app-density.mobile-launcher-shell .bottom-nav{
+        bottom:5px !important;
+      }
+
+      body.mobile-app-density.mobile-launcher-shell .mobile-fab-stack,
+      body.mobile-app-density.mobile-launcher-shell .mobile-fab-dashboard-add,
+      body.mobile-app-density.mobile-launcher-shell .mobile-ai-fab{
+        bottom:5px !important;
+      }
+
+      body.mobile-app-density.mobile-launcher-shell .mobile-menu-sheet .sheet-body{
+        padding-bottom:88px !important;
+      }
+
       .mobile-home-compact-bar{
         position:fixed;
         top:0;
@@ -3029,6 +3057,23 @@
 </head>
 
 <body class="mobile-app-density mobile-page-entering {{ request()->is('dashboard') ? 'mobile-dashboard-home ' : '' }}{{ request()->is('prospects') ? 'mobile-prospects-home ' : '' }}{{ request()->is('dashboard') || request()->is('prospects') ? 'mobile-has-quick-actions' : '' }}">
+<script>
+  (function(){
+    var userAgent = navigator.userAgent || '';
+    var standalone = (window.matchMedia && (
+      window.matchMedia('(display-mode: standalone)').matches
+      || window.matchMedia('(display-mode: fullscreen)').matches
+      || window.matchMedia('(display-mode: minimal-ui)').matches
+    )) || window.navigator.standalone === true;
+    var androidWebView = /\bwv\b/i.test(userAgent)
+      || /; wv\)/i.test(userAgent)
+      || (/Android/i.test(userAgent) && /Version\/4\.0/i.test(userAgent));
+
+    if(standalone || androidWebView){
+      document.body.classList.add('mobile-launcher-shell');
+    }
+  })();
+</script>
 @php
   use Illuminate\Support\Str;
 
@@ -3172,7 +3217,7 @@
   }
 
   if ($canNominatifKredit) {
-      $mobileAllMenus[] = ['label' => 'Nominatif Kredit', 'url' => route('nominatif-kredit.index'), 'active' => request()->is('nominatif-kredit'), 'icon' => 'database'];
+      $mobileAllMenus[] = ['label' => 'Realisasi', 'url' => route('nominatif-kredit.index'), 'active' => request()->is('nominatif-kredit'), 'icon' => 'database'];
   }
 
   if ($canAuditLog) {
@@ -3207,7 +3252,7 @@
       request()->is('prospects*') => ['Prospek', 'prospects'],
       request()->is('rekap-prospek*') => ['Rekap Prospek', 'table'],
       request()->is('simulasi-kredit*') => ['Simulasi Kredit', 'calculator'],
-      request()->is('nominatif-kredit*') => ['Nominatif Kredit', 'database'],
+      request()->is('nominatif-kredit*') => ['Realisasi', 'database'],
       request()->is('audit-logs*') => ['Audit Log', 'audit'],
       request()->is('recycle-bin*') => ['Recycle Bin', 'trash'],
       request()->is('cabangs*') => ['Master Cabang', 'building'],
@@ -3221,7 +3266,7 @@
   $mobileMenuGroups = [
       'Menu Utama' => array_values(array_filter($mobileAllMenus, fn ($item) => in_array($item['label'], ['Dashboard'], true))),
       'Prospek' => array_values(array_filter($mobileAllMenus, fn ($item) => in_array($item['label'], ['Prospek Saya', 'Rekap Prospek', 'Prospek Diajukan'], true))),
-      'Layanan' => array_values(array_filter($mobileAllMenus, fn ($item) => in_array($item['label'], ['Simulasi Kredit', 'Nominatif Kredit'], true))),
+      'Layanan' => array_values(array_filter($mobileAllMenus, fn ($item) => in_array($item['label'], ['Simulasi Kredit', 'Realisasi'], true))),
       'Administrasi' => array_values(array_filter($mobileAllMenus, fn ($item) => in_array($item['label'], ['Audit Log', 'Recycle Bin', 'Master Cabang', 'User', 'Konten App'], true))),
       'Akun' => array_values(array_filter($mobileAllMenus, fn ($item) => in_array($item['label'], ['Profil'], true))),
   ];
@@ -3309,7 +3354,7 @@
 
           @if($canNominatifKredit)
             <a href="{{ route('nominatif-kredit.index') }}" class="navlink {{ request()->is('nominatif-kredit') ? 'active' : '' }}">
-              <i class="bi bi-database"></i><span>Report Prospek</span>
+              <i class="bi bi-database"></i><span>Realisasi</span>
             </a>
           @endif
 

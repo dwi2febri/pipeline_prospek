@@ -395,7 +395,7 @@
 
   <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
     <div>
-      <div class="report-title">Report Prospek Pegawai Cabang</div>
+      <div class="report-title">Realisasi Prospek Pegawai Cabang</div>
       <div class="report-subtitle">Realisasi closing dari prospek yang cocok dengan nominatif.</div>
     </div>
 
