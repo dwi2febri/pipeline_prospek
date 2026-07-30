@@ -441,15 +441,14 @@
         color:#fff;
         background:linear-gradient(142deg,#7196e5 0%,#5d78d6 55%,#4b61c4 100%) !important;
         box-shadow:0 17px 36px rgba(53,70,157,.22);
-        will-change:height,opacity;
+        overflow-anchor:none;
         transition:
-          height .68s cubic-bezier(.16,1,.3,1),
-          min-height .68s cubic-bezier(.16,1,.3,1),
-          padding .68s cubic-bezier(.16,1,.3,1),
-          margin .68s cubic-bezier(.16,1,.3,1),
-          border-radius .58s ease,
-          opacity .34s ease,
-          transform .58s cubic-bezier(.16,1,.3,1);
+          height .46s cubic-bezier(.2,.82,.24,1),
+          min-height .46s cubic-bezier(.2,.82,.24,1),
+          padding .46s cubic-bezier(.2,.82,.24,1),
+          border-radius .4s ease,
+          opacity .24s ease,
+          transform .4s cubic-bezier(.2,.82,.24,1);
       }
 
       .eprospek-mobile-hero.is-compact{
@@ -644,7 +643,7 @@
       }
       .eprospek-hero-visual{
         background-position:right bottom;background-repeat:no-repeat;background-size:contain;
-        filter:drop-shadow(0 14px 17px rgba(37,48,112,.28));
+        filter:none;
       }
       .eprospek-hero-visual img{display:none}
 
@@ -881,6 +880,10 @@
       .mobile-analysis-panel .panel-head > div[style]{width:100%;min-width:0 !important;margin-top:7px}
       .dashboard-chart-box{height:190px !important;min-height:190px !important;max-height:190px !important}
       .dashboard-map{height:250px}
+      .dash-panel{
+        content-visibility:auto;
+        contain-intrinsic-size:420px;
+      }
     }
 
     @media (min-width: 768px){

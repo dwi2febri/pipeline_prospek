@@ -1891,6 +1891,27 @@
         pointer-events:none !important;
       }
 
+      /*
+       * WebView/launcher lebih lambat saat beberapa layer backdrop-filter
+       * bergerak bersamaan dengan hero. Warna solid transparan memberikan
+       * tampilan yang sama ringan tanpa repaint blur di setiap frame.
+       */
+      body.mobile-dashboard-home .bottom-nav,
+      body.mobile-prospects-home .bottom-nav{
+        background:rgba(248,251,255,.96) !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+      }
+
+      body.mobile-dashboard-home .mobile-fab-stack a,
+      body.mobile-prospects-home .mobile-fab-stack a,
+      body.mobile-dashboard-home .mobile-fab-dashboard-add,
+      body.mobile-prospects-home .mobile-fab-dashboard-add{
+        background:rgba(248,251,255,.96) !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+      }
+
       .mobile-menu-sheet-backdrop{
         z-index:8999 !important;
         background:transparent !important;
@@ -4456,12 +4477,6 @@
             : prospectStory.classList.contains('is-scroll-collapsed');
         }
 
-        function isHidden(){
-          return dashboardHero
-            ? dashboardHero.classList.contains('is-scroll-hidden')
-            : prospectStory.classList.contains('is-scroll-hidden');
-        }
-
         function showCompact(){
           if(dashboardHero){
             dashboardHero.classList.add('is-compact');
@@ -4471,18 +4486,6 @@
           if(prospectStory && !prospectBannerIsOpen()){
             prospectStory.classList.add('is-scroll-collapsed');
             prospectStory.classList.remove('is-scroll-hidden');
-          }
-        }
-
-        function hideCompact(){
-          showCompact();
-
-          if(dashboardHero){
-            dashboardHero.classList.add('is-scroll-hidden');
-          }
-
-          if(prospectStory && !prospectBannerIsOpen()){
-            prospectStory.classList.add('is-scroll-hidden');
           }
         }
 
@@ -4524,30 +4527,18 @@
               accumulatedDown += delta;
               accumulatedUp = 0;
 
-              if(!isCompact() && (current > 32 || accumulatedDown > 22)){
+              if(!isCompact() && current > 56 && accumulatedDown > 28){
                 showCompact();
-                transitionLockUntil = Date.now() + 720;
-                accumulatedDown = 0;
-              }else if(isCompact() && !isHidden() && current > 260 && accumulatedDown > 44){
-                hideCompact();
-                transitionLockUntil = Date.now() + 520;
+                transitionLockUntil = Date.now() + 560;
                 accumulatedDown = 0;
               }
             }else if(delta < 0){
               accumulatedUp += Math.abs(delta);
               accumulatedDown = 0;
 
-              if(isHidden() && accumulatedUp > 10){
-                if(prospectStory && current <= 150){
-                  expandHero();
-                }else{
-                  showCompact();
-                }
-                transitionLockUntil = Date.now() + 420;
-                accumulatedUp = 0;
-              }else if(isCompact() && accumulatedUp > 28 && current <= 150){
+              if(isCompact() && accumulatedUp > 24 && current <= 18){
                 expandHero();
-                transitionLockUntil = Date.now() + 720;
+                transitionLockUntil = Date.now() + 560;
                 accumulatedUp = 0;
               }
             }

@@ -938,14 +938,14 @@
         color:#fff;
         background:linear-gradient(142deg,#7196e5 0%,#5d78d6 55%,#4b61c4 100%);
         touch-action:pan-y;
-        will-change:height,opacity;
+        overflow-anchor:none;
         transition:
-          height .72s cubic-bezier(.16,1,.3,1),
-          padding .68s cubic-bezier(.16,1,.3,1),
-          border-radius .58s ease,
-          box-shadow .58s ease,
-          opacity .34s ease,
-          transform .58s cubic-bezier(.16,1,.3,1);
+          height .46s cubic-bezier(.2,.82,.24,1),
+          padding .46s cubic-bezier(.2,.82,.24,1),
+          border-radius .4s ease,
+          box-shadow .4s ease,
+          opacity .24s ease,
+          transform .4s cubic-bezier(.2,.82,.24,1);
       }
 
       .mobile-flyer-wrap.is-collapsed .prospect-mobile-hero,
@@ -956,10 +956,14 @@
         box-shadow:0 13px 28px rgba(53,70,157,.22);
       }
 
-      .mobile-flyer-wrap.is-scroll-collapsed{
+      .mobile-flyer-wrap:not(.is-collapsed){
         position:sticky;
         top:0;
         z-index:10010;
+      }
+
+      .mobile-flyer-wrap.is-collapsed{
+        position:relative;
       }
 
       .mobile-flyer-wrap.is-scroll-hidden .prospect-mobile-hero{
@@ -1564,6 +1568,13 @@
       .tips-link{
         margin-top:6px;
         font-size:.56rem;
+      }
+
+      .prospect-modern-card,
+      .catalog-card,
+      .tips-card{
+        content-visibility:auto;
+        contain-intrinsic-size:260px;
       }
 
       .empty-mini-card{
