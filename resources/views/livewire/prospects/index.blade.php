@@ -957,9 +957,9 @@
       }
 
       .mobile-flyer-wrap:not(.is-collapsed){
-        position:sticky;
-        top:0;
-        z-index:10010;
+        position:relative;
+        top:auto;
+        z-index:auto;
       }
 
       .mobile-flyer-wrap.is-collapsed{
@@ -1888,6 +1888,8 @@
       <img class="prospect-hero-art"
            src="{{ asset('images/mobile/prospects-hero-v1.webp') }}"
            alt=""
+           decoding="async"
+           fetchpriority="high"
            aria-hidden="true">
 
       <div class="prospect-hero-compact" aria-hidden="true">
@@ -1924,6 +1926,29 @@
         <span class="prospect-hero-swipe-arrows">&gt;&gt;</span>
       </div>
     </section>
+
+    <div class="mobile-home-compact-bar d-md-none"
+         id="prospectMobileCompactBar"
+         data-mobile-home-compact
+         aria-hidden="true">
+      <div class="mobile-home-compact-identity">
+        <span class="mobile-home-compact-icon" aria-hidden="true">
+          <i class="bi bi-grid"></i>
+        </span>
+        <div class="mobile-home-compact-copy">
+          <div class="mobile-home-compact-title">Prospek Saya</div>
+          <div class="mobile-home-compact-sub">Pantau pipeline prospek Anda</div>
+        </div>
+      </div>
+      <div class="mobile-home-compact-actions">
+        <a href="{{ url('/prospects') }}" class="mobile-home-compact-action" aria-label="Buka notifikasi">
+          <i class="bi bi-bell"></i>
+        </a>
+        <a href="{{ route('profile.index') }}" class="mobile-home-compact-avatar" aria-label="Buka profil">
+          {{ $prospectInitial }}
+        </a>
+      </div>
+    </div>
 
     <div class="prospect-banner-stage" id="prospectBannerStage" aria-hidden="true">
       <div class="flyer-shell">

@@ -1912,6 +1912,143 @@
         -webkit-backdrop-filter:none !important;
       }
 
+      body.mobile-dashboard-home .main-scroll,
+      body.mobile-prospects-home .main-scroll{
+        scroll-behavior:auto !important;
+        overflow-anchor:none !important;
+      }
+
+      body.mobile-dashboard-home.mobile-page-entering .page-wrap > * > *:not(style):not(script),
+      body.mobile-prospects-home.mobile-page-entering .page-wrap > * > *:not(style):not(script){
+        animation:none !important;
+        will-change:auto !important;
+      }
+
+      .mobile-home-compact-bar{
+        position:fixed;
+        top:0;
+        left:50%;
+        z-index:10010;
+        width:min(100vw,500px);
+        height:68px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        padding:9px 14px 10px;
+        overflow:visible;
+        border:1px solid rgba(255,255,255,.16);
+        border-top:0;
+        border-radius:0 0 25px 25px;
+        color:#fff;
+        background:linear-gradient(135deg,#607fd8 0%,#4b61c4 62%,#35469d 100%);
+        box-shadow:0 12px 25px rgba(36,50,116,.22);
+        opacity:0;
+        transform:translate3d(-50%,-110%,0);
+        pointer-events:none;
+        backface-visibility:hidden;
+        will-change:transform,opacity;
+        transition:
+          transform .34s cubic-bezier(.2,.82,.24,1),
+          opacity .2s ease;
+      }
+
+      .mobile-home-compact-bar.is-visible{
+        opacity:1;
+        transform:translate3d(-50%,0,0);
+        pointer-events:auto;
+      }
+
+      body.mobile-sheet-open .mobile-home-compact-bar,
+      body.session-expired-open .mobile-home-compact-bar{
+        opacity:0 !important;
+        transform:translate3d(-50%,-110%,0) !important;
+        pointer-events:none !important;
+      }
+
+      .mobile-home-compact-identity{
+        min-width:0;
+        display:flex;
+        align-items:center;
+        gap:10px;
+      }
+
+      .mobile-home-compact-icon{
+        width:40px;
+        height:40px;
+        flex:0 0 40px;
+        display:grid;
+        place-items:center;
+        border:1px solid rgba(255,255,255,.2);
+        border-radius:14px;
+        color:#fff;
+        background:rgba(255,255,255,.11);
+        font-size:18px;
+      }
+
+      .mobile-home-compact-copy{
+        min-width:0;
+      }
+
+      .mobile-home-compact-title{
+        overflow:hidden;
+        color:#fff;
+        font-size:12px;
+        font-weight:900;
+        line-height:1.15;
+        white-space:nowrap;
+        text-overflow:ellipsis;
+      }
+
+      .mobile-home-compact-sub{
+        margin-top:3px;
+        overflow:hidden;
+        color:rgba(255,255,255,.7);
+        font-size:8px;
+        line-height:1.2;
+        white-space:nowrap;
+        text-overflow:ellipsis;
+      }
+
+      .mobile-home-compact-actions{
+        flex:0 0 auto;
+        display:flex;
+        align-items:center;
+        gap:8px;
+      }
+
+      .mobile-home-compact-action,
+      .mobile-home-compact-avatar{
+        width:40px;
+        height:40px;
+        display:grid;
+        place-items:center;
+        border-radius:50%;
+        text-decoration:none;
+      }
+
+      .mobile-home-compact-action{
+        border:1px solid rgba(255,255,255,.2);
+        color:#fff;
+        background:rgba(255,255,255,.09);
+        font-size:17px;
+      }
+
+      .mobile-home-compact-avatar{
+        border:3px solid rgba(255,255,255,.48);
+        color:#4b61c4;
+        background:#f4f6ff;
+        box-shadow:0 6px 15px rgba(20,31,85,.2);
+        font-size:14px;
+        font-weight:900;
+      }
+
+      @media (prefers-reduced-motion:reduce){
+        .mobile-home-compact-bar{
+          transition:none;
+        }
+      }
+
       .mobile-menu-sheet-backdrop{
         z-index:8999 !important;
         background:transparent !important;
@@ -4448,113 +4585,113 @@
   </script>
 
   <script>
-    /* Hero Dashboard/Prospek menyusut menjadi header lalu mengikuti hide-on-scroll. */
+    /*
+     * Compact hero memakai layer fixed terpisah. IntersectionObserver hanya
+     * mengubah state saat ambang terlewati; tidak ada kalkulasi per frame.
+     */
     (function(){
-      function bindMobileHomeHero(){
-        if(!window.matchMedia || !window.matchMedia('(max-width: 767.98px)').matches) return;
+      function bindMobileHomeCompactBar(){
+        if(window.__mobileHomeCompactController){
+          window.__mobileHomeCompactController.disconnect();
+          window.__mobileHomeCompactController = null;
+        }
 
+        var mobile = window.matchMedia
+          && window.matchMedia('(max-width: 767.98px)').matches;
         var scroller = document.querySelector('.main-scroll');
-        var dashboardHero = document.querySelector('.eprospek-mobile-hero');
+        var bar = document.querySelector('[data-mobile-home-compact]');
+        var hero = document.querySelector('.eprospek-mobile-hero')
+          || document.getElementById('prospectMobileHero');
         var prospectStory = document.getElementById('prospectMobileStory');
 
-        if(!scroller || (!dashboardHero && !prospectStory) || scroller.dataset.homeHeroBound === '1') return;
+        if(!mobile || !scroller || !bar || !hero) return;
 
-        scroller.dataset.homeHeroBound = '1';
+        var visible = false;
+        var observer = null;
+        var storyObserver = null;
+        var fallbackTicking = false;
 
-        var lastTop = Math.max(0, scroller.scrollTop || 0);
-        var accumulatedDown = 0;
-        var accumulatedUp = 0;
-        var ticking = false;
-        var transitionLockUntil = 0;
-
-        function prospectBannerIsOpen(){
-          return prospectStory && prospectStory.classList.contains('is-collapsed');
+        function bannerIsOpen(){
+          return prospectStory
+            && prospectStory.classList.contains('is-collapsed');
         }
 
-        function isCompact(){
-          return dashboardHero
-            ? dashboardHero.classList.contains('is-compact')
-            : prospectStory.classList.contains('is-scroll-collapsed');
+        function setVisible(nextVisible){
+          nextVisible = Boolean(nextVisible) && !bannerIsOpen();
+          if(visible === nextVisible) return;
+
+          visible = nextVisible;
+          bar.classList.toggle('is-visible', visible);
+          bar.setAttribute('aria-hidden', visible ? 'false' : 'true');
         }
 
-        function showCompact(){
-          if(dashboardHero){
-            dashboardHero.classList.add('is-compact');
-            dashboardHero.classList.remove('is-scroll-hidden');
+        function evaluate(){
+          if(bannerIsOpen()){
+            setVisible(false);
+            return;
           }
 
-          if(prospectStory && !prospectBannerIsOpen()){
-            prospectStory.classList.add('is-scroll-collapsed');
-            prospectStory.classList.remove('is-scroll-hidden');
+          var rootRect = scroller.getBoundingClientRect();
+          var heroRect = hero.getBoundingClientRect();
+          var visibleTop = Math.max(rootRect.top, heroRect.top);
+          var visibleBottom = Math.min(rootRect.bottom, heroRect.bottom);
+          var visibleHeight = Math.max(0, visibleBottom - visibleTop);
+          var ratio = heroRect.height > 0 ? visibleHeight / heroRect.height : 0;
+          var hasPassedTop = heroRect.top < rootRect.top;
+
+          if(!visible && hasPassedTop && ratio <= .42){
+            setVisible(true);
+          }else if(visible && (!hasPassedTop || ratio >= .68)){
+            setVisible(false);
           }
         }
 
-        function expandHero(){
-          if(dashboardHero){
-            dashboardHero.classList.remove('is-compact','is-scroll-hidden');
-          }
-
-          if(prospectStory && !prospectBannerIsOpen()){
-            prospectStory.classList.remove('is-scroll-collapsed','is-scroll-hidden');
-          }
-        }
-
-        scroller.addEventListener('scroll', function(){
-          if(ticking) return;
-          ticking = true;
-
-          window.requestAnimationFrame(function(){
-            var current = Math.max(0, scroller.scrollTop || 0);
-            var delta = current - lastTop;
-
-            if(prospectBannerIsOpen()){
-              lastTop = current;
-              ticking = false;
-              return;
-            }
-
-            if(Date.now() < transitionLockUntil){
-              lastTop = current;
-              ticking = false;
-              return;
-            }
-
-            if(current <= 8){
-              expandHero();
-              accumulatedDown = 0;
-              accumulatedUp = 0;
-            }else if(delta > 0){
-              accumulatedDown += delta;
-              accumulatedUp = 0;
-
-              if(!isCompact() && current > 56 && accumulatedDown > 28){
-                showCompact();
-                transitionLockUntil = Date.now() + 560;
-                accumulatedDown = 0;
-              }
-            }else if(delta < 0){
-              accumulatedUp += Math.abs(delta);
-              accumulatedDown = 0;
-
-              if(isCompact() && accumulatedUp > 24 && current <= 18){
-                expandHero();
-                transitionLockUntil = Date.now() + 560;
-                accumulatedUp = 0;
-              }
-            }
-
-            lastTop = current;
-            ticking = false;
+        if('IntersectionObserver' in window){
+          observer = new IntersectionObserver(evaluate, {
+            root:scroller,
+            threshold:[0,.2,.42,.68,1]
           });
-        }, {passive:true});
+          observer.observe(hero);
+        }else{
+          scroller.addEventListener('scroll', fallbackScroll, {passive:true});
+        }
+
+        function fallbackScroll(){
+          if(fallbackTicking) return;
+          fallbackTicking = true;
+          window.requestAnimationFrame(function(){
+            evaluate();
+            fallbackTicking = false;
+          });
+        }
+
+        if(prospectStory && 'MutationObserver' in window){
+          storyObserver = new MutationObserver(evaluate);
+          storyObserver.observe(prospectStory, {
+            attributes:true,
+            attributeFilter:['class']
+          });
+        }
+
+        evaluate();
+
+        window.__mobileHomeCompactController = {
+          disconnect:function(){
+            if(observer) observer.disconnect();
+            if(storyObserver) storyObserver.disconnect();
+            scroller.removeEventListener('scroll', fallbackScroll);
+            bar.classList.remove('is-visible');
+            bar.setAttribute('aria-hidden','true');
+          }
+        };
       }
 
-      window.addEventListener('load', bindMobileHomeHero);
-      document.addEventListener('livewire:init', bindMobileHomeHero);
+      window.addEventListener('load', bindMobileHomeCompactBar);
+      document.addEventListener('livewire:init', bindMobileHomeCompactBar);
       document.addEventListener('livewire:navigated', function(){
-        window.setTimeout(bindMobileHomeHero, 80);
+        window.setTimeout(bindMobileHomeCompactBar, 60);
       });
-      window.setTimeout(bindMobileHomeHero, 250);
+      window.setTimeout(bindMobileHomeCompactBar, 180);
     })();
   </script>
 

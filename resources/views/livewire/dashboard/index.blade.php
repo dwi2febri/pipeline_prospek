@@ -427,8 +427,8 @@
 
     @media (max-width: 767.98px){
       .eprospek-mobile-hero{
-        position:sticky;
-        top:0;
+        position:relative;
+        top:auto;
         z-index:20;
         display:block;
         height:244px;
@@ -645,7 +645,13 @@
         background-position:right bottom;background-repeat:no-repeat;background-size:contain;
         filter:none;
       }
-      .eprospek-hero-visual img{display:none}
+      .eprospek-hero-visual img{
+        width:100%;
+        height:100%;
+        display:block;
+        object-fit:contain;
+        object-position:right bottom;
+      }
 
       .dash-desktop-heading{display:none !important}
       .mobile-dashboard-filter-toggle{
@@ -922,10 +928,36 @@
         <span>{{ strtoupper(auth()->user()->role ?? 'PEGAWAI') }} · Pipeline prospek Anda</span>
       </div>
     </div>
-    <div class="eprospek-hero-visual" style="background-image:url('{{ asset('images/mobile/eprospek-hero-v1.webp') }}')" aria-hidden="true">
-      <img src="{{ asset('images/mobile/eprospek-hero-v1.webp') }}" alt="">
+    <div class="eprospek-hero-visual" aria-hidden="true">
+      <img src="{{ asset('images/mobile/eprospek-hero-v1.webp') }}"
+           alt=""
+           decoding="async"
+           fetchpriority="high">
     </div>
   </section>
+
+  <div class="mobile-home-compact-bar d-md-none"
+       id="dashboardMobileCompactBar"
+       data-mobile-home-compact
+       aria-hidden="true">
+    <div class="mobile-home-compact-identity">
+      <span class="mobile-home-compact-icon" aria-hidden="true">
+        <i class="bi bi-speedometer2"></i>
+      </span>
+      <div class="mobile-home-compact-copy">
+        <div class="mobile-home-compact-title">Dashboard</div>
+        <div class="mobile-home-compact-sub">Ringkasan pipeline prospek</div>
+      </div>
+    </div>
+    <div class="mobile-home-compact-actions">
+      <a href="{{ url('/prospects') }}" class="mobile-home-compact-action" aria-label="Buka notifikasi">
+        <i class="bi bi-bell"></i>
+      </a>
+      <a href="{{ route('profile.index') }}" class="mobile-home-compact-avatar" aria-label="Buka profil">
+        {{ strtoupper(substr(auth()->user()->nama_lengkap ?: auth()->user()->name ?: 'U', 0, 1)) }}
+      </a>
+    </div>
+  </div>
 
   <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3 dash-desktop-heading">
     <div>
