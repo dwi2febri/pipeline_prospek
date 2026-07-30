@@ -1876,7 +1876,11 @@
       }
 
       body.mobile-sheet-open.mobile-has-quick-actions .bottom-nav{
-        transform:none !important;
+        left:50% !important;
+        right:auto !important;
+        width:min(calc(100vw - 24px),430px) !important;
+        max-width:430px !important;
+        transform:translateX(-50%) !important;
       }
 
       body.mobile-sheet-open .mobile-fab-stack,
@@ -4520,13 +4524,13 @@
               accumulatedDown += delta;
               accumulatedUp = 0;
 
-              if(!isCompact() && (current > 20 || accumulatedDown > 14)){
+              if(!isCompact() && (current > 32 || accumulatedDown > 22)){
                 showCompact();
-                transitionLockUntil = Date.now() + 520;
+                transitionLockUntil = Date.now() + 720;
                 accumulatedDown = 0;
-              }else if(isCompact() && !isHidden() && current > 52 && accumulatedDown > 18){
+              }else if(isCompact() && !isHidden() && current > 260 && accumulatedDown > 44){
                 hideCompact();
-                transitionLockUntil = Date.now() + 380;
+                transitionLockUntil = Date.now() + 520;
                 accumulatedDown = 0;
               }
             }else if(delta < 0){
@@ -4534,16 +4538,16 @@
               accumulatedDown = 0;
 
               if(isHidden() && accumulatedUp > 10){
-                if(prospectStory && current <= 180){
+                if(prospectStory && current <= 150){
                   expandHero();
                 }else{
                   showCompact();
                 }
-                transitionLockUntil = Date.now() + 260;
+                transitionLockUntil = Date.now() + 420;
                 accumulatedUp = 0;
-              }else if(isCompact() && accumulatedUp > 18 && current <= 180){
+              }else if(isCompact() && accumulatedUp > 28 && current <= 150){
                 expandHero();
-                transitionLockUntil = Date.now() + 360;
+                transitionLockUntil = Date.now() + 720;
                 accumulatedUp = 0;
               }
             }

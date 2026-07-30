@@ -938,11 +938,14 @@
         color:#fff;
         background:linear-gradient(142deg,#7196e5 0%,#5d78d6 55%,#4b61c4 100%);
         touch-action:pan-y;
+        will-change:height,opacity;
         transition:
-          height .64s cubic-bezier(.22,1,.36,1),
-          padding .58s cubic-bezier(.22,1,.36,1),
-          border-radius .45s ease,
-          box-shadow .45s ease;
+          height .72s cubic-bezier(.16,1,.3,1),
+          padding .68s cubic-bezier(.16,1,.3,1),
+          border-radius .58s ease,
+          box-shadow .58s ease,
+          opacity .34s ease,
+          transform .58s cubic-bezier(.16,1,.3,1);
       }
 
       .mobile-flyer-wrap.is-collapsed .prospect-mobile-hero,
@@ -989,7 +992,9 @@
         object-fit:cover;object-position:61% 55%;
         -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 24%,#000 100%);
         mask-image:linear-gradient(90deg,transparent 0%,#000 24%,#000 100%);
-        transition:opacity .3s ease,transform .55s cubic-bezier(.22,1,.36,1);
+        will-change:transform,opacity;
+        backface-visibility:hidden;
+        transition:opacity .34s ease,transform .62s cubic-bezier(.16,1,.3,1);
       }
 
       .prospect-hero-toolbar{
@@ -1001,7 +1006,9 @@
         display:flex;align-items:center;gap:10px;
         opacity:0;transform:translateY(-50%) translateX(-16px);
         pointer-events:none;
-        transition:opacity .28s ease .12s,transform .42s cubic-bezier(.22,1,.36,1) .08s;
+        will-change:transform,opacity;
+        backface-visibility:hidden;
+        transition:opacity .3s ease .12s,transform .54s cubic-bezier(.16,1,.3,1) .08s;
       }
 
       .prospect-hero-compact-icon{
@@ -1062,7 +1069,9 @@
 
       .prospect-hero-copy{
         position:relative;z-index:3;width:57%;margin-top:16px;
-        transition:opacity .26s ease,transform .5s cubic-bezier(.22,1,.36,1);
+        will-change:transform,opacity;
+        backface-visibility:hidden;
+        transition:opacity .34s ease,transform .62s cubic-bezier(.16,1,.3,1);
       }
 
       .prospect-hero-eyebrow{

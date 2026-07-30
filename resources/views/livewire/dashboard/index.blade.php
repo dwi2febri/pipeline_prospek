@@ -427,7 +427,8 @@
 
     @media (max-width: 767.98px){
       .eprospek-mobile-hero{
-        position:relative;
+        position:sticky;
+        top:0;
         z-index:20;
         display:block;
         height:244px;
@@ -440,18 +441,18 @@
         color:#fff;
         background:linear-gradient(142deg,#7196e5 0%,#5d78d6 55%,#4b61c4 100%) !important;
         box-shadow:0 17px 36px rgba(53,70,157,.22);
+        will-change:height,opacity;
         transition:
-          height .54s cubic-bezier(.22,1,.36,1),
-          min-height .54s cubic-bezier(.22,1,.36,1),
-          padding .48s ease,
-          margin .48s ease,
-          opacity .28s ease,
-          transform .48s cubic-bezier(.22,1,.36,1);
+          height .68s cubic-bezier(.16,1,.3,1),
+          min-height .68s cubic-bezier(.16,1,.3,1),
+          padding .68s cubic-bezier(.16,1,.3,1),
+          margin .68s cubic-bezier(.16,1,.3,1),
+          border-radius .58s ease,
+          opacity .34s ease,
+          transform .58s cubic-bezier(.16,1,.3,1);
       }
 
       .eprospek-mobile-hero.is-compact{
-        position:sticky;
-        top:0;
         z-index:10010;
         height:68px;
         min-height:68px;
@@ -504,7 +505,9 @@
         display:flex;align-items:center;gap:9px;
         opacity:0;transform:translateY(-50%) translateX(-14px);
         pointer-events:none;
-        transition:opacity .24s ease .08s,transform .38s cubic-bezier(.22,1,.36,1);
+        will-change:transform,opacity;
+        backface-visibility:hidden;
+        transition:opacity .3s ease .12s,transform .52s cubic-bezier(.16,1,.3,1) .08s;
       }
 
       .eprospek-hero-compact-icon{
@@ -619,7 +622,11 @@
         font-weight:900;text-decoration:none;box-shadow:0 7px 18px rgba(1,13,43,.24);
       }
 
-      .eprospek-hero-copy{position:relative;z-index:3;width:61%;margin-top:17px}
+      .eprospek-hero-copy{
+        position:relative;z-index:3;width:61%;margin-top:17px;
+        will-change:transform,opacity;backface-visibility:hidden;
+        transition:opacity .34s ease,transform .58s cubic-bezier(.16,1,.3,1);
+      }
       .eprospek-hero-eyebrow{font-size:8px;font-weight:850;letter-spacing:.045em;text-transform:uppercase;color:#e3e8ff}
       .eprospek-hero-copy h1{margin:5px 0 2px;font-size:21px;font-weight:950;line-height:1.08;letter-spacing:-.025em}
       .eprospek-hero-date{font-size:9px;color:rgba(232,246,252,.78)}
@@ -632,6 +639,8 @@
       .eprospek-hero-visual{
         position:absolute;z-index:2;right:3px;bottom:3px;width:158px;height:204px;
         display:flex;align-items:flex-end;justify-content:flex-end;pointer-events:none;
+        will-change:transform,opacity;backface-visibility:hidden;
+        transition:opacity .34s ease,transform .58s cubic-bezier(.16,1,.3,1);
       }
       .eprospek-hero-visual{
         background-position:right bottom;background-repeat:no-repeat;background-size:contain;
