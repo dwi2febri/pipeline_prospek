@@ -8,6 +8,20 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        #passwordInput::-ms-reveal,
+        #passwordInput::-ms-clear{
+            display:none;
+            width:0;
+            height:0;
+        }
+
+        #passwordInput::-webkit-credentials-auto-fill-button{
+            display:none !important;
+            visibility:hidden;
+            pointer-events:none;
+        }
+    </style>
 </head>
 <body style="margin:0; min-height:100vh; background: radial-gradient(1100px 520px at 50% -15%, rgba(75,123,236,.55) 0%, rgba(11,18,32,1) 55%, rgba(5,7,13,1) 100%);">
 

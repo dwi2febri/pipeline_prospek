@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
 use App\Livewire\Dashboard\Index as DashboardIndex;
@@ -11,6 +13,7 @@ use App\Livewire\Prospects\Index as ProspectsIndex;
 use App\Livewire\Prospects\Form as ProspectsForm;
 use App\Livewire\Prospects\RecycleBin as ProspectsRecycle;
 use App\Livewire\Prospects\Submissions as ProspectsSubmissions;
+use App\Livewire\Prospects\SubmissionDetail as ProspectSubmissionDetail;
 
 use App\Livewire\AuditLogs\Index as AuditIndex;
 
@@ -26,6 +29,7 @@ use App\Livewire\Reports\ProspectRecap as ProspectRecapReport;
 use App\Livewire\Contents\Manager as ContentManager;
 use App\Livewire\Contents\Show as ContentShow;
 use App\Livewire\SimulasiKredit\Index as SimulasiKreditIndex;
+use App\Livewire\NominatifKredit\Index as NominatifKreditIndex;
 use App\Http\Controllers\AiChatController;
 
 // Homepage
@@ -77,28 +81,57 @@ Route::get('/home', function () {
 // =====================
 // PROXY API WILAYAH
 // =====================
-Route::get('/api-wilayah/regencies/{provinceId}', function ($provinceId) {
-    $res = Http::timeout(20)
-        ->acceptJson()
-        ->get("https://wilayah.web.id/api/regencies/{$provinceId}");
+$fetchWilayah = static function (string $endpoint, string $cacheKey) {
+    try {
+        $payload = Cache::remember($cacheKey, now()->addDays(7), function () use ($endpoint) {
+            return Http::acceptJson()
+                ->connectTimeout(3)
+                ->timeout(6)
+                ->retry(2, 250, throw: false)
+                ->get("https://wilayah.web.id/api/{$endpoint}")
+                ->throw()
+                ->json();
+        });
 
-    return response()->json($res->json(), $res->status());
+        return response()->json(is_array($payload) ? $payload : ['data' => []]);
+    } catch (\Throwable $e) {
+        Log::warning('API wilayah gagal dimuat.', [
+            'endpoint' => $endpoint,
+            'message' => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'data' => [],
+            'message' => 'Data wilayah sedang tidak dapat dimuat. Silakan coba lagi.',
+        ], 503);
+    }
+};
+
+Route::get('/api-wilayah/regencies/{provinceId}', function ($provinceId) use ($fetchWilayah) {
+    abort_unless(preg_match('/^\d+$/', (string) $provinceId), 422);
+
+    return $fetchWilayah(
+        "regencies/{$provinceId}",
+        "wilayah:regencies:{$provinceId}"
+    );
 })->name('api.wilayah.regencies');
 
-Route::get('/api-wilayah/districts/{regencyId}', function ($regencyId) {
-    $res = Http::timeout(20)
-        ->acceptJson()
-        ->get("https://wilayah.web.id/api/districts/{$regencyId}");
+Route::get('/api-wilayah/districts/{regencyId}', function ($regencyId) use ($fetchWilayah) {
+    abort_unless(preg_match('/^\d+$/', (string) $regencyId), 422);
 
-    return response()->json($res->json(), $res->status());
+    return $fetchWilayah(
+        "districts/{$regencyId}",
+        "wilayah:districts:{$regencyId}"
+    );
 })->name('api.wilayah.districts');
 
-Route::get('/api-wilayah/villages/{districtId}', function ($districtId) {
-    $res = Http::timeout(20)
-        ->acceptJson()
-        ->get("https://wilayah.web.id/api/villages/{$districtId}");
+Route::get('/api-wilayah/villages/{districtId}', function ($districtId) use ($fetchWilayah) {
+    abort_unless(preg_match('/^\d+$/', (string) $districtId), 422);
 
-    return response()->json($res->json(), $res->status());
+    return $fetchWilayah(
+        "villages/{$districtId}",
+        "wilayah:villages:{$districtId}"
+    );
 })->name('api.wilayah.villages');
 
 // Semua halaman aplikasi harus login
@@ -163,10 +196,20 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL')
         ->name('prospects.submissions');
 
+    Route::get('/prospects-diajukan/{id}', ProspectSubmissionDetail::class)
+        ->whereNumber('id')
+        ->middleware('role:AO')
+        ->name('prospects.submissions.show');
+
     // ===== SIMULASI KREDIT =====
     Route::get('/simulasi-kredit', SimulasiKreditIndex::class)
         ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
         ->name('simulasi-kredit.index');
+
+    // ===== NOMINATIF KREDIT =====
+    Route::get('/nominatif-kredit', NominatifKreditIndex::class)
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->name('nominatif-kredit.index');
 
     // ===== RECYCLE BIN =====
     Route::get('/recycle-bin/prospects', ProspectsRecycle::class)

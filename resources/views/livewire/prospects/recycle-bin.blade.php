@@ -16,6 +16,11 @@
       <i class="bi bi-check-circle me-1"></i> {{ session('ok') }}
     </div>
   @endif
+  @if(session('error'))
+    <div class="alert alert-warning rounded-4 shadow-sm">
+      <i class="bi bi-shield-exclamation me-1"></i> {{ session('error') }}
+    </div>
+  @endif
 
   <div class="card-soft p-3 mb-3">
     <div class="row g-2 align-items-center">
@@ -83,14 +88,16 @@
                   <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
                 </button>
 
-                <button type="button"
-                        class="btn btn-outline-danger btn-sm rounded-pill px-3"
-                        wire:click="forceDelete({{ $p->id }})"
-                        wire:loading.attr="disabled"
-                        wire:target="forceDelete({{ $p->id }})"
-                        onclick="return confirm('Hapus permanen? Data tidak bisa dikembalikan.')">
-                  <i class="bi bi-trash3 me-1"></i> Hapus
-                </button>
+                @if(strtoupper(trim((string) $p->status)) !== 'CLOSING')
+                  <button type="button"
+                          class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                          wire:click="forceDelete({{ $p->id }})"
+                          wire:loading.attr="disabled"
+                          wire:target="forceDelete({{ $p->id }})"
+                          onclick="return confirm('Hapus permanen? Data tidak bisa dikembalikan.')">
+                    <i class="bi bi-trash3 me-1"></i> Hapus
+                  </button>
+                @endif
               </td>
             </tr>
           @empty

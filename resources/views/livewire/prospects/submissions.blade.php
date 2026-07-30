@@ -15,6 +15,87 @@
       box-shadow:0 10px 28px rgba(15,23,42,.05);
     }
 
+    .submission-quick-tabs{
+      display:none;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+      margin:-2px 0 16px;
+      padding:6px;
+      border:1px solid #e5eaf3;
+      border-radius:18px;
+      background:rgba(255,255,255,.78);
+      box-shadow:0 9px 24px rgba(31,45,70,.055);
+    }
+
+    .submission-quick-tab{
+      min-width:0;
+      min-height:50px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 13px;
+      border:1px solid transparent;
+      border-radius:14px;
+      color:#53627a;
+      background:transparent;
+      text-align:left;
+      transition:.18s ease;
+    }
+
+    .submission-quick-tab-icon{
+      width:32px;
+      height:32px;
+      flex:0 0 32px;
+      display:grid;
+      place-items:center;
+      border-radius:11px;
+      color:#4058b3;
+      background:#edf2ff;
+      font-size:14px;
+    }
+
+    .submission-quick-tab-copy{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+
+    .submission-quick-tab-title{
+      color:#253653;
+      font-size:.78rem;
+      font-weight:850;
+      line-height:1.2;
+    }
+
+    .submission-quick-tab.active{
+      border-color:#cad5ff;
+      background:linear-gradient(135deg,#eef2ff,#f8faff);
+      box-shadow:0 7px 18px rgba(64,88,179,.1);
+    }
+
+    .submission-quick-tab.is-all .submission-quick-tab-icon{
+      color:#087fbd;
+      background:#e8f7fc;
+    }
+
+    .submission-quick-tab.is-all.active{
+      border-color:#b8e2ef;
+      background:linear-gradient(135deg,#eaf8fc,#f7fdff);
+      box-shadow:0 7px 18px rgba(8,127,189,.09);
+    }
+
+    .submission-quick-tab.is-overdue .submission-quick-tab-icon{
+      color:#b66b00;
+      background:#fff5df;
+    }
+
+    .submission-quick-tab.is-overdue.active{
+      border-color:#f2d7a0;
+      background:linear-gradient(135deg,#fff5df,#fffaf0);
+      box-shadow:0 7px 18px rgba(182,107,0,.09);
+    }
+
     .modern-table thead th{
       border-bottom:1px solid #e9eef5 !important;
       background:#f8fafc !important;
@@ -327,6 +408,15 @@
       background-color:#fff;
     }
 
+    .assignment-box .searchable-filter-trigger{
+      min-width:240px;
+      border-color:#cfddee;
+      border-radius:12px;
+      color:#1f2937;
+      background:#fff;
+      font-weight:700;
+    }
+
     .assignment-current{
       margin-top:8px;
       padding:8px 10px;
@@ -367,6 +457,306 @@
       font-size:.82rem;
       color:#64748b;
     }
+
+    @media (max-width:767.98px){
+      .submission-quick-tabs{
+        display:grid;
+      }
+
+      .submissions-page-head{
+        display:grid !important;
+        grid-template-columns:minmax(0,1fr) auto;
+        align-items:start !important;
+        gap:7px !important;
+        margin-bottom:10px !important;
+      }
+
+      .submissions-title{
+        color:#182238;
+        font-size:1rem !important;
+        font-weight:900 !important;
+        line-height:1.12;
+        letter-spacing:-.02em;
+      }
+
+      .submissions-subtitle{
+        max-width:250px;
+        margin-top:3px;
+        color:#6d7888 !important;
+        font-size:.62rem;
+        line-height:1.35;
+      }
+
+      .submissions-export-wrap{
+        margin-left:0 !important;
+      }
+
+      .submissions-export{
+        min-width:0 !important;
+        min-height:34px;
+        padding:7px 11px !important;
+        border:0;
+        font-size:.62rem;
+        font-weight:800;
+        box-shadow:0 7px 16px rgba(5,150,105,.16);
+      }
+
+      .submissions-export i{
+        margin-right:4px !important;
+      }
+
+      .soft-filter-card{
+        padding:10px !important;
+        border:1px solid rgba(188,202,220,.55);
+        border-radius:19px;
+        background:rgba(255,255,255,.78);
+        box-shadow:0 9px 22px rgba(31,45,70,.07);
+      }
+
+      .soft-filter-card .row{
+        --bs-gutter-x:7px;
+        --bs-gutter-y:7px;
+      }
+
+      .soft-filter-card .row > [class*="col-"]{
+        width:50%;
+      }
+
+      .soft-filter-card .row > [class*="col-"]:first-child,
+      .soft-filter-card .row > [class*="col-"]:last-child{
+        width:100%;
+      }
+
+      .soft-filter-card .form-label{
+        margin-bottom:3px;
+        color:#687487 !important;
+        font-size:.54rem !important;
+        font-weight:700;
+      }
+
+      .soft-filter-card .form-control,
+      .soft-filter-card .form-select,
+      .soft-filter-card .input-group-text{
+        min-height:36px;
+        height:36px;
+        border-color:#dfe6ef;
+        color:#263348;
+        background-color:rgba(255,255,255,.86) !important;
+        font-size:.62rem;
+        box-shadow:none !important;
+      }
+
+      .soft-filter-card .form-control{
+        min-width:0;
+        padding:7px 9px;
+      }
+
+      .soft-filter-card .form-select{
+        padding-top:6px;
+        padding-bottom:6px;
+        padding-left:9px;
+        border-radius:10px;
+        background-size:11px 9px;
+      }
+
+      .soft-filter-card .input-group{
+        overflow:hidden;
+        border-radius:11px;
+      }
+
+      .soft-filter-card .input-group-text{
+        width:35px;
+        justify-content:center;
+        padding:0;
+        font-size:.72rem;
+      }
+
+      .soft-filter-card .btn{
+        min-height:34px;
+        padding:6px 10px;
+        border-radius:11px !important;
+        font-size:.6rem;
+        font-weight:800;
+      }
+
+      .soft-filter-card .text-md-end{
+        font-size:.56rem !important;
+      }
+
+      .soft-filter-card .mt-3{
+        margin-top:8px !important;
+      }
+
+      .submission-quick-tabs{
+        gap:6px;
+        margin:-2px 0 10px;
+        padding:5px;
+        border-radius:15px;
+      }
+
+      .submission-quick-tab{
+        min-height:43px;
+        gap:7px;
+        padding:6px 7px;
+        border-radius:12px;
+      }
+
+      .submission-quick-tab-icon{
+        width:27px;
+        height:27px;
+        flex-basis:27px;
+        border-radius:9px;
+        font-size:.68rem;
+      }
+
+      .submission-quick-tab-title{
+        font-size:.58rem;
+      }
+
+      .filter-mode-hint{
+        padding:7px 8px;
+        border-radius:10px;
+        color:#718096;
+        background:#f7f9fc;
+        font-size:.54rem;
+        line-height:1.35;
+      }
+
+      .mobile-prospect-card{
+        padding:10px !important;
+        margin-bottom:7px !important;
+        border:1px solid rgba(205,215,228,.72);
+        border-radius:17px;
+        background:rgba(255,255,255,.82);
+        box-shadow:0 7px 18px rgba(31,45,70,.065);
+      }
+
+      .mobile-prospect-card .fw-bold.fs-6{
+        color:#1c2940;
+        font-size:.72rem !important;
+        line-height:1.2;
+      }
+
+      .mobile-prospect-card .small{
+        font-size:.56rem !important;
+        line-height:1.4;
+      }
+
+      .mobile-prospect-card .mt-1{
+        margin-top:3px !important;
+      }
+
+      .mobile-prospect-card .mt-3{
+        margin-top:8px !important;
+      }
+
+      .mobile-prospect-card .my-3{
+        margin-top:8px !important;
+        margin-bottom:8px !important;
+      }
+
+      .badge-modern{
+        min-height:24px;
+        gap:4px;
+        padding:4px 8px;
+        font-size:.52rem;
+        box-shadow:0 4px 10px rgba(15,23,42,.07);
+      }
+
+      .assignment-box{
+        padding:7px;
+        border-radius:12px;
+        box-shadow:none;
+      }
+
+      .assignment-box .form-select,
+      .assignment-select,
+      .assignment-box .searchable-filter-trigger{
+        width:100%;
+        min-width:0;
+        min-height:34px;
+        border-radius:9px;
+        font-size:.58rem;
+      }
+
+      .assignment-current{
+        margin-top:6px;
+        padding:6px 7px;
+        border-radius:9px;
+      }
+
+      .assignment-current-code{
+        font-size:.62rem;
+      }
+
+      .assignment-current-name,
+      .assignment-empty{
+        font-size:.54rem;
+      }
+
+      .mobile-prospect-card .btn{
+        min-height:32px;
+        padding:5px 9px;
+        font-size:.58rem;
+        font-weight:800;
+      }
+
+      .modal-modern .modal-header{
+        padding:12px 13px 10px;
+      }
+
+      .modal-modern .modal-title{
+        font-size:.88rem;
+      }
+
+      .modal-modern .modal-body{
+        padding:11px;
+      }
+
+      .modal-modern .modal-footer{
+        padding:9px 11px 12px;
+      }
+
+      .detail-hero,
+      .detail-grid-card,
+      .detail-full-card,
+      .modal-action-card{
+        padding:10px;
+        border-radius:15px;
+        box-shadow:0 6px 15px rgba(31,45,70,.05);
+      }
+
+      .detail-avatar{
+        width:38px;
+        height:38px;
+        flex-basis:38px;
+        border-radius:12px;
+        font-size:.72rem;
+      }
+
+      .detail-hero-name{
+        font-size:.78rem;
+      }
+
+      .detail-hero-sub,
+      .detail-label,
+      .detail-value-soft{
+        font-size:.56rem;
+      }
+
+      .detail-section-title{
+        margin-bottom:8px;
+        font-size:.56rem;
+      }
+
+      .detail-item{
+        margin-bottom:8px;
+      }
+
+      .detail-value{
+        font-size:.64rem;
+      }
+    }
   </style>
 
   @php
@@ -381,15 +771,15 @@
     </div>
   @endif
 
-  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+  <div class="submissions-page-head d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
     <div>
-      <div class="fw-bold fs-3">Prospek Diajukan</div>
-      <div class="text-muted">Daftar prospek yang diajukan oleh pegawai / AO</div>
+      <div class="submissions-title fw-bold fs-3">Prospek Diajukan</div>
+      <div class="submissions-subtitle text-muted">Daftar prospek yang diajukan oleh pegawai / AO</div>
     </div>
 
-    <div class="ms-auto">
+    <div class="submissions-export-wrap ms-auto">
       <button type="button"
-              class="btn btn-success rounded-pill px-4 py-2"
+              class="submissions-export btn btn-success rounded-pill px-4 py-2"
               wire:click="exportExcel"
               wire:loading.attr="disabled"
               wire:target="exportExcel"
@@ -404,10 +794,13 @@
     </div>
   </div>
 
-<div class="soft-filter-card p-3 mb-3">
+<div class="soft-filter-card p-3 mb-3"
+     wire:ignore.self
+     data-mobile-filter-panel
+     data-mobile-filter-key="prospects-submissions">
   <div class="row g-2 align-items-end">
 
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md-3" data-mobile-filter-primary>
       <label class="form-label small text-muted">Cari</label>
       <div class="input-group">
         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
@@ -418,7 +811,7 @@
       </div>
     </div>
 
-    <div class="col-12 col-md-2">
+    <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Status</label>
       <select class="form-select" wire:model.live="filterStatus">
         <option value="">-- Semua Status --</option>
@@ -429,7 +822,7 @@
       </select>
     </div>
 
-    <div class="col-12 col-md-2">
+    <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Kanwil</label>
       <select class="form-select"
               wire:model.live="filterKanwil"
@@ -441,7 +834,7 @@
       </select>
     </div>
 
-    <div class="col-12 col-md-2">
+    <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Cabang</label>
       <select class="form-select"
               wire:model.live="filterCabang"
@@ -453,7 +846,7 @@
       </select>
     </div>
 
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md-3 mobile-filter-extra">
       <label class="form-label small text-muted">AO</label>
       <select class="form-select" wire:model.live="filterAo">
         <option value="">-- Semua AO --</option>
@@ -465,7 +858,7 @@
       </select>
     </div>
 
-    <div class="col-12 col-md-2">
+    <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Input Oleh</label>
       <select class="form-select" wire:model.live="filterInputRole">
         <option value="">-- Semua --</option>
@@ -475,7 +868,7 @@
       </select>
     </div>
 
-    <div class="col-12 col-md-2">
+    <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Penugasan</label>
       <select class="form-select" wire:model.live="filterPengambilan">
         <option value="">-- Semua --</option>
@@ -484,7 +877,17 @@
       </select>
     </div>
 
-    <div class="col-12 col-md-2">
+    <div class="col-12 col-md-2 mobile-filter-extra">
+      <label class="form-label small text-muted">Produk</label>
+      <select class="form-select" wire:model.live="filterProduk">
+        <option value="">-- Semua Produk --</option>
+        @foreach($produkOptions as $produk)
+          <option value="{{ $produk }}">{{ $produk }}</option>
+        @endforeach
+      </select>
+    </div>
+
+    <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Mode Filter Tanggal</label>
       <select class="form-select" wire:model.live="filterMode">
         @foreach($filterModeOptions as $mode)
@@ -494,7 +897,7 @@
     </div>
 
     @if($filterMode === 'monthly')
-      <div class="col-6 col-md-2">
+      <div class="col-6 col-md-2 mobile-filter-extra">
         <label class="form-label small text-muted">Bulan</label>
         <select class="form-select" wire:model.live="filterBulan">
           <option value="">-- Bulan --</option>
@@ -504,7 +907,7 @@
         </select>
       </div>
 
-      <div class="col-6 col-md-2">
+      <div class="col-6 col-md-2 mobile-filter-extra">
         <label class="form-label small text-muted">Tahun</label>
         <select class="form-select" wire:model.live="filterTahun">
           <option value="">-- Tahun --</option>
@@ -516,14 +919,14 @@
     @endif
 
     @if($filterMode === 'range')
-      <div class="col-12 col-md-2">
+      <div class="col-12 col-md-2 mobile-filter-extra">
         <label class="form-label small text-muted">Dari Tanggal</label>
         <input type="date"
                class="form-control"
                wire:model.live="filterTanggalAwal">
       </div>
 
-      <div class="col-12 col-md-2">
+      <div class="col-12 col-md-2 mobile-filter-extra">
         <label class="form-label small text-muted">Sampai Tanggal</label>
         <input type="date"
                class="form-control"
@@ -531,19 +934,19 @@
       </div>
     @endif
 
-    <div class="col-12 col-md-2">
+    <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted d-block">&nbsp;</label>
       <button type="button" class="btn btn-light w-100 rounded-pill" wire:click="resetFilter">
         <i class="bi bi-arrow-clockwise me-1"></i> Reset
       </button>
     </div>
 
-    <div class="col-12 col-md text-md-end text-muted small">
+    <div class="col-12 col-md text-md-end text-muted small mobile-filter-extra">
       Total: <span class="fw-bold">{{ $items->total() }}</span> pengajuan
     </div>
   </div>
 
-  <div class="mt-3">
+  <div class="mt-3 mobile-filter-extra">
     @if($filterMode === 'all')
       <div class="filter-mode-hint">
         Menampilkan <span class="fw-semibold">semua pengajuan</span> tanpa filter periode.
@@ -565,6 +968,40 @@
     @endif
   </div>
 </div>
+
+  @if($showQuickFilters)
+  <div class="submission-quick-tabs" role="group" aria-label="Filter cepat pengajuan prospek">
+    <button type="button"
+            class="submission-quick-tab is-all {{ $quickFilter === '' ? 'active' : '' }}"
+            wire:click="setQuickFilter('all')"
+            aria-pressed="{{ $quickFilter === '' ? 'true' : 'false' }}">
+      <span class="submission-quick-tab-icon"><i class="bi bi-collection"></i></span>
+      <span class="submission-quick-tab-copy">
+        <span class="submission-quick-tab-title">Semua Data</span>
+      </span>
+    </button>
+
+    <button type="button"
+            class="submission-quick-tab {{ $quickFilter === 'this_week' ? 'active' : '' }}"
+            wire:click="setQuickFilter('this_week')"
+            aria-pressed="{{ $quickFilter === 'this_week' ? 'true' : 'false' }}">
+      <span class="submission-quick-tab-icon"><i class="bi bi-calendar-week"></i></span>
+      <span class="submission-quick-tab-copy">
+        <span class="submission-quick-tab-title">Minggu Ini</span>
+      </span>
+    </button>
+
+    <button type="button"
+            class="submission-quick-tab is-overdue {{ $quickFilter === 'overdue_follow_up' ? 'active' : '' }}"
+            wire:click="setQuickFilter('overdue_follow_up')"
+            aria-pressed="{{ $quickFilter === 'overdue_follow_up' ? 'true' : 'false' }}">
+      <span class="submission-quick-tab-icon"><i class="bi bi-clock-history"></i></span>
+      <span class="submission-quick-tab-copy">
+        <span class="submission-quick-tab-title">Lebih dari Seminggu</span>
+      </span>
+    </button>
+  </div>
+  @endif
 
   <div class="sub-card overflow-hidden d-none d-md-block">
     <div class="table-responsive">
@@ -655,6 +1092,8 @@
 
                     <div class="assignment-box">
                       <select class="form-select form-select-sm assignment-select"
+                              data-searchable-filter
+                              data-search-placeholder="Cari nama, kode, atau posisi AO..."
                               wire:key="assignment-select-{{ $p->id }}-{{ md5((string)($p->diambil_oleh ?? '')) }}"
                               wire:change="assignProspect({{ $p->id }}, $event.target.value)">
                         <option value="">-- Pilih AO --</option>
@@ -701,11 +1140,16 @@
               </td>
 
               <td class="text-end">
-                <button type="button"
-                        class="btn btn-outline-primary btn-sm rounded-pill px-3"
-                        wire:click="openDetail({{ $p->id }})">
-                  <i class="bi bi-eye me-1"></i> Detail
-                </button>
+                @if($isAoRole)
+                  <a href="{{ route('prospects.submissions.show', $p->id) }}"
+                     class="btn btn-primary btn-sm rounded-pill px-3">Lihat</a>
+                @else
+                  <button type="button"
+                          class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                          wire:click="openDetail({{ $p->id }})">
+                    <i class="bi bi-eye me-1"></i> Detail
+                  </button>
+                @endif
               </td>
             </tr>
           @empty
@@ -790,7 +1234,9 @@
 
           @if($canManageAssignment)
             <div class="assignment-box">
-              <select class="form-select form-select-sm"
+              <select class="form-select form-select-sm assignment-select"
+                      data-searchable-filter
+                      data-search-placeholder="Cari nama, kode, atau posisi AO..."
                       wire:key="mobile-assignment-select-{{ $p->id }}-{{ md5((string)($p->diambil_oleh ?? '')) }}"
                       wire:change="assignProspect({{ $p->id }}, $event.target.value)">
                 <option value="">-- Pilih AO --</option>
@@ -823,11 +1269,16 @@
         </div>
 
         <div class="mt-3">
-          <button type="button"
-                  class="btn btn-outline-primary btn-sm w-100 rounded-pill"
-                  wire:click="openDetail({{ $p->id }})">
-            <i class="bi bi-eye me-1"></i> Detail
-          </button>
+          @if($isAoRole)
+            <a href="{{ route('prospects.submissions.show', $p->id) }}"
+               class="btn btn-primary btn-sm w-100 rounded-pill">Lihat</a>
+          @else
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm w-100 rounded-pill"
+                    wire:click="openDetail({{ $p->id }})">
+              <i class="bi bi-eye me-1"></i> Detail
+            </button>
+          @endif
         </div>
       </div>
     @empty
@@ -975,6 +1426,13 @@
                     <div class="detail-item">
                       <span class="detail-label">No Rekening</span>
                       <div class="detail-value-soft">{{ $detail->no_rekening ?: '-' }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">Estimasi Nominal Realisasi</span>
+                      <div class="detail-value-soft">
+                        {{ filled($detail->estimasi_nominal_realisasi) ? 'Rp ' . number_format((int) $detail->estimasi_nominal_realisasi, 0, ',', '.') : '-' }}
+                      </div>
                     </div>
 
                     <div class="detail-item">
@@ -1127,7 +1585,7 @@
                   </div>
                 </div>
 
-                @if(!$hideActionForm)
+                @if($loggedRole !== 'SUPERVISOR' && !$hideActionForm)
                   @if(!$isAoRole)
                     <div class="col-12 col-lg-6">
                       <div class="modal-action-card h-100">
@@ -1167,10 +1625,7 @@
                           <select class="form-select" wire:model.live="statusUpdate">
                             <option value="">-- Pilih Status --</option>
 
-                            @if(!$isAoRole)
-                              <option value="FOLLOW UP">FOLLOW UP</option>
-                            @endif
-
+                            <option value="FOLLOW UP">FOLLOW UP</option>
                             <option value="CLOSING">CLOSING</option>
                             <option value="REJECTED">REJECTED</option>
                           </select>
@@ -1189,6 +1644,24 @@
                                    placeholder="Masukkan nomor rekening"
                                    oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                             @error('noRekening')
+                              <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                          </div>
+                        @endif
+
+                        @if($statusUpdate === 'FOLLOW UP')
+                          <div class="col-12">
+                            <label class="form-label small text-muted">Estimasi Nominal Realisasi</label>
+                            <div class="input-group">
+                              <span class="input-group-text">Rp</span>
+                              <input type="text"
+                                     class="form-control"
+                                     wire:model.blur="estimasiNominalRealisasi"
+                                     inputmode="numeric"
+                                     placeholder="Contoh: 100.000.000"
+                                     oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.')">
+                            </div>
+                            @error('estimasiNominalRealisasi')
                               <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                           </div>

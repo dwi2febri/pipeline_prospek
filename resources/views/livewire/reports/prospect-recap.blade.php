@@ -126,7 +126,9 @@
     </div>
   </div>
 
-  <div class="card-soft p-3 mb-3">
+  <div class="card-soft p-3 mb-3"
+       data-mobile-filter-panel
+       data-mobile-filter-key="prospect-recap">
     <div class="row g-2 align-items-end">
       <div class="col-12 col-md-3">
         <label class="form-label fw-semibold mb-1">Filter Cabang</label>
@@ -181,7 +183,7 @@
         </div>
       @endif
 
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-3" data-mobile-filter-primary>
         <label class="form-label fw-semibold mb-1">Cari</label>
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
@@ -654,7 +656,9 @@
           </div>
 
           <div class="modal-body">
-            <div class="card-soft p-3 mb-3">
+            <div class="card-soft p-3 mb-3"
+                 data-mobile-filter-panel
+                 data-mobile-filter-key="prospect-recap-detail-pegawai">
               <div class="row g-2 align-items-end">
                 <div class="col-12 col-md-3">
                   <label class="form-label fw-semibold mb-1">Mode Tanggal</label>
@@ -753,7 +757,9 @@
           </div>
 
           <div class="modal-body">
-            <div class="card-soft p-3 mb-3">
+            <div class="card-soft p-3 mb-3"
+                 data-mobile-filter-panel
+                 data-mobile-filter-key="prospect-recap-detail-kc">
               <div class="row g-2 align-items-end">
                 <div class="col-12 col-md-3">
                   <label class="form-label fw-semibold mb-1">Mode Tanggal</label>

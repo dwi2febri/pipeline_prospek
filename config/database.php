@@ -64,6 +64,49 @@ return [
             ]) : [],
         ],
 
+        'dpk' => [
+            'driver' => 'mysql',
+            'url' => env('DPK_DB_URL'),
+            'host' => env('DPK_DB_HOST', '127.0.0.1'),
+            'port' => env('DPK_DB_PORT', '23036'),
+            'database' => env('DPK_DB_DATABASE', 'dpk'),
+            'username' => env('DPK_DB_USERNAME', 'prospek'),
+            'password' => env('DPK_DB_PASSWORD', ''),
+            'unix_socket' => env('DPK_DB_SOCKET', ''),
+            'charset' => env('DPK_DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DPK_DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => false,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('DPK_MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        /*
+        | Data pegawai SIMPEG hanya dibaca oleh aplikasi. Gunakan akun database
+        | yang memang memiliki hak SELECT saja di production.
+        */
+        'simpeg' => [
+            'driver' => 'mysql',
+            'host' => env('SIMPEG_DB_HOST', env('DPK_DB_HOST', '10.0.2.2')),
+            'port' => env('SIMPEG_DB_PORT', env('DPK_DB_PORT', '23036')),
+            'database' => env('SIMPEG_DB_DATABASE', 'masq2971_simpeg_dummy'),
+            'username' => env('SIMPEG_DB_USERNAME', 'root'),
+            'password' => env('SIMPEG_DB_PASSWORD', ''),
+            'unix_socket' => env('SIMPEG_DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => false,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::ATTR_TIMEOUT => (int) env('SIMPEG_DB_TIMEOUT', 5),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

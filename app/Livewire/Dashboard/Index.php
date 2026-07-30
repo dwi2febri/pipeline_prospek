@@ -604,6 +604,11 @@ class Index extends Component
                 INNER JOIN (
                     SELECT prospect_id, MIN(id) as min_id
                     FROM prospect_documents
+                    WHERE LOWER(file_path) LIKE "%.jpg"
+                       OR LOWER(file_path) LIKE "%.jpeg"
+                       OR LOWER(file_path) LIKE "%.png"
+                       OR LOWER(file_path) LIKE "%.webp"
+                       OR LOWER(file_path) LIKE "%.gif"
                     GROUP BY prospect_id
                 ) d2 ON d1.id = d2.min_id
             ) docs'), 'docs.prospect_id', '=', 'prospects.id')
@@ -629,6 +634,7 @@ class Index extends Component
         $mapQuery = $mapQuery
             ->select(
                 'prospects.nama',
+                'prospects.no_hp',
                 'prospects.alamat',
                 'prospects.jenis_usaha',
                 'prospects.keterangan_usaha',
@@ -650,13 +656,14 @@ class Index extends Component
             $photoUrl = null;
 
             if (!empty($p->file_path)) {
-                $photoUrl = Storage::url($p->file_path);
+                $photoUrl = Storage::disk('public')->url(ltrim((string) $p->file_path, '/'));
             }
 
             $usahaKode = strtoupper(trim((string) ($p->jenis_usaha ?: 'LAINNYA')));
 
             return [
                 'nama'              => $p->nama,
+                'no_hp'             => $p->no_hp,
                 'alamat'            => $p->alamat,
                 'jenis_usaha_kode'  => $usahaKode,
                 'jenis_usaha_label' => $usahaNameMap[$usahaKode] ?? ucwords(strtolower(str_replace('_', ' ', $usahaKode))),

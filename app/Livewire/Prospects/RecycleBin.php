@@ -47,6 +47,11 @@ class RecycleBin extends Component
             ->where('input_by', $userId)
             ->firstOrFail();
 
+        if (strtoupper(trim((string) $p->status)) === 'CLOSING') {
+            session()->flash('error', 'Prospek berstatus Closing tidak dapat dihapus permanen.');
+            return;
+        }
+
         $p->forceDelete();
 
         session()->flash('ok', 'Prospek dihapus permanen.');

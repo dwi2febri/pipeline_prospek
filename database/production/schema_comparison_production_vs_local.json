@@ -1,0 +1,21 @@
+{
+    "production_dump": "sql_eprospek_bkk.sql",
+    "local_database": "pipeline_prospek",
+    "missing_tables_in_production": [
+        "user_simpeg_syncs"
+    ],
+    "production_only_tables": [
+        "prospects_kunjungan_ao"
+    ],
+    "missing_columns_in_production": {
+        "prospects": [
+            "estimasi_nominal_realisasi"
+        ]
+    },
+    "production_only_columns": [],
+    "changed_columns": [],
+    "missing_indexes_in_production": [],
+    "changed_indexes": [],
+    "missing_foreign_keys_in_production": [],
+    "changed_foreign_keys": []
+}

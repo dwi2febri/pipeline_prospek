@@ -1,5 +1,5 @@
-<div class="position-relative" wire:poll.5s>
-    <button class="iconbtn position-relative" type="button" wire:click="toggle" title="Notifikasi">
+<div class="notification-bell-root position-relative" wire:poll.5s>
+    <button class="notification-bell-trigger iconbtn position-relative" type="button" wire:click="toggle" title="Notifikasi">
         <i class="bi bi-bell"></i>
         @if($unreadCount > 0)
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -10,11 +10,11 @@
 
     @if($open)
         <div
-            class="position-absolute end-0 mt-2 bg-white border rounded-4 shadow"
+            class="notification-panel position-absolute end-0 mt-2 bg-white border rounded-4 shadow"
             style="width:360px; max-width:90vw; z-index:6000; overflow:hidden;"
             wire:click.outside="$set('open', false)"
         >
-            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div class="notification-panel-head p-3 border-bottom d-flex justify-content-between align-items-center">
                 <div>
                     <div class="fw-bold">Notifikasi</div>
                     <div class="text-muted small">Update status prospek Anda</div>
@@ -27,9 +27,9 @@
                 @endif
             </div>
 
-            <div style="max-height:420px; overflow:auto;">
+            <div class="notification-panel-list" style="max-height:420px; overflow:auto;">
                 @forelse($notifications as $n)
-                    <div class="p-3 border-bottom {{ $n->read_at ? '' : 'bg-light' }}">
+                    <div class="notification-panel-item p-3 border-bottom {{ $n->read_at ? '' : 'bg-light' }}">
                         <div class="d-flex justify-content-between align-items-start gap-2">
                             <div class="flex-grow-1">
                                 <div class="fw-semibold">{{ $n->title }}</div>

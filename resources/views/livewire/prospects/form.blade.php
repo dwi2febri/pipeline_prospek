@@ -1,4 +1,4 @@
-<div class="container-fluid px-0">
+<div class="container-fluid px-0 prospect-form-page">
 
   <style>
     .mobile-back-btn{
@@ -311,6 +311,23 @@
       border-radius:18px !important;
     }
 
+    .prospect-readonly-fieldset{
+      min-width:0;
+      margin:0;
+      padding:0;
+      border:0;
+    }
+
+    .prospect-readonly-fieldset[disabled] .form-control,
+    .prospect-readonly-fieldset[disabled] .form-select,
+    .prospect-readonly-fieldset[disabled] .prospect-date-trigger{
+      opacity:1;
+      color:#56657a !important;
+      -webkit-text-fill-color:#56657a;
+      background:#f1f5f9 !important;
+      cursor:default;
+    }
+
     .modal-content{
       border-radius:24px !important;
       overflow:hidden;
@@ -324,6 +341,241 @@
     #mapPicker .leaflet-container,
     #mapPicker{
       background:#f8fafc !important;
+    }
+
+    .prospect-date-trigger{
+      min-height:52px;
+      flex:1 1 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:0 16px;
+      border:1px solid #e5eaf5;
+      border-left:0;
+      border-radius:0 18px 18px 0;
+      color:#334155;
+      background:#fff;
+      font-size:16px;
+      text-align:left;
+    }
+
+    .prospect-sheet-handle{
+      display:none;
+      touch-action:none;
+    }
+
+    .prospect-date-modal .modal-dialog{
+      max-width:480px;
+    }
+
+    .prospect-date-header-icon,
+    .prospect-date-close,
+    .prospect-date-nav{
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      border:1px solid #e4eaf5;
+      color:#41516b;
+      background:#f8faff;
+    }
+
+    .prospect-date-header-icon{
+      width:48px;
+      height:48px;
+      border:0;
+      border-radius:14px;
+      color:#604cff;
+      background:#f0f1ff;
+      font-size:21px;
+    }
+
+    .prospect-date-close,
+    .prospect-date-nav{
+      width:48px;
+      height:48px;
+      border-radius:15px;
+      font-size:22px;
+    }
+
+    .prospect-sheet-header{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 48px;
+      align-items:center;
+      gap:14px;
+    }
+
+    .prospect-sheet-heading{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .prospect-sheet-heading-copy{
+      min-width:0;
+      line-height:1.25;
+    }
+
+    .prospect-sheet-heading-copy .fw-bold{
+      overflow-wrap:anywhere;
+    }
+
+    .prospect-sheet-heading-copy .text-muted{
+      display:block;
+      margin-top:3px;
+      line-height:1.35;
+    }
+
+    .prospect-sheet-header .prospect-date-close{
+      justify-self:end;
+      margin:0;
+    }
+
+    .prospect-date-month{
+      color:#17213a;
+      font-size:18px;
+      font-weight:850;
+    }
+
+    .prospect-date-weekdays,
+    .prospect-date-grid{
+      display:grid;
+      grid-template-columns:repeat(7,minmax(0,1fr));
+      text-align:center;
+    }
+
+    .prospect-date-weekdays{
+      margin-top:18px;
+      color:#8290a8;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .prospect-date-grid{
+      margin-top:6px;
+      row-gap:7px;
+    }
+
+    .prospect-date-day{
+      width:42px;
+      height:42px;
+      margin:auto;
+      border:0;
+      border-radius:14px;
+      color:#34425a;
+      background:transparent;
+      font-size:14px;
+      transition:background .15s ease,transform .15s ease;
+    }
+
+    .prospect-date-day:hover{
+      background:#f0f4ff;
+    }
+
+    .prospect-date-day.is-muted{
+      color:#b5c0d1;
+    }
+
+    .prospect-date-day.is-today:not(.is-selected){
+      color:#536bd3;
+      box-shadow:inset 0 0 0 1px #aebcf2;
+    }
+
+    .prospect-date-day.is-selected{
+      color:#fff;
+      background:linear-gradient(145deg,#6574ec,#48a7e6);
+      box-shadow:0 7px 16px rgba(64,95,210,.27),0 0 0 2px #17213a;
+      font-weight:850;
+      transform:translateY(-1px);
+    }
+
+    .prospect-date-today{
+      min-height:48px;
+      padding:0 17px;
+      border:0;
+      border-radius:15px;
+      color:#5364d9;
+      background:#eef1ff;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .prospect-mobile-select{
+      width:100%;
+      min-height:54px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:0 16px;
+      border:1px solid #e7edf5;
+      border-radius:18px;
+      color:#263750;
+      background:#fff;
+      box-shadow:0 6px 18px rgba(15,23,42,.04);
+      font-size:16px;
+      text-align:left;
+    }
+
+    .prospect-mobile-select:disabled{
+      color:#7d899b;
+      background:#eef2f6;
+    }
+
+    .prospect-select-search{
+      position:relative;
+    }
+
+    .prospect-select-search .form-control{
+      padding-left:16px !important;
+      padding-right:16px !important;
+    }
+
+    .prospect-select-list{
+      min-height:120px;
+      overflow-y:auto;
+      overscroll-behavior:contain;
+      scrollbar-width:thin;
+    }
+
+    .prospect-select-option{
+      width:100%;
+      min-height:52px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:7px;
+      padding:10px 14px;
+      border:1px solid transparent;
+      border-radius:16px;
+      color:#33445f;
+      background:#f8fafc;
+      font-size:13px;
+      line-height:1.35;
+      text-align:left;
+    }
+
+    .prospect-select-option-dot{
+      width:13px;
+      height:13px;
+      flex:0 0 13px;
+      border:3px solid #bdc8d9;
+      border-radius:50%;
+      background:#fff;
+    }
+
+    .prospect-select-option.is-selected{
+      border-color:#a9b9ff;
+      color:#4d4bc8;
+      background:#eff2ff;
+      font-weight:750;
+    }
+
+    .prospect-select-option.is-selected .prospect-select-option-dot{
+      border-color:#6c55ee;
+      box-shadow:inset 0 0 0 2px #fff;
+      background:#6c55ee;
     }
 
     @media (max-width: 767.98px){
@@ -398,6 +650,64 @@
         min-width:52px;
       }
 
+      .prospect-date-input-group{
+        height:48px !important;
+        min-height:48px !important;
+      }
+
+      .prospect-date-input-group > .input-group-text,
+      .prospect-date-trigger{
+        height:46px !important;
+        min-height:46px !important;
+        padding-top:0 !important;
+        padding-bottom:0 !important;
+        box-sizing:border-box;
+      }
+
+      body.mobile-app-density .main-scroll .page-wrap .prospect-date-trigger{
+        padding-right:12px !important;
+        padding-left:12px !important;
+        font-size:11px !important;
+        line-height:1.4 !important;
+      }
+
+      .prospect-mobile-select{
+        height:46px !important;
+        min-height:46px !important;
+        padding:10px 12px !important;
+        border-radius:14px;
+        font-size:11px !important;
+        line-height:1.4 !important;
+      }
+
+      body.mobile-app-density .main-scroll .page-wrap .prospect-mobile-select{
+        height:46px !important;
+        min-height:46px !important;
+        padding:10px 12px !important;
+        border:1px solid #dbe4ee !important;
+        border-radius:var(--simstok-mobile-control-radius) !important;
+        color:#2f3d53 !important;
+        background-color:#fafcff !important;
+        box-shadow:none !important;
+        font-size:11px !important;
+        line-height:1.4 !important;
+      }
+
+      body.mobile-app-density .main-scroll .page-wrap .prospect-mobile-select:disabled{
+        color:#6d798b !important;
+        background-color:#eef2f6 !important;
+      }
+
+      .prospect-native-select{
+        position:absolute !important;
+        width:1px !important;
+        height:1px !important;
+        min-height:1px !important;
+        padding:0 !important;
+        opacity:0 !important;
+        pointer-events:none !important;
+      }
+
       .btn-app-primary,
       .btn-app-outline,
       .btn-app-light{
@@ -429,6 +739,213 @@
 
       .mobile-hidden-label{
         display:none;
+      }
+
+      .prospect-sheet-handle{
+        display:block;
+        width:54px;
+        height:6px;
+        margin:10px auto 2px;
+        border-radius:999px;
+        background:#d7dfec;
+      }
+
+      .prospect-date-modal,
+      .prospect-map-modal,
+      .prospect-select-modal{
+        padding:0 !important;
+      }
+
+      .prospect-date-modal .modal-dialog,
+      .prospect-map-modal .modal-dialog,
+      .prospect-select-modal .modal-dialog{
+        width:100vw;
+        max-width:none;
+        min-height:100dvh;
+        margin:0;
+        display:flex;
+        align-items:flex-end;
+        transform:translate(0,100%) !important;
+      }
+
+      .prospect-date-modal.show .modal-dialog,
+      .prospect-map-modal.show .modal-dialog,
+      .prospect-select-modal.show .modal-dialog{
+        transform:none !important;
+      }
+
+      .prospect-date-modal .modal-content,
+      .prospect-map-modal .modal-content,
+      .prospect-select-modal .modal-content{
+        width:100%;
+        max-height:calc(100dvh - 12px);
+        margin-top:auto;
+        border-radius:30px 30px 0 0 !important;
+        padding-bottom:env(safe-area-inset-bottom);
+        box-shadow:0 -22px 60px rgba(15,23,42,.22);
+      }
+
+      body.mobile-app-density .prospect-date-modal .modal-content,
+      body.mobile-app-density .prospect-map-modal .modal-content,
+      body.mobile-app-density .prospect-select-modal .modal-content{
+        border-radius:30px 30px 0 0 !important;
+      }
+
+      body.mobile-app-density .prospect-date-modal,
+      body.mobile-app-density .prospect-map-modal,
+      body.mobile-app-density .prospect-select-modal{
+        padding:0 !important;
+      }
+
+      body.mobile-app-density .prospect-date-modal .modal-dialog,
+      body.mobile-app-density .prospect-map-modal .modal-dialog,
+      body.mobile-app-density .prospect-select-modal .modal-dialog{
+        width:100vw !important;
+        max-width:100vw !important;
+        min-height:100dvh !important;
+        margin:0 !important;
+      }
+
+      .prospect-date-modal .modal-content{
+        min-height:min(625px,calc(100dvh - 12px));
+      }
+
+      .prospect-date-modal .modal-header,
+      .prospect-map-modal .modal-header{
+        padding:14px 20px 10px;
+      }
+
+      .prospect-sheet-header{
+        grid-template-columns:minmax(0,1fr) 44px;
+        gap:10px;
+      }
+
+      .prospect-sheet-header .prospect-date-close{
+        width:44px;
+        height:44px;
+      }
+
+      .prospect-sheet-heading{
+        gap:10px;
+      }
+
+      .prospect-sheet-heading .prospect-date-header-icon{
+        width:44px;
+        height:44px;
+        flex-basis:44px;
+      }
+
+      .prospect-sheet-heading-copy .fw-bold{
+        font-size:17px !important;
+        line-height:1.2;
+      }
+
+      .prospect-sheet-heading-copy .text-muted{
+        font-size:11px !important;
+      }
+
+      .prospect-date-modal .modal-body{
+        padding:6px 20px 18px;
+      }
+
+      body.mobile-app-density .prospect-date-modal .modal-header{
+        padding:14px 20px 10px !important;
+      }
+
+      body.mobile-app-density .prospect-date-modal .modal-body{
+        max-height:none !important;
+        padding:6px 20px 18px !important;
+      }
+
+      body.mobile-app-density .prospect-date-modal .modal-footer{
+        padding:12px 20px 20px !important;
+      }
+
+      .prospect-date-modal .modal-footer{
+        padding:12px 20px 20px;
+      }
+
+      .prospect-date-day{
+        width:40px;
+        height:40px;
+      }
+
+      .prospect-map-modal .modal-content{
+        height:min(88dvh,760px);
+      }
+
+      .prospect-select-modal .modal-content{
+        height:min(86dvh,740px);
+      }
+
+      .prospect-map-modal .modal-body{
+        padding:10px 14px;
+        overflow-y:auto;
+        overscroll-behavior:contain;
+      }
+
+      body.mobile-app-density .prospect-map-modal .modal-header{
+        padding:12px 14px 10px !important;
+      }
+
+      body.mobile-app-density .prospect-map-modal .modal-body{
+        padding:10px 14px !important;
+        max-height:none !important;
+      }
+
+      .prospect-map-modal .modal-footer{
+        display:grid;
+        grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);
+        gap:9px;
+        padding:12px 14px 16px;
+      }
+
+      body.mobile-app-density .prospect-map-modal .modal-footer{
+        padding:12px 14px 16px !important;
+      }
+
+      .prospect-map-modal .modal-footer .btn{
+        width:100%;
+        min-height:48px;
+        margin:0;
+        padding-left:10px !important;
+        padding-right:10px !important;
+      }
+
+      .prospect-map-modal #mapPicker{
+        height:300px !important;
+      }
+
+      .prospect-select-modal .modal-header{
+        padding:12px 10px 10px 14px;
+      }
+
+      .prospect-select-modal .modal-body{
+        min-height:0;
+        display:flex;
+        flex-direction:column;
+        padding:4px 18px 16px;
+        overflow:hidden;
+      }
+
+      body.mobile-app-density .prospect-select-modal .modal-header{
+        padding:12px 10px 10px 14px !important;
+      }
+
+      body.mobile-app-density .prospect-select-modal .modal-body{
+        max-height:none !important;
+        padding:4px 18px 16px !important;
+        overflow:hidden !important;
+      }
+
+      body.mobile-app-density .prospect-select-modal .prospect-select-search .form-control{
+        padding-left:16px !important;
+        padding-right:16px !important;
+      }
+
+      .prospect-select-list{
+        flex:1 1 auto;
+        margin-top:12px;
       }
     }
   </style>
@@ -464,6 +981,7 @@
 
   <div class="w-100">
     <div class="card-soft p-4 w-100">
+      <fieldset class="prospect-readonly-fieldset" @disabled($id)>
       <div class="row g-3">
 
         <div class="col-12">
@@ -473,9 +991,17 @@
             <div class="row g-3">
               <div class="col-12 col-md-4">
                 <label class="form-label fw-semibold">Tanggal Prospek</label>
-                <div class="input-group">
+                <div class="input-group prospect-date-input-group">
                   <span class="input-group-text bg-white"><i class="bi bi-calendar-event"></i></span>
-                  <input type="date" class="form-control" wire:model="tanggal_prospek" id="tanggal_prospek">
+                  <input type="date" class="form-control d-none d-md-block" wire:model="tanggal_prospek" id="tanggal_prospek">
+                  <button type="button"
+                          class="prospect-date-trigger d-md-none"
+                          id="btnOpenProspectDate"
+                          aria-haspopup="dialog"
+                          aria-controls="modalProspectDate">
+                    <span id="prospectDateDisplay">Pilih tanggal</span>
+                    <i class="bi bi-calendar3" aria-hidden="true"></i>
+                  </button>
                 </div>
                 @error('tanggal_prospek')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
               </div>
@@ -535,7 +1061,7 @@
 
               <div class="col-12">
                 <label class="form-label fw-semibold">Cabang</label>
-                <select class="form-select" wire:model="cabang_id">
+                <select id="cabangSelect" class="form-select" wire:model="cabang_id" data-mobile-title="Pilih Cabang">
                   <option value="">-- Pilih Cabang --</option>
                   @if(!empty($cabangOptions))
                     @foreach($cabangOptions as $c)
@@ -563,7 +1089,7 @@
             <div class="row g-3">
               <div class="col-12 col-md-6">
                 <label class="form-label fw-semibold">Jenis Usaha</label>
-                <select class="form-select" wire:model="jenis_usaha">
+                <select id="jenisUsahaSelect" class="form-select" wire:model="jenis_usaha" data-mobile-title="Pilih Jenis Usaha">
                   <option value="">-- Pilih Jenis Usaha --</option>
                   @foreach($jenisUsahaOptions as $opt)
                     <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
@@ -574,7 +1100,7 @@
 
               <div class="col-12 col-md-6">
                 <label class="form-label fw-semibold">Rekomendasi Produk</label>
-                <select class="form-select" wire:model="jenis_produk">
+                <select id="jenisProdukSelect" class="form-select" wire:model="jenis_produk" data-mobile-title="Pilih Produk">
                   @foreach($produkOptions as $opt)
                     <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
                   @endforeach
@@ -620,22 +1146,26 @@
                     <input id="lokasi_lng" class="form-control" wire:model="lokasi_lng" placeholder="Lng" readonly>
                   </div>
 
-                  <div class="col-12 col-md-4 d-grid">
-                    <button type="button" class="btn btn-app-primary" id="btnGetLoc">
-                      <i class="bi bi-crosshair2 me-1"></i> Lokasi Saat Ini
-                    </button>
-                  </div>
+                  @if(!$id)
+                    <div class="col-12 col-md-4 d-grid">
+                      <button type="button" class="btn btn-app-primary" id="btnGetLoc">
+                        <i class="bi bi-crosshair2 me-1"></i> Lokasi Saat Ini
+                      </button>
+                    </div>
 
-                  <div class="col-12 d-grid">
-                    <button type="button" class="btn btn-app-outline" id="btnOpenMapPicker">
-                      <i class="bi bi-map me-1"></i> Pilih Titik di Peta
-                    </button>
-                  </div>
+                    <div class="col-12 d-grid">
+                      <button type="button" class="btn btn-app-outline" id="btnOpenMapPicker">
+                        <i class="bi bi-map me-1"></i> Pilih Titik di Peta
+                      </button>
+                    </div>
+                  @endif
                 </div>
 
-                <div class="hint-soft mt-2" id="locHint">
-                  Pilih <b>Lokasi Saat Ini</b> atau gunakan <b>Pilih Titik di Peta</b>.
-                </div>
+                @if(!$id)
+                  <div class="hint-soft mt-2" id="locHint">
+                    Pilih <b>Lokasi Saat Ini</b> atau gunakan <b>Pilih Titik di Peta</b>.
+                  </div>
+                @endif
 
                 @error('lokasi_lat')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                 @error('lokasi_lng')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
@@ -645,39 +1175,51 @@
                 <label class="form-label fw-semibold">Wilayah Administratif</label>
 
                 <div class="row g-3">
-                  <div class="col-12">
-                    <div wire:ignore>
-                      <select id="kabKotaSelect" class="form-select">
-                        <option value="">-- Pilih Kab/Kota --</option>
-                      </select>
+                  @if($id)
+                    <div class="col-12">
+                      <input class="form-control" type="text" value="{{ $kab_kota ?: '-' }}" readonly>
                     </div>
-                    <input type="hidden" id="kab_kota_hidden" wire:model.live="kab_kota">
-                    <input type="hidden" id="kode_kab_kota_hidden" wire:model.live="kode_kab_kota">
-                    @error('kab_kota')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                  </div>
+                    <div class="col-12">
+                      <input class="form-control" type="text" value="{{ $kecamatan ?: '-' }}" readonly>
+                    </div>
+                    <div class="col-12">
+                      <input class="form-control" type="text" value="{{ $desa ?: '-' }}" readonly>
+                    </div>
+                  @else
+                    <div class="col-12">
+                      <div wire:ignore>
+                        <select id="kabKotaSelect" class="form-select" data-mobile-title="Pilih Kabupaten / Kota">
+                          <option value="">-- Pilih Kab/Kota --</option>
+                        </select>
+                      </div>
+                      <input type="hidden" id="kab_kota_hidden" wire:model="kab_kota">
+                      <input type="hidden" id="kode_kab_kota_hidden" wire:model="kode_kab_kota">
+                      @error('kab_kota')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                    </div>
 
-                  <div class="col-12">
-                    <div wire:ignore>
-                      <select id="kecamatanSelect" class="form-select" disabled>
-                        <option value="">-- Pilih Kecamatan --</option>
-                      </select>
+                    <div class="col-12">
+                      <div wire:ignore>
+                        <select id="kecamatanSelect" class="form-select" data-mobile-title="Pilih Kecamatan" disabled>
+                          <option value="">-- Pilih Kecamatan --</option>
+                        </select>
+                      </div>
+                      <input type="hidden" id="kecamatan_hidden" wire:model="kecamatan">
+                      <input type="hidden" id="kode_kecamatan_hidden" wire:model="kode_kecamatan">
+                      @error('kecamatan')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
-                    <input type="hidden" id="kecamatan_hidden" wire:model.live="kecamatan">
-                    <input type="hidden" id="kode_kecamatan_hidden" wire:model.live="kode_kecamatan">
-                    @error('kecamatan')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                  </div>
 
-                  <div class="col-12">
-                    <div wire:ignore>
-                      <select id="desaSelect" class="form-select" disabled>
-                        <option value="">-- Pilih Desa --</option>
-                      </select>
+                    <div class="col-12">
+                      <div wire:ignore>
+                        <select id="desaSelect" class="form-select" data-mobile-title="Pilih Desa" disabled>
+                          <option value="">-- Pilih Desa --</option>
+                        </select>
+                      </div>
+                      <input type="hidden" id="desa_hidden" wire:model="desa">
+                      <input type="hidden" id="kode_desa_hidden" wire:model="kode_desa">
+                      @error('desa')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
-                    <input type="hidden" id="desa_hidden" wire:model.live="desa">
-                    <input type="hidden" id="kode_desa_hidden" wire:model.live="kode_desa">
-                    <input type="hidden" id="kode_provinsi_hidden" wire:model.live="kode_provinsi" value="33">
-                    @error('desa')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                  </div>
+                    <input type="hidden" id="kode_provinsi_hidden" wire:model="kode_provinsi" value="33">
+                  @endif
                 </div>
               </div>
             </div>
@@ -688,37 +1230,39 @@
           <div class="section-soft">
             <div class="section-soft-title">Dokumentasi</div>
 
-            <label class="form-label fw-semibold">Dokumentasi (Foto)</label>
+            @if(!$id)
+              <label class="form-label fw-semibold">Dokumentasi (Foto)</label>
 
-            <input id="lwPhotos" type="file" class="d-none" accept="image/*" multiple wire:model="photos">
-            <input id="cameraCaptureInput" type="file" class="d-none" accept="image/*" capture="environment">
-            <input id="galleryInput" type="file" class="d-none" accept="image/*" multiple>
+              <input id="lwPhotos" type="file" class="d-none" accept="image/*" multiple wire:model="photos">
+              <input id="cameraCaptureInput" type="file" class="d-none" accept="image/*" capture="environment">
+              <input id="galleryInput" type="file" class="d-none" accept="image/*" multiple>
 
-            <div class="photo-action-row">
-              <button type="button" class="btn btn-app-primary" id="btnOpenCamera">
-                <i class="bi bi-camera me-1"></i> Ambil Foto
-              </button>
+              <div class="photo-action-row">
+                <button type="button" class="btn btn-app-primary" id="btnOpenCamera">
+                  <i class="bi bi-camera me-1"></i> Ambil Foto
+                </button>
 
-              <button type="button" class="btn btn-app-outline" id="btnOpenGallery">
-                <i class="bi bi-images me-1"></i> Pilih dari Galeri
-              </button>
+                <button type="button" class="btn btn-app-outline" id="btnOpenGallery">
+                  <i class="bi bi-images me-1"></i> Pilih dari Galeri
+                </button>
 
-              <div class="upload-pill">
-                <i class="bi bi-info-circle"></i> Maksimal 5MB per foto
+                <div class="upload-pill">
+                  <i class="bi bi-info-circle"></i> Maksimal 5MB per foto
+                </div>
               </div>
-            </div>
 
-            <div class="small text-muted mt-2" wire:loading wire:target="photos">Mengunggah foto...</div>
-            @error('photos') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-            @error('photos.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+              <div class="small text-muted mt-2" wire:loading wire:target="photos">Mengunggah foto...</div>
+              @error('photos') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+              @error('photos.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
 
-            <div class="mt-3">
-              <div class="preview-title">Preview foto dipilih</div>
-              <div id="photoPreviewWrap" class="row g-2" wire:ignore></div>
-            </div>
+              <div class="mt-3">
+                <div class="preview-title">Preview foto dipilih</div>
+                <div id="photoPreviewWrap" class="row g-2" wire:ignore></div>
+              </div>
+            @endif
 
             @if($id && isset($docs) && $docs->count())
-              <div class="mt-3">
+              <div>
                 <div class="preview-title">Foto tersimpan</div>
                 <div class="row g-2">
                   @foreach($docs as $doc)
@@ -727,12 +1271,6 @@
                         <img src="{{ $doc->url }}" class="w-100"
                             style="border-radius:14px;object-fit:cover;aspect-ratio:1/1;"
                             loading="lazy">
-                        <button type="button"
-                                class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-2"
-                                wire:click="deleteDoc({{ $doc->id }})"
-                                onclick="return confirm('Hapus foto ini?')">
-                          <i class="bi bi-trash"></i>
-                        </button>
                       </div>
                     </div>
                   @endforeach
@@ -754,20 +1292,22 @@
 
         <div class="col-12">
           <div class="sticky-action-bar">
-            <div class="sticky-action-grid">
-              <button class="btn btn-app-primary" wire:click.prevent="save">
-                <i class="bi bi-save me-1"></i> Simpan
-              </button>
-
+            <div class="sticky-action-grid {{ $id ? 'd-block' : '' }}">
+              @if(!$id)
+                <button class="btn btn-app-primary" wire:click.prevent="save">
+                  <i class="bi bi-save me-1"></i> Simpan
+                </button>
+              @endif
               <a class="btn btn-app-light text-center text-decoration-none d-flex align-items-center justify-content-center"
                 href="{{ route('prospects.index') }}">
-                Batal
+                {{ $id ? 'Kembali' : 'Batal' }}
               </a>
             </div>
           </div>
         </div>
 
       </div>
+      </fieldset>
     </div>
   </div>
 
@@ -801,9 +1341,91 @@
     </div>
   </div>
 
-  <div class="modal fade" id="modalMapPicker" tabindex="-1" aria-hidden="true" wire:ignore.self>
-    <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
+  <div class="modal fade prospect-date-modal" id="modalProspectDate" tabindex="-1" aria-hidden="true" wire:ignore.self>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0">
+        <span class="prospect-sheet-handle" aria-hidden="true"></span>
+
+        <div class="modal-header border-0 prospect-sheet-header">
+          <div class="prospect-sheet-heading">
+            <span class="prospect-date-header-icon"><i class="bi bi-calendar3"></i></span>
+            <div class="prospect-sheet-heading-copy">
+              <div class="fw-bold fs-5">Pilih Tanggal</div>
+              <div class="text-muted small">Tanggal prospek pegawai</div>
+            </div>
+          </div>
+          <button type="button"
+                  class="prospect-date-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Tutup kalender">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <button type="button" class="prospect-date-nav" id="prospectDatePrev" aria-label="Bulan sebelumnya">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <div class="prospect-date-month" id="prospectDateMonth" aria-live="polite"></div>
+            <button type="button" class="prospect-date-nav" id="prospectDateNext" aria-label="Bulan berikutnya">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+
+          <div class="prospect-date-weekdays" aria-hidden="true">
+            <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span>
+            <span>Jum</span><span>Sab</span><span>Min</span>
+          </div>
+          <div class="prospect-date-grid" id="prospectDateGrid" role="grid" aria-label="Kalender tanggal prospek"></div>
+        </div>
+
+        <div class="modal-footer border-0 justify-content-end">
+          <button type="button" class="prospect-date-today" id="btnProspectDateToday">Hari ini</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade prospect-select-modal" id="modalProspectSelect" tabindex="-1" aria-hidden="true" wire:ignore.self>
+    <div class="modal-dialog">
+      <div class="modal-content border-0">
+        <span class="prospect-sheet-handle" aria-hidden="true"></span>
+
+        <div class="modal-header border-0 prospect-sheet-header">
+          <div class="prospect-sheet-heading">
+            <span class="prospect-date-header-icon"><i class="bi bi-ui-radios"></i></span>
+            <div class="prospect-sheet-heading-copy">
+              <div class="fw-bold fs-5" id="prospectSelectTitle">Pilih Data</div>
+              <div class="text-muted small">Cari lalu pilih salah satu data</div>
+            </div>
+          </div>
+          <button type="button"
+                  class="prospect-date-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Tutup pilihan">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="prospect-select-search">
+            <input type="search"
+                   class="form-control"
+                   id="prospectSelectSearch"
+                   placeholder="Cari data..."
+                   autocomplete="off">
+          </div>
+          <div class="prospect-select-list" id="prospectSelectList" role="listbox"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade prospect-map-modal" id="modalMapPicker" tabindex="-1" aria-hidden="true" wire:ignore.self>
+    <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content border-0" style="border-radius:18px;overflow:hidden;">
+        <span class="prospect-sheet-handle" aria-hidden="true"></span>
         <div class="modal-header">
           <div>
             <div class="fw-bold">Pilih Titik Lokasi</div>
@@ -934,17 +1556,66 @@
         || location.hostname === '127.0.0.1';
     }
 
-    async function fetchJson(url) {
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      });
+    const wilayahRequestCache = new Map();
 
-      if (!res.ok) {
-        throw new Error('HTTP ' + res.status + ' - ' + url);
+    async function fetchJson(url) {
+      if (wilayahRequestCache.has(url)) {
+        return await wilayahRequestCache.get(url);
       }
 
-      return await res.json();
+      const request = (async function () {
+        let lastError = null;
+
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          const controller = new AbortController();
+          const timeoutId = window.setTimeout(function () {
+            controller.abort();
+          }, 12000);
+
+          try {
+            const res = await fetch(url, {
+              method: 'GET',
+              headers: { 'Accept': 'application/json' },
+              signal: controller.signal
+            });
+
+            const json = await res.json().catch(function () {
+              return null;
+            });
+
+            if (!res.ok) {
+              throw new Error((json && json.message) || ('HTTP ' + res.status));
+            }
+
+            if (!json || !Array.isArray(json.data)) {
+              throw new Error('Format data wilayah tidak valid.');
+            }
+
+            return json;
+          } catch (error) {
+            lastError = error;
+
+            if (attempt < 2) {
+              await new Promise(function (resolve) {
+                window.setTimeout(resolve, 350);
+              });
+            }
+          } finally {
+            window.clearTimeout(timeoutId);
+          }
+        }
+
+        throw lastError || new Error('Data wilayah gagal dimuat.');
+      })();
+
+      wilayahRequestCache.set(url, request);
+
+      try {
+        return await request;
+      } catch (error) {
+        wilayahRequestCache.delete(url);
+        throw error;
+      }
     }
 
     function normalizeText(str) {
@@ -1228,6 +1899,12 @@
 
     async function initWilayahProspek() {
       const PROV_ID = '33';
+      const requestSerial = window.__prospectWilayahRequestSerial
+        || (window.__prospectWilayahRequestSerial = {
+          kabupaten: 0,
+          kecamatan: 0,
+          desa: 0
+        });
 
       const kabSelect = getEl('kabKotaSelect');
       const kecSelect = getEl('kecamatanSelect');
@@ -1246,12 +1923,23 @@
         return;
       }
 
+      if (
+        kabSelect.dataset.wilayahState === 'loading'
+        || kabSelect.dataset.wilayahState === 'ready'
+      ) {
+        return;
+      }
+
+      kabSelect.dataset.wilayahState = 'loading';
       setInputValue(kodeProvHidden, PROV_ID);
 
       async function loadKabupaten(initialName) {
+        const requestId = ++requestSerial.kabupaten;
         resetSelect(kabSelect, '-- Loading Kab/Kota --', true);
 
         const json = await fetchJson('/api-wilayah/regencies/' + PROV_ID);
+        if (requestId !== requestSerial.kabupaten) return [];
+
         const list = Array.isArray(json.data) ? json.data : [];
 
         kabSelect.innerHTML = '<option value="">-- Pilih Kab/Kota --</option>';
@@ -1264,6 +1952,7 @@
         });
 
         kabSelect.disabled = false;
+        kabSelect.dataset.loadState = 'ready';
 
         if (initialName) {
           const found = findByNameLoose(list, initialName);
@@ -1278,15 +1967,31 @@
       }
 
       async function loadKecamatan(regencyCode, initialName) {
+        const requestId = ++requestSerial.kecamatan;
+
         if (!regencyCode) {
           resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
           resetSelect(desaSelect, '-- Pilih Desa --', true);
+          kecSelect.dataset.loadState = 'idle';
           return [];
         }
 
         resetSelect(kecSelect, '-- Loading Kecamatan --', true);
+        kecSelect.dataset.loadState = 'loading';
 
-        const json = await fetchJson('/api-wilayah/districts/' + regencyCode);
+        let json;
+        try {
+          json = await fetchJson('/api-wilayah/districts/' + regencyCode);
+        } catch (error) {
+          if (requestId === requestSerial.kecamatan) {
+            resetSelect(kecSelect, '-- Gagal memuat, klik untuk coba lagi --', false);
+            kecSelect.dataset.loadState = 'error';
+          }
+          console.error('Kecamatan gagal dimuat:', error);
+          return [];
+        }
+
+        if (requestId !== requestSerial.kecamatan) return [];
         const list = Array.isArray(json.data) ? json.data : [];
 
         kecSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
@@ -1299,6 +2004,7 @@
         });
 
         kecSelect.disabled = false;
+        kecSelect.dataset.loadState = 'ready';
 
         if (initialName) {
           const found = findByNameLoose(list, initialName);
@@ -1313,14 +2019,30 @@
       }
 
       async function loadDesa(districtCode, initialName) {
+        const requestId = ++requestSerial.desa;
+
         if (!districtCode) {
           resetSelect(desaSelect, '-- Pilih Desa --', true);
+          desaSelect.dataset.loadState = 'idle';
           return [];
         }
 
         resetSelect(desaSelect, '-- Loading Desa --', true);
+        desaSelect.dataset.loadState = 'loading';
 
-        const json = await fetchJson('/api-wilayah/villages/' + districtCode);
+        let json;
+        try {
+          json = await fetchJson('/api-wilayah/villages/' + districtCode);
+        } catch (error) {
+          if (requestId === requestSerial.desa) {
+            resetSelect(desaSelect, '-- Gagal memuat, klik untuk coba lagi --', false);
+            desaSelect.dataset.loadState = 'error';
+          }
+          console.error('Desa gagal dimuat:', error);
+          return [];
+        }
+
+        if (requestId !== requestSerial.desa) return [];
         const list = Array.isArray(json.data) ? json.data : [];
 
         desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
@@ -1333,6 +2055,7 @@
         });
 
         desaSelect.disabled = false;
+        desaSelect.dataset.loadState = 'ready';
 
         if (initialName) {
           const found = findByNameLoose(list, initialName);
@@ -1358,7 +2081,9 @@
           setInputValue(kodeKecHidden, '');
           setInputValue(kodeDesaHidden, '');
 
+          requestSerial.desa++;
           resetSelect(desaSelect, '-- Pilih Desa --', true);
+          desaSelect.dataset.loadState = 'idle';
           await loadKecamatan(this.value || '', '');
         });
       }
@@ -1386,6 +2111,34 @@
         });
       }
 
+      if (kabSelect.dataset.retryBound !== '1') {
+        kabSelect.dataset.retryBound = '1';
+        kabSelect.addEventListener('pointerdown', function (event) {
+          if (kabSelect.dataset.wilayahState !== 'error') return;
+          event.preventDefault();
+          kabSelect.dataset.wilayahState = 'idle';
+          initWilayahProspek();
+        });
+      }
+
+      if (kecSelect.dataset.retryBound !== '1') {
+        kecSelect.dataset.retryBound = '1';
+        kecSelect.addEventListener('pointerdown', function (event) {
+          if (kecSelect.dataset.loadState !== 'error' || !kabSelect.value) return;
+          event.preventDefault();
+          loadKecamatan(kabSelect.value, '');
+        });
+      }
+
+      if (desaSelect.dataset.retryBound !== '1') {
+        desaSelect.dataset.retryBound = '1';
+        desaSelect.addEventListener('pointerdown', function (event) {
+          if (desaSelect.dataset.loadState !== 'error' || !kecSelect.value) return;
+          event.preventDefault();
+          loadDesa(kecSelect.value, '');
+        });
+      }
+
       try {
         const initialKab = kabHidden.value || '';
         const initialKec = kecHidden.value || '';
@@ -1406,9 +2159,12 @@
             }
           }
         }
+
+        kabSelect.dataset.wilayahState = 'ready';
       } catch (e) {
         console.error('Wilayah gagal dimuat:', e);
-        resetSelect(kabSelect, '-- Gagal memuat Kab/Kota --', true);
+        kabSelect.dataset.wilayahState = 'error';
+        resetSelect(kabSelect, '-- Gagal memuat, klik untuk coba lagi --', false);
         resetSelect(kecSelect, '-- Pilih Kecamatan --', true);
         resetSelect(desaSelect, '-- Pilih Desa --', true);
       }
@@ -1423,6 +2179,9 @@
     let pickedLat = '';
     let pickedLng = '';
     let pickedAddress = '';
+    let prospectDateView = null;
+    let activeMobileSelect = null;
+    const mobileSelectObservers = new WeakMap();
 
     function isMobileDevice() {
       return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
@@ -1943,19 +2702,435 @@
       }
     }
 
+    function dateToYmd(date) {
+      return date.getFullYear()
+        + '-' + String(date.getMonth() + 1).padStart(2, '0')
+        + '-' + String(date.getDate()).padStart(2, '0');
+    }
+
+    function parseLocalDate(value) {
+      const parts = String(value || '').split('-').map(Number);
+      if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) return null;
+
+      const date = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0);
+      if (
+        date.getFullYear() !== parts[0]
+        || date.getMonth() !== parts[1] - 1
+        || date.getDate() !== parts[2]
+      ) {
+        return null;
+      }
+
+      return date;
+    }
+
+    function formatProspectDate(value) {
+      const date = parseLocalDate(value);
+      if (!date) return 'Pilih tanggal';
+
+      return String(date.getDate()).padStart(2, '0')
+        + '/' + String(date.getMonth() + 1).padStart(2, '0')
+        + '/' + date.getFullYear();
+    }
+
+    function updateProspectDateDisplay() {
+      const input = getEl('tanggal_prospek');
+      const display = getEl('prospectDateDisplay');
+      if (display) display.textContent = formatProspectDate(input ? input.value : '');
+    }
+
+    function selectedOptionText(select) {
+      if (!select || select.selectedIndex < 0) return 'Pilih data';
+      return String(select.options[select.selectedIndex].textContent || '').trim();
+    }
+
+    function syncMobileSelectButton(select) {
+      if (!select || !select.id) return;
+      const button = document.querySelector(
+        '.prospect-mobile-select[data-select-id="' + select.id + '"]'
+      );
+      if (!button) return;
+
+      const label = button.querySelector('.prospect-mobile-select-label');
+      const isDisabled = select.matches(':disabled');
+      if (label) label.textContent = selectedOptionText(select);
+      button.disabled = isDisabled;
+      button.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
+    }
+
+    function renderMobileSelectOptions(keyword) {
+      const list = getEl('prospectSelectList');
+      if (!list || !activeMobileSelect) return;
+
+      const query = String(keyword || '').trim().toLowerCase();
+      const options = Array.from(activeMobileSelect.options || []).filter(function(option) {
+        return !query || String(option.textContent || '').toLowerCase().includes(query);
+      });
+
+      list.innerHTML = '';
+
+      if (!options.length) {
+        const empty = document.createElement('div');
+        empty.className = 'text-center text-muted py-4';
+        empty.textContent = 'Data tidak ditemukan.';
+        list.appendChild(empty);
+        return;
+      }
+
+      options.forEach(function(option) {
+        const item = document.createElement('button');
+        const isSelected = option.value === activeMobileSelect.value;
+
+        item.type = 'button';
+        item.className = 'prospect-select-option' + (isSelected ? ' is-selected' : '');
+        item.disabled = option.disabled;
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+
+        const dot = document.createElement('span');
+        dot.className = 'prospect-select-option-dot';
+        dot.setAttribute('aria-hidden', 'true');
+
+        const text = document.createElement('span');
+        text.textContent = String(option.textContent || '').trim();
+
+        item.appendChild(dot);
+        item.appendChild(text);
+
+        item.addEventListener('click', function () {
+          if (!activeMobileSelect || option.disabled) return;
+
+          setInputValue(activeMobileSelect, option.value);
+          syncMobileSelectButton(activeMobileSelect);
+
+          const modalEl = getEl('modalProspectSelect');
+          if (modalEl && window.bootstrap) {
+            const instance = bootstrap.Modal.getInstance(modalEl);
+            if (instance) instance.hide();
+          }
+        });
+
+        list.appendChild(item);
+      });
+    }
+
+    function openMobileSelect(select) {
+      const modalEl = getEl('modalProspectSelect');
+      const title = getEl('prospectSelectTitle');
+      const search = getEl('prospectSelectSearch');
+      if (!modalEl || !select || select.matches(':disabled') || !window.bootstrap) return;
+
+      activeMobileSelect = select;
+      if (title) title.textContent = select.dataset.mobileTitle || 'Pilih Data';
+      if (search) search.value = '';
+      renderMobileSelectOptions('');
+
+      bootstrap.Modal.getOrCreateInstance(modalEl).show();
+
+      window.setTimeout(function () {
+        if (search && modalEl.classList.contains('show')) search.focus();
+      }, 180);
+    }
+
+    function bindMobileSelectSheets() {
+      const modalEl = getEl('modalProspectSelect');
+      const search = getEl('prospectSelectSearch');
+
+      document.querySelectorAll('select.form-select[data-mobile-title]').forEach(function(select, index) {
+        if (!select.id) select.id = 'prospectMobileSelect' + index;
+        select.classList.add('prospect-native-select');
+
+        let button = document.querySelector(
+          '.prospect-mobile-select[data-select-id="' + select.id + '"]'
+        );
+
+        if (!button) {
+          button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'prospect-mobile-select d-md-none';
+          button.dataset.selectId = select.id;
+          button.setAttribute('aria-haspopup', 'dialog');
+          button.setAttribute('aria-controls', 'modalProspectSelect');
+          button.innerHTML = '<span class="prospect-mobile-select-label"></span>'
+            + '<i class="bi bi-chevron-down" aria-hidden="true"></i>';
+          select.insertAdjacentElement('afterend', button);
+        }
+
+        if (button.dataset.bound !== '1') {
+          button.dataset.bound = '1';
+          button.addEventListener('click', function () {
+            openMobileSelect(getEl(this.dataset.selectId));
+          });
+        }
+
+        if (select.dataset.mobileSheetBound !== '1') {
+          select.dataset.mobileSheetBound = '1';
+          select.addEventListener('change', function () {
+            syncMobileSelectButton(this);
+          });
+        }
+
+        if (!mobileSelectObservers.has(select)) {
+          const observer = new MutationObserver(function () {
+            syncMobileSelectButton(select);
+            if (activeMobileSelect === select && modalEl && modalEl.classList.contains('show')) {
+              renderMobileSelectOptions(search ? search.value : '');
+            }
+          });
+
+          observer.observe(select, {
+            attributes: true,
+            attributeFilter: ['disabled'],
+            childList: true,
+            subtree: true
+          });
+          mobileSelectObservers.set(select, observer);
+        }
+
+        syncMobileSelectButton(select);
+      });
+
+      if (search && search.dataset.bound !== '1') {
+        search.dataset.bound = '1';
+        search.addEventListener('input', function () {
+          renderMobileSelectOptions(this.value);
+        });
+      }
+
+      if (modalEl && modalEl.dataset.selectBound !== '1') {
+        modalEl.dataset.selectBound = '1';
+        modalEl.addEventListener('hidden.bs.modal', function () {
+          activeMobileSelect = null;
+          if (search) search.value = '';
+        });
+      }
+    }
+
+    function bindBottomSheetSwipe(modalEl) {
+      if (!modalEl || modalEl.dataset.swipeBound === '1') return;
+      modalEl.dataset.swipeBound = '1';
+
+      const content = modalEl.querySelector('.modal-content');
+      if (!content) return;
+
+      let startY = 0;
+      let distanceY = 0;
+      let dragging = false;
+
+      function resetSheetPosition() {
+        content.style.removeProperty('transition');
+        content.style.removeProperty('transform');
+      }
+
+      content.addEventListener('touchstart', function (event) {
+        if (event.touches.length !== 1) return;
+
+        const startedOnHandle = event.target.closest('.prospect-sheet-handle');
+        const startedOnHeader = event.target.closest('.modal-header');
+        const body = modalEl.querySelector('.modal-body');
+        const startedOnInteractive = event.target.closest(
+          'input,button,select,textarea,a,.leaflet-container'
+        );
+        const bodyAtTop = !body || body.scrollTop <= 0;
+
+        if (!startedOnHandle && !startedOnHeader && (startedOnInteractive || !bodyAtTop)) {
+          return;
+        }
+
+        startY = event.touches[0].clientY;
+        distanceY = 0;
+        dragging = true;
+        content.style.setProperty('transition', 'none', 'important');
+      }, { passive: true });
+
+      content.addEventListener('touchmove', function (event) {
+        if (!dragging || event.touches.length !== 1) return;
+        distanceY = Math.max(0, event.touches[0].clientY - startY);
+        if (distanceY <= 0) return;
+
+        event.preventDefault();
+        content.style.setProperty('transform', 'translateY(' + distanceY + 'px)', 'important');
+      }, { passive: false });
+
+      content.addEventListener('touchend', function () {
+        if (!dragging) return;
+        dragging = false;
+
+        if (distanceY >= 72 && window.bootstrap) {
+          const instance = bootstrap.Modal.getInstance(modalEl);
+          if (instance) instance.hide();
+        }
+
+        resetSheetPosition();
+        distanceY = 0;
+      });
+
+      content.addEventListener('touchcancel', function () {
+        dragging = false;
+        distanceY = 0;
+        resetSheetPosition();
+      });
+
+      modalEl.addEventListener('hidden.bs.modal', resetSheetPosition);
+    }
+
+    function renderProspectDateCalendar() {
+      const grid = getEl('prospectDateGrid');
+      const monthTitle = getEl('prospectDateMonth');
+      const input = getEl('tanggal_prospek');
+      if (!grid || !monthTitle) return;
+
+      const selected = parseLocalDate(input ? input.value : '');
+      const today = new Date();
+
+      if (!prospectDateView) {
+        const initial = selected || today;
+        prospectDateView = new Date(initial.getFullYear(), initial.getMonth(), 1, 12, 0, 0);
+      }
+
+      const year = prospectDateView.getFullYear();
+      const month = prospectDateView.getMonth();
+      const firstWeekday = (new Date(year, month, 1, 12, 0, 0).getDay() + 6) % 7;
+      const firstGridDate = new Date(year, month, 1 - firstWeekday, 12, 0, 0);
+      const monthLabel = prospectDateView.toLocaleDateString('id-ID', {
+        month: 'long',
+        year: 'numeric'
+      });
+
+      monthTitle.textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+      grid.innerHTML = '';
+
+      for (let index = 0; index < 42; index++) {
+        const cellDate = new Date(
+          firstGridDate.getFullYear(),
+          firstGridDate.getMonth(),
+          firstGridDate.getDate() + index,
+          12,
+          0,
+          0
+        );
+        const value = dateToYmd(cellDate);
+        const isSelected = selected && value === dateToYmd(selected);
+        const isToday = value === dateToYmd(today);
+        const dayButton = document.createElement('button');
+
+        dayButton.type = 'button';
+        dayButton.className = 'prospect-date-day';
+        dayButton.textContent = String(cellDate.getDate());
+        dayButton.dataset.date = value;
+        dayButton.setAttribute('role', 'gridcell');
+        dayButton.setAttribute(
+          'aria-label',
+          cellDate.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })
+        );
+
+        if (cellDate.getMonth() !== month) dayButton.classList.add('is-muted');
+        if (isToday) dayButton.classList.add('is-today');
+        if (isSelected) {
+          dayButton.classList.add('is-selected');
+          dayButton.setAttribute('aria-selected', 'true');
+        }
+
+        dayButton.addEventListener('click', function () {
+          const dateInput = getEl('tanggal_prospek');
+          setInputValue(dateInput, this.dataset.date || '');
+          updateProspectDateDisplay();
+
+          const modalEl = getEl('modalProspectDate');
+          if (modalEl && window.bootstrap) {
+            const instance = bootstrap.Modal.getInstance(modalEl);
+            if (instance) instance.hide();
+          }
+        });
+
+        grid.appendChild(dayButton);
+      }
+    }
+
+    function bindProspectDatePicker() {
+      const openButton = getEl('btnOpenProspectDate');
+      const modalEl = getEl('modalProspectDate');
+      const previous = getEl('prospectDatePrev');
+      const next = getEl('prospectDateNext');
+      const todayButton = getEl('btnProspectDateToday');
+
+      updateProspectDateDisplay();
+      if (!openButton || !modalEl) return;
+
+      if (openButton.dataset.bound !== '1') {
+        openButton.dataset.bound = '1';
+        openButton.addEventListener('click', function () {
+          const selected = parseLocalDate((getEl('tanggal_prospek') || {}).value);
+          const initial = selected || new Date();
+          prospectDateView = new Date(initial.getFullYear(), initial.getMonth(), 1, 12, 0, 0);
+          renderProspectDateCalendar();
+
+          if (window.bootstrap) {
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+          }
+        });
+      }
+
+      if (previous && previous.dataset.bound !== '1') {
+        previous.dataset.bound = '1';
+        previous.addEventListener('click', function () {
+          const base = prospectDateView || new Date();
+          prospectDateView = new Date(base.getFullYear(), base.getMonth() - 1, 1, 12, 0, 0);
+          renderProspectDateCalendar();
+        });
+      }
+
+      if (next && next.dataset.bound !== '1') {
+        next.dataset.bound = '1';
+        next.addEventListener('click', function () {
+          const base = prospectDateView || new Date();
+          prospectDateView = new Date(base.getFullYear(), base.getMonth() + 1, 1, 12, 0, 0);
+          renderProspectDateCalendar();
+        });
+      }
+
+      if (todayButton && todayButton.dataset.bound !== '1') {
+        todayButton.dataset.bound = '1';
+        todayButton.addEventListener('click', function () {
+          const today = new Date();
+          setInputValue(getEl('tanggal_prospek'), dateToYmd(today));
+          updateProspectDateDisplay();
+
+          if (window.bootstrap) {
+            const instance = bootstrap.Modal.getInstance(modalEl);
+            if (instance) instance.hide();
+          }
+        });
+      }
+
+      if (modalEl.dataset.dateBound !== '1') {
+        modalEl.dataset.dateBound = '1';
+        modalEl.addEventListener('shown.bs.modal', renderProspectDateCalendar);
+      }
+    }
+
     function initTanggalDefault() {
       var el = getEl('tanggal_prospek');
       if (!el) return;
       if (!el.value) {
         var d = new Date();
-        var mm = String(d.getMonth() + 1).padStart(2, '0');
-        var dd = String(d.getDate()).padStart(2, '0');
-        el.value = d.getFullYear() + '-' + mm + '-' + dd;
+        setInputValue(el, dateToYmd(d));
       }
+      updateProspectDateDisplay();
     }
 
     function bootAll() {
       initTanggalDefault();
+      bindProspectDatePicker();
+      bindMobileSelectSheets();
+      bindBottomSheetSwipe(getEl('modalProspectDate'));
+      bindBottomSheetSwipe(getEl('modalProspectSelect'));
+      bindBottomSheetSwipe(getEl('modalMapPicker'));
       bindLocationButton();
       bindContactPicker();
       initWilayahProspek();

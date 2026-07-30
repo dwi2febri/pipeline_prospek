@@ -61,6 +61,118 @@
     .sim-print-head{
       display:none;
     }
+    .sim-currency,
+    .sim-amount{
+      display:inline;
+    }
+    @media (max-width:767.98px){
+      .sim-title{
+        font-size:1.24rem;
+      }
+      .sim-subtitle{
+        font-size:.64rem;
+        line-height:1.45;
+      }
+      .sim-card{
+        width:100%;
+        padding:10px !important;
+        border-radius:20px;
+      }
+      .sim-panel{
+        padding:11px !important;
+        border-radius:16px;
+      }
+      .sim-panel .row{
+        --bs-gutter-x:10px;
+        --bs-gutter-y:10px;
+      }
+      .sim-panel .form-label{
+        margin-bottom:5px;
+        font-size:.67rem;
+      }
+      .sim-panel .form-control,
+      .sim-panel .form-select,
+      .sim-panel .searchable-filter-trigger{
+        min-height:46px !important;
+        border-radius:14px !important;
+        font-size:.68rem !important;
+      }
+      .sim-panel .btn{
+        min-height:38px;
+        padding:8px 13px;
+        border-radius:12px;
+        font-size:.65rem;
+      }
+      .sim-summary-grid{
+        --bs-gutter-x:6px;
+        --bs-gutter-y:6px;
+        margin-bottom:10px !important;
+      }
+      .sim-summary-grid > [class*="col-"]{
+        width:33.333333%;
+        flex:0 0 33.333333%;
+      }
+      .sim-summary{
+        min-height:70px;
+        padding:8px !important;
+        border-left-width:3px;
+        border-radius:12px;
+      }
+      .sim-summary .label{
+        margin-bottom:4px;
+        font-size:.5rem;
+        line-height:1.25;
+      }
+      .sim-summary .value{
+        font-size:.58rem;
+        line-height:1.35;
+        overflow-wrap:anywhere;
+      }
+      .sim-table-wrap{
+        width:100%;
+        max-width:100%;
+        overflow:hidden;
+        border:1px solid #e2e8f0;
+        border-radius:12px;
+        background:#fff;
+      }
+      .sim-table{
+        width:100% !important;
+        min-width:0 !important;
+        table-layout:fixed;
+        margin:0 !important;
+        font-size:7.5px;
+        line-height:1.25;
+      }
+      .sim-table th,
+      .sim-table td{
+        height:auto;
+        padding:7px 2px !important;
+        overflow:hidden;
+        vertical-align:middle;
+        text-align:center !important;
+        text-overflow:clip;
+        white-space:nowrap;
+      }
+      .sim-table th{
+        font-size:7.2px;
+        letter-spacing:-.01em;
+      }
+      .sim-table th:nth-child(1),
+      .sim-table td:nth-child(1){
+        width:11%;
+      }
+      .sim-table th:nth-child(n+2),
+      .sim-table td:nth-child(n+2){
+        width:22.25%;
+      }
+      .sim-currency{
+        display:none;
+      }
+      .sim-amount{
+        display:inline;
+      }
+    }
     @media print{
       body{
         background:#fff !important;
@@ -113,7 +225,10 @@
       <div class="row g-3">
         <div class="col-12 col-md-4">
           <label class="form-label fw-semibold">Produk</label>
-          <select class="form-select" wire:model.live="produk">
+          <select class="form-select"
+                  wire:model.live="produk"
+                  data-searchable-filter
+                  data-search-placeholder="Cari produk...">
             @foreach($produkOptions as $value => $label)
               <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
@@ -123,7 +238,10 @@
         @if($produk === 'makaryo')
           <div class="col-12 col-md-4">
             <label class="form-label fw-semibold">Status Pegawai</label>
-            <select class="form-select" wire:model.live="pegawai">
+            <select class="form-select"
+                    wire:model.live="pegawai"
+                    data-searchable-filter
+                    data-search-placeholder="Cari status pegawai...">
               <option value="internal">Pegawai Internal</option>
               <option value="eksternal">Pegawai Eksternal</option>
             </select>
@@ -132,7 +250,10 @@
 
         <div class="col-12 col-md-4">
           <label class="form-label fw-semibold">Metode</label>
-          <select class="form-select" wire:model.live="metode">
+          <select class="form-select"
+                  wire:model.live="metode"
+                  data-searchable-filter
+                  data-search-placeholder="Cari metode...">
             <option value="flat">Flat</option>
             <option value="anuitas">Anuitas</option>
           </select>
@@ -192,7 +313,7 @@
         </tbody>
       </table>
 
-      <div class="row g-3 mb-4">
+      <div class="row g-3 mb-4 sim-summary-grid">
         <div class="col-12 col-md-4">
           <div class="sim-summary p-3">
             <div class="label">Angsuran/Bulan</div>
@@ -213,7 +334,7 @@
         </div>
       </div>
 
-      <div class="table-responsive">
+      <div class="table-responsive sim-table-wrap">
         <table class="table table-bordered table-striped sim-table" id="simulasi-kredit-table">
           <thead>
             <tr>
@@ -228,10 +349,10 @@
             @forelse($jadwalAngsuran as $row)
               <tr>
                 <td>{{ $row['bulan'] }}</td>
-                <td class="text-end">{{ 'Rp ' . number_format($row['pokok'], 0, ',', '.') }}</td>
-                <td class="text-end">{{ 'Rp ' . number_format($row['bunga'], 0, ',', '.') }}</td>
-                <td class="text-end">{{ 'Rp ' . number_format($row['angsuran'], 0, ',', '.') }}</td>
-                <td class="text-end">{{ 'Rp ' . number_format($row['sisa_pokok'], 0, ',', '.') }}</td>
+                <td class="text-end"><span class="sim-currency">Rp </span><span class="sim-amount">{{ number_format($row['pokok'], 0, ',', '.') }}</span></td>
+                <td class="text-end"><span class="sim-currency">Rp </span><span class="sim-amount">{{ number_format($row['bunga'], 0, ',', '.') }}</span></td>
+                <td class="text-end"><span class="sim-currency">Rp </span><span class="sim-amount">{{ number_format($row['angsuran'], 0, ',', '.') }}</span></td>
+                <td class="text-end"><span class="sim-currency">Rp </span><span class="sim-amount">{{ number_format($row['sisa_pokok'], 0, ',', '.') }}</span></td>
               </tr>
             @empty
               <tr>

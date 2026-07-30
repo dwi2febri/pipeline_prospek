@@ -17,12 +17,12 @@ class Index extends Component
 
     public string $status  = 'ALL';
     public string $search  = '';
-    public string $periode = 'bulan_ini';
+    public string $periode = 'semua';
 
     protected $queryString = [
         'status'  => ['except' => 'ALL'],
         'search'  => ['except' => ''],
-        'periode' => ['except' => 'bulan_ini'],
+        'periode' => ['except' => 'semua'],
     ];
 
     public function updatingSearch(): void
@@ -55,6 +55,11 @@ class Index extends Component
             ->where('id', $id)
             ->where('input_by', $u->id)
             ->firstOrFail();
+
+        if (strtoupper(trim((string) $p->status)) === 'CLOSING') {
+            session()->flash('error', 'Prospek berstatus Closing tidak dapat dihapus.');
+            return;
+        }
 
         $p->delete();
 

@@ -14,6 +14,11 @@
       font-size:1rem;
     }
 
+    .eprospek-mobile-hero,
+    .mobile-dashboard-filter-toggle{
+      display:none;
+    }
+
     .dash-top-actions{
       display:flex;
       align-items:center;
@@ -55,38 +60,68 @@
 
     .mobile-fab-stack{
       position:fixed;
-      right:16px;
-      bottom:88px;
-      z-index:1045;
+      right:max(8px,calc(50% - 245px));
+      bottom:calc(10px + env(safe-area-inset-bottom));
+      z-index:10030;
       display:flex;
       flex-direction:column;
-      gap:12px;
+      align-items:center;
+      gap:10px;
+      width:72px;
     }
 
     .mobile-fab-stack .mobile-fab-ai,
     .mobile-fab-stack .mobile-fab-dashboard-add{
-      width:62px;
-      height:62px;
+      position:static !important;
+      flex:0 0 auto;
       border-radius:999px;
       display:flex;
       align-items:center;
       justify-content:center;
-      color:#fff;
+      color:#171b22;
       text-decoration:none;
-      box-shadow:0 18px 30px rgba(37,99,235,.28);
+      overflow:hidden;
+      isolation:isolate;
+      border:1px solid rgba(255,255,255,.55);
+      box-shadow:
+        0 10px 24px rgba(31,45,70,.1),
+        inset 0 1px 0 rgba(255,255,255,.66),
+        inset 0 -1px 0 rgba(255,255,255,.12);
+      backdrop-filter:blur(12px) saturate(108%);
+      -webkit-backdrop-filter:blur(12px) saturate(108%);
+      transition:transform .18s ease,box-shadow .18s ease;
     }
 
     .mobile-fab-stack .mobile-fab-ai{
-      background:linear-gradient(135deg,#7c3aed 0%,#2563eb 100%);
+      width:72px;
+      height:72px;
+      background:rgba(255,255,255,.08);
     }
 
     .mobile-fab-stack .mobile-fab-dashboard-add{
-      background:linear-gradient(135deg,#14b8a6 0%,#3b82f6 100%);
+      width:72px;
+      height:72px;
+      background:rgba(255,255,255,.08);
+    }
+
+    .mobile-fab-stack .mobile-fab-ai:active,
+    .mobile-fab-stack .mobile-fab-dashboard-add:active{
+      transform:scale(.94);
     }
 
     .mobile-fab-stack .mobile-fab-ai i,
     .mobile-fab-stack .mobile-fab-dashboard-add i{
-      font-size:1.45rem;
+      position:relative;
+      z-index:1;
+      filter:drop-shadow(0 1px 2px rgba(31,45,70,.14));
+    }
+
+    .mobile-fab-stack .mobile-fab-ai i{
+      font-size:1.35rem;
+    }
+
+    .mobile-fab-stack .mobile-fab-dashboard-add i{
+      font-size:1.7rem;
     }
 
     .dash-filter-card{
@@ -336,13 +371,32 @@
     }
 
     .map-popup-photo{
-      margin-top:10px;
       border-radius:12px;
       width:100%;
       max-width:220px;
       height:140px;
       object-fit:cover;
       border:1px solid #e5e7eb;
+      display:block;
+    }
+
+    .map-popup-photo-link{
+      display:block;
+      width:220px;
+      max-width:100%;
+      margin-top:10px;
+      cursor:zoom-in;
+    }
+
+    .map-popup-photo-empty{
+      margin-top:10px;
+      padding:9px 12px;
+      border:1px dashed #cbd5e1;
+      border-radius:10px;
+      background:#f8fafc;
+      color:#64748b;
+      font-size:12px;
+      text-align:center;
     }
 
 
@@ -372,37 +426,452 @@
     }
 
     @media (max-width: 767.98px){
-      .dash-title{ font-size:1.7rem; }
-
-      .desktop-ai-btn{
-        display:none !important;
+      .eprospek-mobile-hero{
+        position:relative;
+        z-index:20;
+        display:block;
+        height:244px;
+        min-height:244px;
+        margin:0 -10px 12px;
+        padding:11px 14px 24px;
+        overflow:hidden;
+        isolation:isolate;
+        border-radius:0 0 32px 32px;
+        color:#fff;
+        background:linear-gradient(142deg,#7196e5 0%,#5d78d6 55%,#4b61c4 100%) !important;
+        box-shadow:0 17px 36px rgba(53,70,157,.22);
+        transition:
+          height .54s cubic-bezier(.22,1,.36,1),
+          min-height .54s cubic-bezier(.22,1,.36,1),
+          padding .48s ease,
+          margin .48s ease,
+          opacity .28s ease,
+          transform .48s cubic-bezier(.22,1,.36,1);
       }
 
-      .mobile-inline-actions{
+      .eprospek-mobile-hero.is-compact{
+        position:sticky;
+        top:0;
+        z-index:10010;
+        height:68px;
+        min-height:68px;
+        padding:10px 14px;
+        border-radius:0 0 24px 24px;
+      }
+
+      .eprospek-mobile-hero.is-scroll-hidden{
+        height:0;
+        min-height:0;
+        margin-bottom:0;
+        padding-top:0;
+        padding-bottom:0;
+        border-width:0;
+        opacity:0;
+        transform:translateY(-100%);
+        pointer-events:none;
+      }
+
+      .eprospek-mobile-hero::before{
+        content:"";
+        position:absolute;
+        inset:7px;
+        z-index:-1;
+        border:1px solid rgba(255,255,255,.08);
+        border-top:0;
+        border-radius:0 0 27px 27px;
+      }
+
+      .eprospek-mobile-hero::after{
+        content:"";
+        position:absolute;
+        z-index:-1;
+        width:128%;height:88px;right:-19%;top:86px;
+        border-radius:44% 56% 48% 52% / 62% 45% 55% 38%;
+        background:rgba(255,255,255,.09);
+        transform:rotate(-9deg);
+      }
+
+      .eprospek-hero-toolbar{
+        position:relative;
+        z-index:4;
         display:flex;
-        gap:10px;
-        margin-top:12px;
-        flex-wrap:wrap;
+        align-items:center;
+        justify-content:flex-end;
       }
 
-      .mobile-inline-actions .mobile-inline-ai,
-      .mobile-inline-actions .mobile-inline-add{
-        flex:1 1 calc(50% - 5px);
-        justify-content:center;
+      .eprospek-hero-compact{
+        position:absolute;left:14px;top:50%;z-index:5;
+        display:flex;align-items:center;gap:9px;
+        opacity:0;transform:translateY(-50%) translateX(-14px);
+        pointer-events:none;
+        transition:opacity .24s ease .08s,transform .38s cubic-bezier(.22,1,.36,1);
       }
+
+      .eprospek-hero-compact-icon{
+        width:38px;height:38px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);
+        border-radius:13px;color:#fff;background:rgba(255,255,255,.12);font-size:17px;
+      }
+
+      .eprospek-hero-compact-title{font-size:11px;font-weight:900}
+      .eprospek-hero-compact-sub{margin-top:1px;color:rgba(255,255,255,.68);font-size:7px}
+
+      .eprospek-mobile-hero.is-compact .eprospek-hero-compact{
+        opacity:1;
+        transform:translateY(-50%) translateX(0);
+      }
+
+      .eprospek-mobile-hero.is-compact .eprospek-hero-copy,
+      .eprospek-mobile-hero.is-compact .eprospek-hero-visual,
+      .eprospek-mobile-hero.is-compact::after{
+        opacity:0;
+        transform:translateY(-28px);
+        pointer-events:none;
+      }
+
+      .eprospek-hero-actions{display:flex;align-items:center;gap:8px}
+      .eprospek-hero-notification{
+        width:38px;height:38px;display:grid;place-items:center;padding:0;
+        border:1px solid rgba(255,255,255,.17);border-radius:50%;
+        background:rgba(255,255,255,.09);color:#fff;overflow:visible;
+      }
+      .eprospek-hero-notification .notification-bell-root{
+        position:static !important;
+        width:100%;height:100%;display:grid;place-items:center;
+      }
+      .eprospek-hero-notification .notification-bell-trigger{
+        width:100% !important;height:100% !important;min-width:0 !important;
+        display:grid !important;place-items:center !important;
+        margin:0 !important;padding:0 !important;border-radius:50% !important;
+        outline:0 !important;-webkit-tap-highlight-color:transparent;
+      }
+      .eprospek-hero-notification .notification-bell-trigger:focus,
+      .eprospek-hero-notification .notification-bell-trigger:focus-visible,
+      .eprospek-hero-notification .notification-bell-trigger:active{
+        border-radius:50% !important;
+        outline:0 !important;
+        background:rgba(255,255,255,.16) !important;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,.28) !important;
+      }
+      .eprospek-hero-notification .notification-bell-trigger > i{
+        display:block;margin:0 !important;font-size:17px;line-height:1;
+        transform:none !important;
+      }
+      .eprospek-hero-notification .notification-bell-trigger .badge{
+        top:-3px !important;right:-5px !important;left:auto !important;
+        min-width:18px;padding:4px 5px !important;transform:none !important;
+        border:2px solid #6785dc;
+      }
+      .eprospek-hero-notification button,
+      .eprospek-hero-notification a{
+        color:#fff !important;background:transparent !important;border:0 !important;box-shadow:none !important;
+      }
+      .eprospek-hero-notification .notification-panel{
+        position:fixed !important;
+        top:60px !important;right:12px !important;left:12px !important;
+        width:auto !important;max-width:none !important;max-height:calc(100dvh - 84px) !important;
+        margin:0 !important;overflow:hidden !important;
+        border:1px solid rgba(255,255,255,.3) !important;border-radius:24px !important;
+        color:#fff !important;
+        background:linear-gradient(142deg,#7196e5 0%,#5d78d6 55%,#4b61c4 100%) !important;
+        box-shadow:0 24px 60px rgba(34,47,111,.34),inset 0 1px 0 rgba(255,255,255,.18) !important;
+        z-index:11050 !important;
+      }
+      .eprospek-hero-notification .notification-panel::before,
+      .eprospek-hero-notification .notification-panel::after{
+        content:"";position:absolute;z-index:0;left:-12%;width:124%;pointer-events:none;
+        border-radius:46% 54% 48% 52% / 58% 43% 57% 42%;
+        background:rgba(255,255,255,.09);
+      }
+      .eprospek-hero-notification .notification-panel::before{
+        top:72px;height:68px;transform:rotate(-5deg);
+      }
+      .eprospek-hero-notification .notification-panel::after{
+        bottom:34px;height:82px;transform:rotate(6deg);background:rgba(37,55,139,.12);
+      }
+      .eprospek-hero-notification .notification-panel-head,
+      .eprospek-hero-notification .notification-panel-list{
+        position:relative;z-index:1;
+      }
+      .eprospek-hero-notification .notification-panel-head{
+        border-color:rgba(255,255,255,.18) !important;background:rgba(255,255,255,.06) !important;
+      }
+      .eprospek-hero-notification .notification-panel .text-muted{
+        color:rgba(255,255,255,.74) !important;
+      }
+      .eprospek-hero-notification .notification-panel-list{
+        max-height:calc(100dvh - 164px) !important;
+      }
+      .eprospek-hero-notification .notification-panel-item{
+        border-color:rgba(255,255,255,.16) !important;background:rgba(255,255,255,.035) !important;
+      }
+      .eprospek-hero-notification .notification-panel-item.bg-light{
+        background:rgba(255,255,255,.13) !important;
+      }
+      .eprospek-hero-notification .notification-panel button,
+      .eprospek-hero-notification .notification-panel a{
+        width:auto !important;height:auto !important;padding:6px 10px !important;
+        border:1px solid rgba(255,255,255,.32) !important;border-radius:999px !important;
+        color:#fff !important;background:rgba(255,255,255,.12) !important;
+      }
+      .eprospek-hero-avatar{
+        width:40px;height:40px;display:grid;place-items:center;border-radius:50%;
+        color:#4b61c4;background:#f3f5ff;border:3px solid rgba(255,255,255,.5);
+        font-weight:900;text-decoration:none;box-shadow:0 7px 18px rgba(1,13,43,.24);
+      }
+
+      .eprospek-hero-copy{position:relative;z-index:3;width:61%;margin-top:17px}
+      .eprospek-hero-eyebrow{font-size:8px;font-weight:850;letter-spacing:.045em;text-transform:uppercase;color:#e3e8ff}
+      .eprospek-hero-copy h1{margin:5px 0 2px;font-size:21px;font-weight:950;line-height:1.08;letter-spacing:-.025em}
+      .eprospek-hero-date{font-size:9px;color:rgba(232,246,252,.78)}
+      .eprospek-hero-role{
+        display:inline-flex;align-items:center;gap:6px;max-width:100%;margin-top:13px;padding:7px 9px;
+        border:1px solid rgba(255,255,255,.14);border-radius:999px;
+        background:rgba(255,255,255,.1);font-size:7.8px;font-weight:700;
+      }
+      .eprospek-hero-role i{color:#ffd829}
+      .eprospek-hero-visual{
+        position:absolute;z-index:2;right:3px;bottom:3px;width:158px;height:204px;
+        display:flex;align-items:flex-end;justify-content:flex-end;pointer-events:none;
+      }
+      .eprospek-hero-visual{
+        background-position:right bottom;background-repeat:no-repeat;background-size:contain;
+        filter:drop-shadow(0 14px 17px rgba(37,48,112,.28));
+      }
+      .eprospek-hero-visual img{display:none}
+
+      .dash-desktop-heading{display:none !important}
+      .mobile-dashboard-filter-toggle{
+        width:100%;display:flex;align-items:center;justify-content:space-between;
+        margin:0 0 9px;padding:11px 13px;border:1px solid rgba(93,120,214,.22);border-radius:18px;
+        color:#3f519e;background:linear-gradient(145deg,#fff,#f2f5ff);box-shadow:0 9px 23px rgba(53,70,157,.09);
+        font-size:10px;font-weight:800;
+      }
+      .mobile-dashboard-filter-toggle:focus,
+      .mobile-dashboard-filter-toggle:active{outline:0 !important;box-shadow:0 9px 23px rgba(53,70,157,.09),0 0 0 3px rgba(93,120,214,.1) !important}
+      .mobile-dashboard-filter-toggle i{color:#5d78d6}
+      .dash-filter-card{
+        display:block;
+        max-height:0;
+        margin-bottom:0 !important;
+        padding:0 12px !important;
+        overflow:hidden;
+        border:0 solid transparent !important;
+        border-radius:23px !important;
+        background:linear-gradient(155deg,#fff,#f7f9ff) !important;
+        box-shadow:none !important;
+        opacity:0;
+        transform:translateY(-7px);
+        transition:max-height .4s cubic-bezier(.22,1,.36,1),padding .35s ease,margin .35s ease,opacity .25s ease,transform .35s ease,box-shadow .35s ease;
+      }
+      .dash-filter-card.mobile-open{
+        max-height:720px;
+        margin-bottom:13px !important;
+        padding:12px !important;
+        border-width:1px !important;
+        border-color:rgba(183,195,233,.68) !important;
+        box-shadow:0 14px 30px rgba(53,70,157,.09) !important;
+        opacity:1;
+        transform:translateY(0);
+      }
+      .mobile-filter-sheet-head{display:flex;align-items:center;gap:10px;margin-bottom:11px;padding:2px 2px 10px;border-bottom:1px solid #e8ecf8}
+      .mobile-filter-sheet-icon{width:34px;height:34px;display:grid;place-items:center;flex:0 0 34px;border-radius:12px;color:#fff;background:linear-gradient(145deg,#7196e5,#4b61c4);box-shadow:0 7px 15px rgba(75,97,196,.2)}
+      .mobile-filter-sheet-title{color:#25346f;font-size:.76rem;font-weight:850;line-height:1.15}
+      .mobile-filter-sheet-sub{margin-top:2px;color:#7b86a8;font-size:.59rem;line-height:1.25}
+      .dash-filter-card .row{--bs-gutter-x:10px;--bs-gutter-y:9px}
+      .dash-filter-card .form-label{color:#4a587f;font-size:.65rem;font-weight:800 !important}
+      .dash-filter-card .form-select,
+      .dash-filter-card .form-control{
+        min-height:40px;
+        border:1px solid #dfe5f5;
+        border-radius:13px;
+        color:#263451;
+        background-color:#fbfcff;
+        font-size:.72rem;
+        box-shadow:none !important;
+      }
+      .dash-filter-card .summary-note{width:100%;justify-content:flex-start;border-radius:15px;background:#f7f9ff}
+      .dash-title{font-size:1.7rem}
+      .desktop-ai-btn{display:none !important}
+      .mobile-inline-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+      .mobile-inline-actions .mobile-inline-ai,
+      .mobile-inline-actions .mobile-inline-add{flex:1 1 calc(50% - 5px);justify-content:center}
 
       .dash-stat-card{
-        min-height:124px;
-        border-radius:22px;
+        --metric-accent:#5d78d6;
+        min-height:82px;
+        padding:35px 5px 7px;
+        border:1px solid rgba(187,210,226,.65);
+        border-radius:15px;
+        color:#16335c;
+        background:linear-gradient(145deg,#fff,#f6fbff);
+        box-shadow:0 7px 17px rgba(53,70,157,.07);
       }
-
-      .dash-stat-card .value{
-        font-size:2.15rem;
+      .dash-stat-card::after{
+        content:"";position:absolute;left:-8%;bottom:-18px;width:116%;height:34px;
+        border-radius:48% 52% 46% 54% / 62% 48% 52% 38%;
+        background:color-mix(in srgb,var(--metric-accent) 11%,transparent);
+        transform:rotate(-3deg);
       }
-
-      .dashboard-map{
-        height:360px;
+      .dash-stat-card .value{position:relative;z-index:2;font-size:1.04rem;line-height:1}
+      .dash-stat-card .label{overflow:hidden;color:#647b96;font-size:.46rem;line-height:1.15;margin-bottom:4px;white-space:nowrap;text-overflow:ellipsis}
+      .dash-stat-card .icon{
+        left:6px;right:auto;top:6px;bottom:auto;width:24px;height:24px;display:grid;place-items:center;
+        border-radius:8px;font-size:11px;color:var(--metric-accent);opacity:1;
+        background:color-mix(in srgb,var(--metric-accent) 12%,white);
       }
+      .dashboard-summary-cards{
+        --bs-gutter-x:0;
+        --bs-gutter-y:0;
+        display:grid !important;
+        grid-template-columns:repeat(5,minmax(0,1fr));
+        gap:5px;
+        margin:0 0 13px !important;
+      }
+      .dashboard-summary-cards > div{
+        width:auto !important;
+        max-width:none !important;
+        padding:0 !important;
+        grid-column:auto !important;
+        grid-row:auto !important;
+        float:none !important;
+      }
+      .dashboard-summary-cards .bg-total .value{color:#d3a600}
+      .dashboard-summary-cards .bg-open .value{color:#087fbd}
+      .dashboard-summary-cards .bg-follow .value{color:#0b2b6f}
+      .dashboard-summary-cards .bg-rejected .value{color:#d74a5c}
+      .dashboard-summary-cards .bg-closing .value{color:#178fbd}
+      .dashboard-summary-cards .bg-total{--metric-accent:#e7a900;background:linear-gradient(145deg,#fffdf3,#fff)}
+      .dashboard-summary-cards .bg-open{--metric-accent:#209bc7;background:linear-gradient(145deg,#f2fbff,#fff)}
+      .dashboard-summary-cards .bg-follow{--metric-accent:#4b61c4;background:linear-gradient(145deg,#f3f5ff,#fff)}
+      .dashboard-summary-cards .bg-rejected{--metric-accent:#e85b72;background:linear-gradient(145deg,#fff4f6,#fff)}
+      .dashboard-summary-cards .bg-closing{--metric-accent:#18a7c8;background:linear-gradient(145deg,#f0fcff,#fff)}
+      .mobile-analysis-menu{
+        margin:0 0 14px;
+        padding:11px 10px 10px;
+        border:1px solid #dbe7f8;
+        border-radius:18px;
+        background:#fff;
+        box-shadow:0 10px 26px rgba(20,42,82,.07);
+      }
+      .mobile-analysis-menu-head{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        margin-bottom:9px;
+        padding:0 1px;
+      }
+      .mobile-analysis-menu-title{
+        color:#142a52;
+        font-size:.76rem;
+        font-weight:900;
+        letter-spacing:-.01em;
+      }
+      .mobile-analysis-menu-sub{
+        display:inline-flex;
+        align-items:center;
+        gap:4px;
+        color:#8292ad;
+        font-size:.49rem;
+        font-weight:600;
+      }
+      .mobile-analysis-menu-sub i{
+        color:#5b8def;
+        font-size:.55rem;
+      }
+      .mobile-analysis-grid{
+        display:grid;
+        grid-template-columns:repeat(6,minmax(0,1fr));
+        gap:5px;
+      }
+      .mobile-analysis-link{
+        min-width:0;
+        min-height:91px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:flex-start;
+        gap:3px;
+        padding:5px 3px 4px;
+        overflow:hidden;
+        border:1px solid #dce8f8;
+        border-bottom:2px solid #2f73e8;
+        border-radius:12px;
+        color:#142a52;
+        background:linear-gradient(180deg,#fff 0%,#f7faff 100%);
+        text-decoration:none;
+        box-shadow:0 5px 12px rgba(47,115,232,.07);
+        transition:border-color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease;
+      }
+      .mobile-analysis-link:hover,
+      .mobile-analysis-link:focus-visible{
+        outline:0;
+        border-color:#9fc2f6;
+        border-bottom-color:#1769e0;
+        background:#f2f7ff;
+        box-shadow:0 7px 16px rgba(47,115,232,.13);
+      }
+      .mobile-analysis-link:active{
+        transform:translateY(1px) scale(.98);
+        box-shadow:0 3px 8px rgba(47,115,232,.1);
+      }
+      .mobile-analysis-mockup{
+        width:100%;
+        height:62px;
+        display:block;
+        object-fit:contain;
+        border:0;
+        border-radius:9px;
+        background:#f8fbff;
+        mix-blend-mode:multiply;
+      }
+      .mobile-analysis-link span{
+        width:100%;
+        overflow:hidden;
+        padding:0 1px 1px;
+        color:#142a52;
+        font-size:.48rem;
+        font-weight:850;
+        line-height:1.15;
+        text-align:center;
+        white-space:nowrap;
+        text-overflow:ellipsis;
+      }
+      .dash-panel{border-radius:19px;box-shadow:0 10px 23px rgba(11,43,111,.07)}
+      .mobile-analysis-panel{
+        --insight-rgb:47,115,232;
+        position:relative;scroll-margin-top:10px;
+        border-color:rgba(var(--insight-rgb),.25);
+        background:linear-gradient(155deg,rgba(var(--insight-rgb),.09),#fff 58%);
+      }
+      .mobile-analysis-panel::before{
+        content:"";position:absolute;left:0;right:0;top:0;height:3px;
+        background:linear-gradient(90deg,#1769e0,#5b8def);
+      }
+      .mobile-analysis-panel .analysis-kicker{
+        display:inline-flex;align-items:center;gap:5px;margin-bottom:7px;padding:5px 8px;border-radius:999px;
+        color:rgb(var(--insight-rgb));background:rgba(var(--insight-rgb),.13);
+        font-size:.57rem;font-weight:850;text-transform:uppercase;letter-spacing:.04em;
+      }
+      .dash-panel .panel-title{font-size:.78rem}
+      .dash-panel .panel-sub{font-size:.66rem}
+      .dash-panel .panel-head{padding:12px 12px 0}
+      .dash-panel .panel-body{padding:10px 12px 12px}
+      .dash-panel .form-label{font-size:.66rem}
+      .dash-panel .form-select,
+      .dash-panel .form-control{min-height:34px;font-size:.72rem}
+      .summary-note{gap:5px;padding:7px 9px;font-size:.64rem}
+      .legend-chip{padding:6px 8px;font-size:.64rem}
+      .modern-table{font-size:.68rem}
+      .modern-table thead th{font-size:.62rem}
+      .mobile-fab-stack{
+        right:max(8px,calc(50% - 245px));
+        bottom:calc(10px + env(safe-area-inset-bottom));
+        gap:10px;
+      }
+      .mobile-analysis-panel .panel-head > div[style]{width:100%;min-width:0 !important;margin-top:7px}
+      .dashboard-chart-box{height:190px !important;min-height:190px !important;max-height:190px !important}
+      .dashboard-map{height:250px}
     }
 
     @media (min-width: 768px){
@@ -413,7 +882,40 @@
     }
   </style>
 
-  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+  <section class="eprospek-mobile-hero d-md-none" aria-label="Ringkasan akun">
+    <div class="eprospek-hero-compact" aria-hidden="true">
+      <span class="eprospek-hero-compact-icon"><i class="bi bi-speedometer2"></i></span>
+      <div>
+        <div class="eprospek-hero-compact-title">Dashboard</div>
+        <div class="eprospek-hero-compact-sub">Ringkasan pipeline prospek</div>
+      </div>
+    </div>
+
+    <div class="eprospek-hero-toolbar">
+      <div class="eprospek-hero-actions">
+        <div class="eprospek-hero-notification notif-wrap" data-notif-redirect="{{ url('/prospects') }}">
+          @livewire('notifications.bell', [], key('dashboard-mobile-hero-bell-' . auth()->id()))
+        </div>
+        <a href="{{ route('profile.index') }}" class="eprospek-hero-avatar" aria-label="Buka profil">
+          {{ strtoupper(substr(auth()->user()->nama_lengkap ?: auth()->user()->name ?: 'U', 0, 1)) }}
+        </a>
+      </div>
+    </div>
+    <div class="eprospek-hero-copy">
+      <div class="eprospek-hero-eyebrow">Ringkasan Pipeline Cabang</div>
+      <h1>Halo,<br>{{ \Illuminate\Support\Str::limit(auth()->user()->nama_lengkap ?: auth()->user()->name, 24) }}</h1>
+      <div class="eprospek-hero-date">{{ now()->locale('id')->translatedFormat('l, d F Y') }}</div>
+      <div class="eprospek-hero-role">
+        <i class="bi bi-lightning-charge-fill"></i>
+        <span>{{ strtoupper(auth()->user()->role ?? 'PEGAWAI') }} · Pipeline prospek Anda</span>
+      </div>
+    </div>
+    <div class="eprospek-hero-visual" style="background-image:url('{{ asset('images/mobile/eprospek-hero-v1.webp') }}')" aria-hidden="true">
+      <img src="{{ asset('images/mobile/eprospek-hero-v1.webp') }}" alt="">
+    </div>
+  </section>
+
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3 dash-desktop-heading">
     <div>
       <div class="dash-title">Dashboard CRM Prospek</div>
       <div class="dash-subtitle">Ringkasan prospek, status, produk, jenis usaha, dan peta persebaran Jawa Tengah</div>
@@ -436,7 +938,21 @@
     </div>
   </div>
 
-  <div class="dash-filter-card p-3 mb-4">
+  <button type="button" class="mobile-dashboard-filter-toggle d-md-none" id="mobileDashboardFilterToggle"
+          aria-controls="dashboardFilterCard" aria-expanded="false">
+    <span><i class="bi bi-sliders2 me-2"></i>Filter Dashboard</span>
+    <i class="bi bi-chevron-down"></i>
+  </button>
+
+  <div class="dash-filter-card p-3 mb-4" id="dashboardFilterCard">
+    <div class="mobile-filter-sheet-head d-md-none">
+      <span class="mobile-filter-sheet-icon"><i class="bi bi-sliders2"></i></span>
+      <div>
+        <div class="mobile-filter-sheet-title">Atur Tampilan Dashboard</div>
+        <div class="mobile-filter-sheet-sub">Pilih wilayah dan periode data yang ingin dianalisis.</div>
+      </div>
+    </div>
+
     <div class="row g-3 align-items-end">
       <div class="col-12 col-md-3">
         <label class="form-label fw-semibold mb-1">Filter Cabang / Kanwil</label>
@@ -506,7 +1022,7 @@
     </div>
   </div>
 
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 dashboard-summary-cards">
     <div class="col-12 col-sm-6 col-xl">
       <div class="dash-stat-card bg-total h-100">
         <div class="label">Total Pengajuan</div>
@@ -548,11 +1064,57 @@
     </div>
   </div>
 
+  <section class="mobile-analysis-menu d-md-none" aria-label="Menu analisis dashboard">
+    <div class="mobile-analysis-menu-head">
+      <div class="mobile-analysis-menu-title">Menu Analisis</div>
+      <div class="mobile-analysis-menu-sub">Pilih insight <i class="bi bi-info-circle"></i></div>
+    </div>
+    <div class="mobile-analysis-grid">
+      <a class="mobile-analysis-link" href="#analysis-closing">
+        <img class="mobile-analysis-mockup"
+             src="{{ asset('images/mobile/analysis-blue-v2/closing.webp') }}"
+             alt="" aria-hidden="true">
+        <span>Closing</span>
+      </a>
+      <a class="mobile-analysis-link" href="#analysis-product">
+        <img class="mobile-analysis-mockup"
+             src="{{ asset('images/mobile/analysis-blue-v2/product.webp') }}"
+             alt="" aria-hidden="true">
+        <span>Produk</span>
+      </a>
+      <a class="mobile-analysis-link" href="#analysis-status">
+        <img class="mobile-analysis-mockup"
+             src="{{ asset('images/mobile/analysis-blue-v2/status.webp') }}"
+             alt="" aria-hidden="true">
+        <span>Status</span>
+      </a>
+      <a class="mobile-analysis-link" href="#analysis-business">
+        <img class="mobile-analysis-mockup"
+             src="{{ asset('images/mobile/analysis-blue-v2/business.webp') }}"
+             alt="" aria-hidden="true">
+        <span>Usaha</span>
+      </a>
+      <a class="mobile-analysis-link" href="#analysis-trend">
+        <img class="mobile-analysis-mockup"
+             src="{{ asset('images/mobile/analysis-blue-v2/trend.webp') }}"
+             alt="" aria-hidden="true">
+        <span>Tren</span>
+      </a>
+      <a class="mobile-analysis-link" href="#analysis-map">
+        <img class="mobile-analysis-mockup"
+             src="{{ asset('images/mobile/analysis-blue-v2/map.webp') }}"
+             alt="" aria-hidden="true">
+        <span>Peta</span>
+      </a>
+    </div>
+  </section>
+
   <div class="row g-3 mb-4">
     <div class="col-12 col-xl-8">
-      <div class="dash-panel h-100">
+      <div class="dash-panel h-100 mobile-analysis-panel" id="analysis-closing">
         <div class="panel-head d-flex flex-wrap align-items-start justify-content-between gap-3">
           <div>
+            <div class="analysis-kicker d-md-none"><i class="bi bi-bar-chart-line"></i> Analisis Closing</div>
             <div class="panel-title">{{ $grafikUtamaTitle }}</div>
             <div class="panel-sub">{{ $grafikUtamaSubtitle }}</div>
           </div>
@@ -570,7 +1132,7 @@
         </div>
 
         <div class="panel-body">
-          <div wire:ignore class="dashboard-chart-box">
+          <div wire:ignore class="dashboard-chart-box" data-mobile-height="190px">
             <canvas id="chartClosingCabang"></canvas>
           </div>
         </div>
@@ -578,13 +1140,14 @@
     </div>
 
     <div class="col-12 col-xl-4">
-      <div class="dash-panel h-100">
+      <div class="dash-panel h-100 mobile-analysis-panel" id="analysis-product">
         <div class="panel-head">
+          <div class="analysis-kicker d-md-none"><i class="bi bi-pie-chart"></i> Analisis Produk</div>
           <div class="panel-title">Pengajuan per Rekomendasi Produk</div>
           <div class="panel-sub">Komposisi produk yang paling banyak diajukan</div>
         </div>
         <div class="panel-body">
-          <div wire:ignore class="dashboard-chart-box">
+          <div wire:ignore class="dashboard-chart-box" data-mobile-height="155px">
             <canvas id="chartProduk"></canvas>
           </div>
         </div>
@@ -594,13 +1157,14 @@
 
   <div class="row g-3 mb-4">
     <div class="col-12 col-xl-4">
-      <div class="dash-panel h-100">
+      <div class="dash-panel h-100 mobile-analysis-panel" id="analysis-status">
         <div class="panel-head">
+          <div class="analysis-kicker d-md-none"><i class="bi bi-speedometer2"></i> Analisis Status</div>
           <div class="panel-title">Distribusi Status</div>
           <div class="panel-sub">Mencakup OPEN, FOLLOW UP, REJECTED, dan CLOSING</div>
         </div>
         <div class="panel-body">
-          <div wire:ignore class="dashboard-chart-box">
+          <div wire:ignore class="dashboard-chart-box" data-mobile-height="155px">
             <canvas id="chartStatus"></canvas>
           </div>
         </div>
@@ -608,13 +1172,14 @@
     </div>
 
     <div class="col-12 col-xl-4">
-      <div class="dash-panel h-100">
+      <div class="dash-panel h-100 mobile-analysis-panel" id="analysis-business">
         <div class="panel-head">
+          <div class="analysis-kicker d-md-none"><i class="bi bi-briefcase"></i> Analisis Usaha</div>
           <div class="panel-title">Top Jenis Usaha</div>
           <div class="panel-sub">Jenis usaha yang paling dominan</div>
         </div>
         <div class="panel-body">
-          <div wire:ignore class="dashboard-chart-box">
+          <div wire:ignore class="dashboard-chart-box" data-mobile-height="175px">
             <canvas id="chartUsaha"></canvas>
           </div>
         </div>
@@ -622,13 +1187,14 @@
     </div>
 
     <div class="col-12 col-xl-4">
-      <div class="dash-panel h-100">
+      <div class="dash-panel h-100 mobile-analysis-panel" id="analysis-trend">
         <div class="panel-head">
+          <div class="analysis-kicker d-md-none"><i class="bi bi-graph-up-arrow"></i> Analisis Tren</div>
           <div class="panel-title">Tren Pengajuan Bulanan</div>
           <div class="panel-sub">Pergerakan jumlah input prospek per bulan</div>
         </div>
         <div class="panel-body">
-          <div wire:ignore class="dashboard-chart-box">
+          <div wire:ignore class="dashboard-chart-box" data-mobile-height="175px">
             <canvas id="chartTrend"></canvas>
           </div>
         </div>
@@ -638,8 +1204,9 @@
 
   <div class="row g-3 mb-4">
     <div class="col-12 col-xl-8">
-      <div class="dash-panel">
+      <div class="dash-panel mobile-analysis-panel" id="analysis-map">
         <div class="panel-head">
+          <div class="analysis-kicker d-md-none"><i class="bi bi-geo-alt"></i> Analisis Wilayah</div>
           <div class="panel-title">Peta Persebaran Pengajuan Jawa Tengah</div>
           <div class="panel-sub">Warna marker mengikuti master jenis usaha dari database</div>
         </div>
@@ -876,8 +1443,28 @@
       <i class="bi bi-stars"></i>
     </a>
 
-
+    <a href="{{ route('prospects.create') }}" class="mobile-fab-dashboard-add" aria-label="Tambah Prospek">
+      <i class="bi bi-plus-lg"></i>
+    </a>
   </div>
+
+  <script>
+    (function () {
+      const button = document.getElementById('mobileDashboardFilterToggle');
+      const card = document.getElementById('dashboardFilterCard');
+      if (!button || !card || button.dataset.bound === '1') return;
+      button.dataset.bound = '1';
+      button.addEventListener('click', function () {
+        const open = card.classList.toggle('mobile-open');
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        const chevron = button.querySelector('.bi-chevron-down, .bi-chevron-up');
+        if (chevron) {
+          chevron.classList.toggle('bi-chevron-down', !open);
+          chevron.classList.toggle('bi-chevron-up', open);
+        }
+      });
+    })();
+  </script>
 
   @push('scripts')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -896,6 +1483,7 @@
       let chartTrend = null;
       let mapInstance = null;
       let mapLayerGroup = null;
+      let mapDataSignature = null;
       let renderTimer = null;
 
       function parseJsonScript(id, fallback) {
@@ -983,9 +1571,11 @@
         var box = canvas.closest('.dashboard-chart-box');
         if (!box) return;
 
-        box.style.setProperty('height', '320px', 'important');
-        box.style.setProperty('min-height', '320px', 'important');
-        box.style.setProperty('max-height', '320px', 'important');
+        var isMobileChart = window.matchMedia && window.matchMedia('(max-width: 767.98px)').matches;
+        var chartHeight = isMobileChart ? (box.dataset.mobileHeight || '180px') : '320px';
+        box.style.setProperty('height', chartHeight, 'important');
+        box.style.setProperty('min-height', chartHeight, 'important');
+        box.style.setProperty('max-height', chartHeight, 'important');
 
         canvas.style.setProperty('width', '100%', 'important');
         canvas.style.setProperty('height', '100%', 'important');
@@ -1020,6 +1610,17 @@
 
       function renderCharts() {
         const data = getDashboardPayload();
+        const mobileChart = window.matchMedia && window.matchMedia('(max-width: 767.98px)').matches;
+        const compactLegend = {
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'circle',
+            boxWidth: 8,
+            padding: mobileChart ? 8 : 12,
+            font: { size: mobileChart ? 9 : 12 }
+          }
+        };
 
         const elClosing = document.getElementById('chartClosingCabang');
         const elProduk  = document.getElementById('chartProduk');
@@ -1048,10 +1649,19 @@
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
-            plugins: { legend: { display: true } },
+            plugins: { legend: { display: true, ...compactLegend } },
             scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(148,163,184,.18)' } },
-              x: { ticks: { autoSkip: false, maxRotation: 90, minRotation: 0 }, grid: { display: false } }
+              y: { beginAtZero: true, ticks: { precision: 0, font: { size: mobileChart ? 9 : 12 } }, grid: { color: 'rgba(148,163,184,.18)' } },
+              x: {
+                ticks: {
+                  autoSkip: mobileChart,
+                  maxTicksLimit: mobileChart ? 6 : undefined,
+                  maxRotation: mobileChart ? 0 : 90,
+                  minRotation: 0,
+                  font: { size: mobileChart ? 8 : 12 }
+                },
+                grid: { display: false }
+              }
             }
           }
         });
@@ -1065,7 +1675,7 @@
               backgroundColor: ['#38bdf8','#fb7185','#fb923c','#facc15','#34d399','#818cf8']
             }]
           },
-          options: { responsive: true, maintainAspectRatio: false, animation: false, cutout: '55%' }
+          options: { responsive: true, maintainAspectRatio: false, animation: false, cutout: '55%', plugins: { legend: compactLegend } }
         });
 
         chartStatus = upsertChart(chartStatus, elStatus, {
@@ -1077,7 +1687,7 @@
               backgroundColor: ['#cbd5e1','#fbbf24','#f43f5e','#22c55e']
             }]
           },
-          options: { responsive: true, maintainAspectRatio: false, animation: false }
+          options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: compactLegend } }
         });
 
         chartUsaha = upsertChart(chartUsaha, elUsaha, {
@@ -1092,8 +1702,8 @@
             maintainAspectRatio: false,
             animation: false,
             scales: {
-              x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(148,163,184,.18)' } },
-              y: { grid: { display: false } }
+              x: { beginAtZero: true, ticks: { precision: 0, font: { size: mobileChart ? 9 : 12 } }, grid: { color: 'rgba(148,163,184,.18)' } },
+              y: { ticks: { font: { size: mobileChart ? 8 : 12 } }, grid: { display: false } }
             }
           }
         });
@@ -1117,9 +1727,10 @@
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
+            plugins: { legend: compactLegend },
             scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(148,163,184,.18)' } },
-              x: { grid: { display: false } }
+              y: { beginAtZero: true, ticks: { precision: 0, font: { size: mobileChart ? 9 : 12 } }, grid: { color: 'rgba(148,163,184,.18)' } },
+              x: { ticks: { maxTicksLimit: mobileChart ? 6 : undefined, font: { size: mobileChart ? 8 : 12 } }, grid: { display: false } }
             }
           }
         });
@@ -1141,6 +1752,19 @@
           mapLayerGroup = L.layerGroup().addTo(mapInstance);
         }
 
+        const nextMapDataSignature = JSON.stringify({
+          items: items,
+          usahaColorMap: payload.usahaColorMap || {}
+        });
+
+        // Jangan bangun ulang marker atau menjalankan fitBounds bila datanya
+        // tidak berubah. Ini mempertahankan zoom, posisi, dan popup pengguna.
+        if (mapDataSignature === nextMapDataSignature) {
+          mapInstance.invalidateSize();
+          return;
+        }
+
+        mapDataSignature = nextMapDataSignature;
         mapLayerGroup.clearLayers();
 
         const bounds = [];
@@ -1184,8 +1808,10 @@
           const fotoUrl = pick(item, ['foto_url', 'photo_url', 'file_url', 'image_url', 'foto', 'photo'], '');
 
           const foto = fotoUrl
-            ? '<img class="map-popup-photo" src="' + esc(fotoUrl) + '" alt="Foto">'
-            : '';
+            ? '<a class="map-popup-photo-link" href="' + esc(fotoUrl) + '" target="_blank" rel="noopener noreferrer" title="Buka foto ukuran penuh">' +
+                '<img class="map-popup-photo" src="' + esc(fotoUrl) + '" alt="Foto ' + esc(nama) + '" loading="lazy">' +
+              '</a>'
+            : '<div class="map-popup-photo-empty">Foto belum tersedia</div>';
 
           const alamatHtml = alamat
             ? '<div class="map-popup-row"><strong>Alamat:</strong> ' + esc(alamat) + '</div>'
@@ -1209,6 +1835,24 @@
             foto;
 
           marker.bindPopup(popupHtml);
+          marker.on('popupopen', function (event) {
+            const popupElement = event.popup && event.popup.getElement
+              ? event.popup.getElement()
+              : null;
+            const image = popupElement
+              ? popupElement.querySelector('.map-popup-photo')
+              : null;
+
+            if (image && image.dataset.errorBound !== '1') {
+              image.dataset.errorBound = '1';
+              image.addEventListener('error', function () {
+                const link = image.closest('.map-popup-photo-link');
+                if (link) {
+                  link.outerHTML = '<div class="map-popup-photo-empty">Foto gagal dimuat</div>';
+                }
+              }, { once: true });
+            }
+          });
           marker.addTo(mapLayerGroup);
           bounds.push([lat, lng]);
         });

@@ -26,10 +26,12 @@ class Submissions extends Component
     public ?string $filterKanwil = '';
     public ?string $filterAo = '';
     public ?string $filterInputRole = '';
+    public ?string $filterProduk = '';
 
     public string $filterBulan = '';
     public string $filterTahun = '';
     public string $filterMode = 'all';
+    public string $quickFilter = 'this_week';
 
     public ?string $filterTanggalAwal = null;
     public ?string $filterTanggalAkhir = null;
@@ -38,6 +40,7 @@ class Submissions extends Component
     public ?string $statusUpdate = null;
     public string $ambilStatus = '0';
     public ?string $noRekening = null;
+    public ?string $estimasiNominalRealisasi = null;
 
     public bool $canViewDetail = false;
     public bool $showTakenMessage = false;
@@ -55,11 +58,13 @@ class Submissions extends Component
         'filterKanwil' => ['except' => ''],
         'filterAo' => ['except' => ''],
         'filterInputRole' => ['except' => ''],
+        'filterProduk' => ['except' => ''],
         'filterMode' => ['except' => 'all'],
         'filterBulan' => ['except' => ''],
         'filterTahun' => ['except' => ''],
         'filterTanggalAwal' => ['except' => ''],
         'filterTanggalAkhir' => ['except' => ''],
+        'quickFilter' => ['except' => 'this_week'],
     ];
 
     public function mount(): void
@@ -74,6 +79,8 @@ class Submissions extends Component
         $this->filterKanwil = '';
         $this->filterAo = '';
         $this->filterInputRole = '';
+        $this->filterProduk = '';
+        $this->quickFilter = $this->isAoViewerRole($role) ? 'this_week' : '';
 
         if ($role === 'SUPERVISOR') {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
@@ -158,6 +165,11 @@ class Submissions extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterProduk(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatingFilterBulan(): void
     {
         $this->resetPage();
@@ -170,6 +182,8 @@ class Submissions extends Component
 
     public function updatingFilterMode(): void
     {
+        $this->quickFilter = '';
+
         if ($this->filterMode === 'all') {
             $this->filterBulan = '';
             $this->filterTahun = '';
@@ -188,6 +202,8 @@ class Submissions extends Component
 
     public function updatingFilterTanggalAwal(): void
     {
+        $this->quickFilter = '';
+
         if ($this->filterMode !== 'range') {
             $this->filterMode = 'range';
         }
@@ -196,6 +212,8 @@ class Submissions extends Component
 
     public function updatingFilterTanggalAkhir(): void
     {
+        $this->quickFilter = '';
+
         if ($this->filterMode !== 'range') {
             $this->filterMode = 'range';
         }
@@ -207,6 +225,31 @@ class Submissions extends Component
         $this->noRekening = preg_replace('/[^0-9]/', '', (string) $value);
     }
 
+    public function updatedEstimasiNominalRealisasi($value): void
+    {
+        $digits = preg_replace('/[^0-9]/', '', (string) $value);
+        $this->estimasiNominalRealisasi = $digits === ''
+            ? null
+            : number_format((int) $digits, 0, ',', '.');
+    }
+
+    public function setQuickFilter(string $filter): void
+    {
+        if (!$this->isAoViewerRole()) {
+            $this->quickFilter = '';
+            $this->resetPage();
+            return;
+        }
+
+        if (!in_array($filter, ['all', 'this_week', 'overdue_follow_up'], true)) {
+            $this->quickFilter = '';
+        } else {
+            $this->quickFilter = $filter === 'all' ? '' : $filter;
+        }
+
+        $this->resetPage();
+    }
+
     public function resetFilter(): void
     {
         $this->search = '';
@@ -214,11 +257,13 @@ class Submissions extends Component
         $this->filterPengambilan = '';
         $this->filterAo = '';
         $this->filterInputRole = '';
+        $this->filterProduk = '';
         $this->filterMode = 'all';
         $this->filterBulan = '';
         $this->filterTahun = '';
         $this->filterTanggalAwal = null;
         $this->filterTanggalAkhir = null;
+        $this->quickFilter = $this->isAoViewerRole() ? 'this_week' : '';
 
         if ($this->lockCabangFilter) {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
@@ -668,6 +713,9 @@ class Submissions extends Component
                     $creatorQ->where('role', $roleFilter);
                 });
             })
+            ->when($this->filterProduk !== null && trim((string) $this->filterProduk) !== '', function ($q) {
+                $q->where('jenis_produk', trim((string) $this->filterProduk));
+            })
             ->when($this->filterMode === 'monthly' && $this->filterBulan !== '', function ($q) {
                 $q->whereMonth('tanggal_prospek', (int) $this->filterBulan);
             })
@@ -679,6 +727,16 @@ class Submissions extends Component
             })
             ->when($this->filterMode === 'range' && filled($this->filterTanggalAkhir), function ($q) {
                 $q->whereDate('tanggal_prospek', '<=', $this->filterTanggalAkhir);
+            })
+            ->when($this->isAoViewerRole($role) && $this->quickFilter === 'this_week', function ($q) {
+                $q->whereBetween('tanggal_prospek', [
+                    now()->startOfWeek()->toDateString(),
+                    now()->endOfWeek()->toDateString(),
+                ]);
+            })
+            ->when($this->isAoViewerRole($role) && $this->quickFilter === 'overdue_follow_up', function ($q) {
+                $q->whereDate('tanggal_prospek', '<', now()->subDays(7)->toDateString())
+                    ->whereIn('status', ['OPEN', 'FOLLOW UP']);
             })
             ->when(!empty($allowedProduk), function ($q) use ($allowedProduk) {
                 $q->whereIn('jenis_produk', $allowedProduk);
@@ -950,7 +1008,7 @@ class Submissions extends Component
         $html = '';
         $html .= '<html><head><meta charset="UTF-8"></head><body>';
         $html .= '<table border="1">';
-        $html .= '<tr><th colspan="24" style="font-weight:bold; font-size:16px;">DATA PROSPEK DIAJUKAN</th></tr>';
+        $html .= '<tr><th colspan="25" style="font-weight:bold; font-size:16px;">DATA PROSPEK DIAJUKAN</th></tr>';
         $html .= '<tr>';
         $html .= '<th>Tanggal Prospek</th>';
         $html .= '<th>Nama Prospek</th>';
@@ -964,6 +1022,7 @@ class Submissions extends Component
         $html .= '<th>Jenis Produk</th>';
         $html .= '<th>Jenis Usaha</th>';
         $html .= '<th>Status</th>';
+        $html .= '<th>Estimasi Nominal Realisasi</th>';
         $html .= '<th>Status Pengambilan</th>';
         $html .= '<th>Username Pengambil</th>';
         $html .= '<th>Nama Lengkap Pengambil</th>';
@@ -997,6 +1056,7 @@ class Submissions extends Component
             $html .= '<td>' . $this->esc($p->jenis_produk) . '</td>';
             $html .= '<td>' . $this->esc($p->jenis_usaha) . '</td>';
             $html .= '<td>' . $this->esc($p->status) . '</td>';
+            $html .= '<td>' . $this->esc($p->estimasi_nominal_realisasi) . '</td>';
             $html .= '<td>' . ((int)($p->is_diambil ?? 0) === 1 ? 'DIAMBIL' : 'BELUM') . '</td>';
             $html .= '<td>' . $this->esc($p->diambil_oleh) . '</td>';
             $html .= '<td>' . $this->esc($namaPengambil) . '</td>';
@@ -1054,6 +1114,9 @@ class Submissions extends Component
             : 'FOLLOW UP';
         $this->ambilStatus = (string) ((int) ($p->is_diambil ?? 0));
         $this->noRekening = $this->hasNoRekeningColumn() ? ($p->no_rekening ?? null) : null;
+        $this->estimasiNominalRealisasi = filled($p->estimasi_nominal_realisasi)
+            ? number_format((int) $p->estimasi_nominal_realisasi, 0, ',', '.')
+            : null;
         $this->canViewDetail = false;
         $this->showTakenMessage = false;
         $this->takenByUsername = $p->diambil_oleh;
@@ -1099,6 +1162,7 @@ class Submissions extends Component
         $this->statusUpdate = null;
         $this->ambilStatus = '0';
         $this->noRekening = null;
+        $this->estimasiNominalRealisasi = null;
         $this->canViewDetail = false;
         $this->showTakenMessage = false;
         $this->takenByUsername = null;
@@ -1118,6 +1182,11 @@ class Submissions extends Component
     public function updateAmbilStatus(): void
     {
         $role = $this->currentUserRole();
+
+        if ($this->isSupervisorRole($role)) {
+            session()->flash('ok', 'Role Supervisor hanya dapat melihat detail prospek.');
+            return;
+        }
 
         if (!$this->detailId || !$this->canViewDetail || $this->hideActionForm) {
             session()->flash('ok', 'Data prospek tidak dapat diperbarui.');
@@ -1182,9 +1251,12 @@ class Submissions extends Component
     {
         $role = $this->currentUserRole();
 
-        $allowedStatuses = $this->isAoViewerRole($role)
-            ? ['REJECTED', 'CLOSING']
-            : ['FOLLOW UP', 'REJECTED', 'CLOSING'];
+        if ($this->isSupervisorRole($role)) {
+            session()->flash('ok', 'Role Supervisor hanya dapat melihat detail prospek.');
+            return;
+        }
+
+        $allowedStatuses = ['FOLLOW UP', 'REJECTED', 'CLOSING'];
 
         $this->validate([
             'statusUpdate' => ['required', 'in:' . implode(',', $allowedStatuses)],
@@ -1199,6 +1271,23 @@ class Submissions extends Component
             ], [
                 'noRekening.required' => 'No. rekening wajib diisi saat status Closing.',
                 'noRekening.regex' => 'No. rekening hanya boleh angka.',
+            ]);
+        }
+
+        if ($this->statusUpdate === 'FOLLOW UP') {
+            $this->estimasiNominalRealisasi = preg_replace(
+                '/[^0-9]/',
+                '',
+                (string) $this->estimasiNominalRealisasi
+            );
+
+            $this->validate([
+                'estimasiNominalRealisasi' => ['required', 'integer', 'min:1', 'digits_between:1,18'],
+            ], [
+                'estimasiNominalRealisasi.required' => 'Estimasi Nominal Realisasi wajib diisi saat status Follow Up.',
+                'estimasiNominalRealisasi.integer' => 'Estimasi Nominal Realisasi harus berupa angka.',
+                'estimasiNominalRealisasi.min' => 'Estimasi Nominal Realisasi harus lebih dari 0.',
+                'estimasiNominalRealisasi.digits_between' => 'Estimasi Nominal Realisasi maksimal 18 digit.',
             ]);
         }
 
@@ -1232,6 +1321,10 @@ class Submissions extends Component
         }
 
         $p->status = $newStatus;
+
+        if ($newStatus === 'FOLLOW UP') {
+            $p->estimasi_nominal_realisasi = (int) $this->estimasiNominalRealisasi;
+        }
 
         if ($newStatus === 'CLOSING' && $this->hasNoRekeningColumn()) {
             $p->no_rekening = $this->noRekening;
@@ -1292,6 +1385,7 @@ class Submissions extends Component
         $detail = $this->detail;
 
         $role = $this->currentUserRole();
+        $showQuickFilters = $this->isAoViewerRole($role);
         $kodeKanwilUser = $this->getUserKanwilKode();
 
         $cabangOptionsQuery = Cabang::query()
@@ -1350,6 +1444,11 @@ class Submissions extends Component
             ['id' => 'PEGAWAI', 'label' => 'PEGAWAI'],
         ];
 
+        $produkOptions = $this->getAllowedProdukByUser();
+        if ($produkOptions === []) {
+            $produkOptions = ['KREDIT', 'TABUNGAN', 'DEPOSITO', 'ASET'];
+        }
+
         return view('livewire.prospects.submissions', compact(
             'items',
             'detail',
@@ -1361,7 +1460,9 @@ class Submissions extends Component
             'namaPengambilMap',
             'assignmentMap',
             'filterModeOptions',
-            'inputRoleOptions'
+            'inputRoleOptions',
+            'produkOptions',
+            'showQuickFilters'
         ))->layout('layouts.bootstrap');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
@@ -12,28 +13,35 @@ class RoleMiddleware
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             abort(401);
         }
 
-        $role = strtoupper((string)($user->role ?? ''));
+        $role = strtoupper(trim((string) ($user->role ?? '')));
+
+        // User nonaktif tidak boleh tertahan pada halaman error 403.
+        if ((int) ($user->aktif ?? 1) !== 1) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()
+                ->route('login')
+                ->withErrors(['email' => 'Akun Anda sudah tidak aktif.']);
+        }
 
         // kalau tidak ada parameter role, anggap lolos
-        if (count($roles) === 0) {
+        if ($roles === []) {
             return $next($request);
         }
 
-        $allowed = array_map(function ($r) {
-            return strtoupper((string)$r);
-        }, $roles);
+        $allowed = array_map(
+            fn ($allowedRole) => strtoupper(trim((string) $allowedRole)),
+            $roles
+        );
 
-        if (!in_array($role, $allowed, true)) {
+        if (! in_array($role, $allowed, true)) {
             abort(403);
-        }
-
-        // optional: block user nonaktif
-        if ((int)($user->aktif ?? 1) !== 1) {
-            abort(403, 'User nonaktif.');
         }
 
         return $next($request);

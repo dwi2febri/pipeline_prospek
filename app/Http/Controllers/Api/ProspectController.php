@@ -154,6 +154,7 @@ class ProspectController extends Controller
             'is_diambil'        => ['nullable', 'integer'],
             'diambil_oleh'      => ['nullable', 'string', 'max:50'],
             'no_rekening'       => ['nullable', 'string', 'max:50'],
+            'estimasi_nominal_realisasi' => ['required_if:status,FOLLOW UP', 'nullable', 'integer', 'min:1'],
             'cabang_id'         => ['required', 'integer', 'exists:cabangs,id'],
             'referral_user_id'  => ['nullable', 'string', 'max:50'],
             'catatan'           => ['nullable', 'string'],
@@ -214,6 +215,7 @@ class ProspectController extends Controller
             'is_diambil'        => ['nullable', 'integer'],
             'diambil_oleh'      => ['nullable', 'string', 'max:50'],
             'no_rekening'       => ['nullable', 'string', 'max:50'],
+            'estimasi_nominal_realisasi' => ['required_if:status,FOLLOW UP', 'nullable', 'integer', 'min:1'],
             'cabang_id'         => ['required', 'integer', 'exists:cabangs,id'],
             'referral_user_id'  => ['nullable', 'string', 'max:50'],
             'catatan'           => ['nullable', 'string'],
@@ -255,9 +257,13 @@ class ProspectController extends Controller
 
         $data = $r->validate([
             'status' => ['required', 'in:OPEN,FOLLOW UP,CLOSING,REJECTED'],
+            'estimasi_nominal_realisasi' => ['required_if:status,FOLLOW UP', 'nullable', 'integer', 'min:1'],
         ]);
 
         $p->status = $data['status'];
+        if ($data['status'] === 'FOLLOW UP') {
+            $p->estimasi_nominal_realisasi = $data['estimasi_nominal_realisasi'];
+        }
         $p->save();
 
         return response()->json([
@@ -267,6 +273,7 @@ class ProspectController extends Controller
                 'id' => (int) $p->id,
                 'nama' => $p->nama,
                 'status' => $p->status,
+                'estimasi_nominal_realisasi' => $p->estimasi_nominal_realisasi,
             ],
         ]);
     }
@@ -280,6 +287,14 @@ class ProspectController extends Controller
         }
 
         $p = $q->where('id', (int) $id)->firstOrFail();
+
+        if (strtoupper(trim((string) $p->status)) === 'CLOSING') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Prospek berstatus Closing tidak dapat dihapus.',
+            ], 422);
+        }
+
         $p->delete();
 
         return response()->json([

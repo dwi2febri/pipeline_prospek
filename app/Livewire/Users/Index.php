@@ -7,8 +7,13 @@ use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Cabang;
+use App\Services\ProspectReferralUserIdService;
+use App\Services\SimpegUserService;
 
 class Index extends Component
 {
@@ -18,9 +23,18 @@ class Index extends Component
     public string $filterCabang = '';
     public string $filterRole = '';
     public string $filterAktif = '';
+    public string $filterSync = '';
     public string $filterJobPosition = '';
     public string $filterBranchName = '';
     public string $filterUnitKerja = '';
+    public string $activeTab = 'local';
+    public string $simpegSearch = '';
+    public string $simpegFilterKode = '';
+    public string $simpegFilterKantor = '';
+    public string $simpegFilterUnit = '';
+    public string $simpegFilterJabatan = '';
+    public string $simpegFilterLevel = '';
+    public string $simpegFilterGroup = '';
     public $file;
 
     protected $queryString = [
@@ -28,10 +42,31 @@ class Index extends Component
         'filterCabang' => ['except' => ''],
         'filterRole' => ['except' => ''],
         'filterAktif' => ['except' => ''],
+        'filterSync' => ['except' => ''],
         'filterJobPosition' => ['except' => ''],
         'filterBranchName' => ['except' => ''],
         'filterUnitKerja' => ['except' => ''],
+        'activeTab' => ['except' => 'local', 'as' => 'tab'],
+        'simpegSearch' => ['except' => ''],
+        'simpegFilterKode' => ['except' => ''],
+        'simpegFilterKantor' => ['except' => ''],
+        'simpegFilterUnit' => ['except' => ''],
+        'simpegFilterJabatan' => ['except' => ''],
+        'simpegFilterLevel' => ['except' => ''],
+        'simpegFilterGroup' => ['except' => ''],
     ];
+
+    public function mount(): void
+    {
+        if (!in_array($this->activeTab, ['local', 'simpeg'], true)) {
+            $this->activeTab = 'local';
+        }
+    }
+
+    public function setActiveTab(string $tab): void
+    {
+        $this->activeTab = $tab === 'simpeg' ? 'simpeg' : 'local';
+    }
 
     public function updatingSearch()
     {
@@ -53,6 +88,11 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterSync()
+    {
+        $this->resetPage();
+    }
+
     public function updatingFilterJobPosition()
     {
         $this->resetPage();
@@ -68,16 +108,141 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function updatedSimpegSearch(): void
+    {
+        $this->resetPage('simpegPage');
+    }
+
+    public function updatedSimpegFilterKode(): void
+    {
+        $this->resetPage('simpegPage');
+    }
+
+    public function updatedSimpegFilterKantor(): void
+    {
+        $this->resetPage('simpegPage');
+    }
+
+    public function updatedSimpegFilterUnit(): void
+    {
+        $this->resetPage('simpegPage');
+    }
+
+    public function updatedSimpegFilterJabatan(): void
+    {
+        $this->resetPage('simpegPage');
+    }
+
+    public function updatedSimpegFilterLevel(): void
+    {
+        $this->resetPage('simpegPage');
+    }
+
+    public function updatedSimpegFilterGroup(): void
+    {
+        $this->resetPage('simpegPage');
+    }
+
     public function resetFilter(): void
     {
         $this->search = '';
         $this->filterCabang = '';
         $this->filterRole = '';
         $this->filterAktif = '';
+        $this->filterSync = '';
         $this->filterJobPosition = '';
         $this->filterBranchName = '';
         $this->filterUnitKerja = '';
         $this->resetPage();
+    }
+
+    public function resetSimpegFilter(): void
+    {
+        $this->simpegSearch = '';
+        $this->simpegFilterKode = '';
+        $this->simpegFilterKantor = '';
+        $this->simpegFilterUnit = '';
+        $this->simpegFilterJabatan = '';
+        $this->simpegFilterLevel = '';
+        $this->simpegFilterGroup = '';
+        $this->resetPage('simpegPage');
+    }
+
+    public function startSimpegGenerate(): array
+    {
+        $this->skipRender();
+
+        try {
+            $rows = app(SimpegUserService::class)->allActiveEmployees();
+            if ($rows === []) {
+                return ['ok' => false, 'message' => 'Tidak ada pegawai aktif SIMPEG untuk diproses.'];
+            }
+
+            $frequencies = [];
+            foreach ($rows as $row) {
+                $key = Str::lower(trim((string) ($row['employee_id'] ?? '')));
+                if ($key !== '') {
+                    $frequencies[$key] = ($frequencies[$key] ?? 0) + 1;
+                }
+            }
+
+            $jobId = Str::random(40);
+            Cache::put($this->generateCacheKey($jobId), [
+                'rows' => $rows,
+                'frequencies' => $frequencies,
+            ], now()->addMinutes(30));
+
+            return ['ok' => true, 'job_id' => $jobId, 'total' => count($rows)];
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [
+                'ok' => false,
+                'message' => 'Database SIMPEG belum dapat dihubungkan atau struktur datanya tidak sesuai.',
+            ];
+        }
+    }
+
+    public function processSimpegGenerate(string $jobId, int $offset): array
+    {
+        $this->skipRender();
+
+        if (!preg_match('/^[A-Za-z0-9]{40}$/', $jobId)) {
+            return ['ok' => false, 'message' => 'ID proses generate tidak valid.'];
+        }
+
+        $key = $this->generateCacheKey($jobId);
+        $job = Cache::get($key);
+        if (!is_array($job) || !isset($job['rows'], $job['frequencies'])) {
+            return ['ok' => false, 'message' => 'Sesi generate sudah berakhir. Silakan mulai lagi.'];
+        }
+
+        try {
+            $result = app(SimpegUserService::class)->processBatch(
+                $job['rows'],
+                $job['frequencies'],
+                max(0, $offset),
+                200
+            );
+
+            if ($result['done']) {
+                Cache::forget($key);
+                $this->resetPage();
+            } else {
+                Cache::put($key, $job, now()->addMinutes(30));
+            }
+
+            return ['ok' => true] + $result;
+        } catch (\Throwable $e) {
+            report($e);
+
+            return ['ok' => false, 'message' => 'Generate gagal. Perubahan pada batch terakhir dibatalkan.'];
+        }
+    }
+
+    private function generateCacheKey(string $jobId): string
+    {
+        return 'simpeg-user-generate:' . auth()->id() . ':' . $jobId;
     }
 
     protected function normalizeText(?string $value): ?string
@@ -266,6 +431,7 @@ class Index extends Component
 
                 if ($u) {
                     $oldName = (string) $u->name;
+                    $oldEmployeeId = (string) ($u->employee_id ?? '');
 
                     $u->name = $username;
                     $u->nama_lengkap = $fullName;
@@ -292,11 +458,10 @@ class Index extends Component
 
                     $u->save();
 
-                    if ($oldName !== '' && $oldName !== $u->name) {
-                        DB::table('prospects')
-                            ->where('referral_user_id', $oldName)
-                            ->update(['referral_user_id' => $u->name]);
-                    }
+                    app(ProspectReferralUserIdService::class)->replace(
+                        [$oldName, $oldEmployeeId],
+                        (string) ($u->employee_id ?: $u->name)
+                    );
 
                     $updated++;
                 } else {
@@ -372,6 +537,24 @@ class Index extends Component
             ->pluck('unit_kerja');
 
         $items = User::query()
+            ->select('users.*')
+            ->addSelect([
+                'simpeg_sync_status' => DB::table('user_simpeg_syncs as sync_status')
+                    ->select('sync_status.sync_status')
+                    ->whereColumn('sync_status.user_id', 'users.id')
+                    ->latest('sync_status.synced_at')
+                    ->limit(1),
+                'simpeg_sync_message' => DB::table('user_simpeg_syncs as sync_message')
+                    ->select('sync_message.sync_message')
+                    ->whereColumn('sync_message.user_id', 'users.id')
+                    ->latest('sync_message.synced_at')
+                    ->limit(1),
+                'simpeg_synced_at' => DB::table('user_simpeg_syncs as sync_time')
+                    ->select('sync_time.synced_at')
+                    ->whereColumn('sync_time.user_id', 'users.id')
+                    ->latest('sync_time.synced_at')
+                    ->limit(1),
+            ])
             ->with('cabang')
             ->when($this->search !== '', function ($q) {
                 $s = '%' . $this->search . '%';
@@ -397,6 +580,28 @@ class Index extends Component
             ->when($this->filterAktif !== '', function ($q) {
                 $q->where('aktif', (int) $this->filterAktif);
             })
+            ->when($this->filterSync !== '', function ($q) {
+                $q->where(function ($statusQuery) {
+                    if ($this->filterSync === 'DEACTIVATED') {
+                        $statusQuery->where('users.aktif', 0)
+                            ->orWhereExists(function ($sync) {
+                                $sync->selectRaw('1')
+                                    ->from('user_simpeg_syncs')
+                                    ->whereColumn('user_simpeg_syncs.user_id', 'users.id')
+                                    ->where('user_simpeg_syncs.sync_status', 'DEACTIVATED');
+                            });
+
+                        return;
+                    }
+
+                    $statusQuery->whereExists(function ($sync) {
+                        $sync->selectRaw('1')
+                            ->from('user_simpeg_syncs')
+                            ->whereColumn('user_simpeg_syncs.user_id', 'users.id')
+                            ->where('user_simpeg_syncs.sync_status', $this->filterSync);
+                    });
+                });
+            })
             ->when($this->filterJobPosition !== '', function ($q) {
                 $q->where('job_position', $this->filterJobPosition);
             })
@@ -409,12 +614,49 @@ class Index extends Component
             ->latest('id')
             ->paginate(10);
 
+        $simpegItems = new LengthAwarePaginator([], 0, 50, 1, [
+            'path' => request()->url(),
+            'pageName' => 'simpegPage',
+        ]);
+        $simpegOptions = [
+            'kode' => collect(),
+            'kantor' => collect(),
+            'unit' => collect(),
+            'jabatan' => collect(),
+            'level' => collect(),
+            'group' => collect(),
+        ];
+        $simpegError = '';
+
+        if ($this->activeTab === 'simpeg') {
+            try {
+                $service = app(SimpegUserService::class);
+                $filters = [
+                    'search' => $this->simpegSearch,
+                    'kode' => $this->simpegFilterKode,
+                    'kantor' => $this->simpegFilterKantor,
+                    'unit' => $this->simpegFilterUnit,
+                    'jabatan' => $this->simpegFilterJabatan,
+                    'level' => $this->simpegFilterLevel,
+                    'group' => $this->simpegFilterGroup,
+                ];
+                $simpegItems = $service->paginate($filters);
+                $simpegOptions = $service->filterOptions();
+            } catch (\Throwable $e) {
+                report($e);
+                $simpegError = 'Database SIMPEG belum dapat dihubungkan atau struktur datanya tidak sesuai.';
+            }
+        }
+
         return view('livewire.users.index', compact(
             'items',
             'cabangs',
             'jobPositions',
             'branchNames',
-            'unitKerjas'
+            'unitKerjas',
+            'simpegItems',
+            'simpegOptions',
+            'simpegError'
         ))->layout('layouts.bootstrap');
     }
 }

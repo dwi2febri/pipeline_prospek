@@ -5,6 +5,7 @@ namespace App\Livewire\Users;
 use Livewire\Component;
 use App\Models\User;
 use App\Models\Cabang;
+use App\Services\ProspectReferralUserIdService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -140,6 +141,7 @@ class Form extends Component
         try {
             $u = $this->id ? User::findOrFail($this->id) : new User();
             $oldName = (string) ($u->name ?? '');
+            $oldEmployeeId = (string) ($u->employee_id ?? '');
 
             $u->name = $this->name;
             $u->nama_lengkap = $this->nama_lengkap;
@@ -162,11 +164,10 @@ class Form extends Component
 
             $u->save();
 
-            if ($oldName !== '' && $oldName !== $u->name) {
-                DB::table('prospects')
-                    ->where('referral_user_id', $oldName)
-                    ->update(['referral_user_id' => $u->name]);
-            }
+            app(ProspectReferralUserIdService::class)->replace(
+                [$oldName, $oldEmployeeId],
+                (string) ($u->employee_id ?: $u->name)
+            );
 
             DB::commit();
         } catch (\Throwable $e) {

@@ -24,6 +24,7 @@ class Prospect extends Model
         'jenis_usaha',
         'jenis_produk',
         'status',
+        'estimasi_nominal_realisasi',
         'cabang_id',
         'input_by',
         'referral_user_id',
@@ -34,7 +35,8 @@ class Prospect extends Model
         'tanggal_prospek' => 'date',
         'cabang_id' => 'integer',
         'input_by' => 'integer',
-        'referral_user_id' => 'integer',
+        'referral_user_id' => 'string',
+        'estimasi_nominal_realisasi' => 'integer',
     ];
 
     public function cabang()

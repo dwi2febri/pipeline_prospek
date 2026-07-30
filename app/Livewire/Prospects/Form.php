@@ -279,6 +279,8 @@ class Form extends Component
 
     public function save()
     {
+        abort_if($this->id !== null, 403, 'Mode detail hanya dapat dibaca.');
+
         $this->no_hp = $this->normalizeDigits($this->no_hp);
         $this->nik   = $this->normalizeDigits($this->nik);
         $this->kode_provinsi = '33';
@@ -330,7 +332,7 @@ class Form extends Component
         $p->catatan           = $this->catatan;
 
         $p->cabang_id         = $this->cabang_id;
-        $p->referral_user_id  = $u->name;
+        $p->referral_user_id  = $u->employee_id ?: $u->name;
 
         if ($this->shouldAutoTakeProspect($role, $jobPosition, $jenisProduk)) {
             $p->is_diambil = 1;
@@ -373,6 +375,8 @@ class Form extends Component
 
     public function deleteDoc(int $docId): void
     {
+        abort_if($this->id !== null, 403, 'Mode detail hanya dapat dibaca.');
+
         $doc = ProspectDocument::findOrFail($docId);
 
         $u = auth()->user();
@@ -392,6 +396,10 @@ class Form extends Component
     #[\Livewire\Attributes\On('setLatLngProspek')]
     public function setLatLngProspek($lat, $lng): void
     {
+        if ($this->id !== null) {
+            return;
+        }
+
         $this->lokasi_lat = (string) $lat;
         $this->lokasi_lng = (string) $lng;
     }
@@ -399,6 +407,10 @@ class Form extends Component
     #[\Livewire\Attributes\On('setAlamatProspek')]
     public function setAlamatProspek($alamat): void
     {
+        if ($this->id !== null) {
+            return;
+        }
+
         $this->alamat = (string) $alamat;
     }
 
