@@ -125,6 +125,33 @@
       background:#ffffff;
     }
 
+    .nominatif-report .filter-control > .filter-input.searchable-filter-native + .searchable-filter-trigger{
+      min-height:54px;
+      border:1px solid #dbeafe;
+      border-radius:18px;
+      padding:0 44px 0 46px;
+      background:#ffffff;
+      color:#0f172a;
+      font-weight:800;
+    }
+
+    .nominatif-report .filter-control > .filter-input.searchable-filter-native + .searchable-filter-trigger:hover{
+      border-color:#93c5fd;
+      background:#f8fbff;
+    }
+
+    .nominatif-report .filter-control > .filter-input.searchable-filter-native + .searchable-filter-trigger:disabled{
+      border-color:#dbe3ef;
+      background:#f1f5f9;
+      color:#475569;
+      cursor:not-allowed;
+      opacity:1;
+    }
+
+    .nominatif-report .filter-control > .filter-input.searchable-filter-native ~ .filter-chevron{
+      display:none;
+    }
+
     .filter-control-icon{
       position:absolute;
       left:16px;
@@ -350,12 +377,55 @@
     }
 
     @media (max-width: 767.98px){
+      .pro-filter-shell{
+        padding:14px;
+        border-radius:24px;
+      }
+
       .report-title{
         font-size:1.56rem;
       }
 
+      .realisasi-metric-grid{
+        --bs-gutter-x:.65rem;
+        --bs-gutter-y:.65rem;
+      }
+
       .metric-card{
-        min-height:138px;
+        min-height:126px;
+        padding:14px;
+        border-radius:19px;
+        box-shadow:0 12px 24px rgba(15,23,42,.12);
+      }
+
+      .metric-card .label{
+        min-height:2.15em;
+        margin-bottom:7px;
+        font-size:.73rem;
+        line-height:1.16;
+      }
+
+      .metric-card .value{
+        max-width:100%;
+        font-size:clamp(.74rem,3.8vw,1.08rem);
+        line-height:1.18;
+        letter-spacing:-.025em;
+        white-space:nowrap;
+      }
+
+      .metric-card .noa{
+        max-width:calc(100% - 4px);
+        margin-top:9px;
+        gap:5px;
+        padding:5px 7px;
+        font-size:.65rem;
+        line-height:1.15;
+      }
+
+      .metric-card .icon{
+        right:9px;
+        bottom:8px;
+        font-size:34px;
       }
 
       .chart-box,
@@ -365,8 +435,25 @@
       }
 
       .pro-filter-title{
-        align-items:flex-start;
-        flex-direction:column;
+        align-items:center;
+        flex-direction:row;
+        margin-bottom:9px;
+      }
+
+      .pro-filter-title h3{
+        font-size:1rem;
+      }
+
+      .pro-filter-badge{
+        width:36px;
+        height:36px;
+        flex:0 0 36px;
+        justify-content:center;
+        padding:0;
+      }
+
+      .pro-filter-badge span{
+        display:none;
       }
     }
   </style>
@@ -415,11 +502,11 @@
   <div class="pro-filter-shell"
        data-mobile-filter-panel
        data-mobile-filter-key="nominatif-kredit">
-    <div class="pro-filter-title">
+    <div class="pro-filter-title" data-mobile-filter-primary>
       <h3><i class="bi bi-sliders2 me-2 text-primary"></i>Pencarian Cepat</h3>
-      <div class="pro-filter-badge">
+      <div class="pro-filter-badge" title="Filter aktif" aria-label="Filter aktif">
         <i class="bi bi-funnel"></i>
-        Filter Aktif
+        <span>Filter Aktif</span>
       </div>
     </div>
 
@@ -431,8 +518,14 @@
         </label>
         <div class="filter-control">
           <i class="bi bi-building filter-control-icon"></i>
-          <select class="filter-input" wire:model.live="filterCabang">
-            <option value="">Semua Cabang</option>
+          <select class="filter-input"
+                  wire:model.live="filterCabang"
+                  @disabled($lockCabangFilter)
+                  aria-readonly="{{ $lockCabangFilter ? 'true' : 'false' }}"
+                  title="{{ $lockCabangFilter ? 'Cabang otomatis mengikuti cabang supervisor' : 'Pilih cabang' }}">
+            @unless($lockCabangFilter)
+              <option value="">Semua Cabang</option>
+            @endunless
             @foreach($cabangs as $cabang)
               <option value="{{ $cabang->id }}">{{ $cabang->kode_cabang }} - {{ $cabang->nama_cabang }}</option>
             @endforeach
@@ -531,8 +624,8 @@
     </div>
   </div>
 
-  <div class="row g-3 mb-3">
-    <div class="col-12 col-md-6 col-xl-3">
+  <div class="row g-3 mb-3 realisasi-metric-grid">
+    <div class="col-6 col-xl-3">
       <div class="metric-card metric-total">
         <div class="label">Total Realisasi</div>
         <div class="value">{{ $money($report['totalRealisasi']) }}</div>
@@ -545,7 +638,7 @@
     </div>
 
     @foreach(['KREDIT' => 'metric-kredit', 'TABUNGAN' => 'metric-tabungan', 'DEPOSITO' => 'metric-deposito'] as $key => $class)
-      <div class="col-12 col-md-6 col-xl-3">
+      <div class="col-6 col-xl-3">
         <div class="metric-card {{ $class }}">
           <div class="label">Realisasi {{ $summary[$key]['label'] }}</div>
           <div class="value">{{ $money($summary[$key]['realisasi']) }}</div>

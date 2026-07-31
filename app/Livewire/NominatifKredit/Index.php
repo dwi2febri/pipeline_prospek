@@ -5,12 +5,20 @@ namespace App\Livewire\NominatifKredit;
 use App\Models\Cabang;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Throwable;
 
 class Index extends Component
 {
+    private const ALLOWED_ROLES = [
+        'ADMIN',
+        'MANAJEMEN',
+        'MANAJEMEN KANWIL',
+        'SUPERVISOR',
+    ];
+
     public ?string $filterCabang = '';
     public string $filterDateMode = 'monthly';
     public ?string $filterBulan = '';
@@ -18,6 +26,7 @@ class Index extends Component
     public ?string $filterTanggalAwal = '';
     public ?string $filterTanggalAkhir = '';
     public string $filterReferralRole = 'all';
+    public bool $lockCabangFilter = false;
 
     protected array $productMap = [
         'KREDIT' => [
@@ -48,17 +57,59 @@ class Index extends Component
 
     public function mount(): void
     {
+        $this->authorizeAccess();
+
         $this->filterDateMode = 'monthly';
         $this->filterBulan = (string) now()->month;
         $this->filterTahun = (string) now()->year;
         $this->filterTanggalAwal = '';
         $this->filterTanggalAkhir = '';
         $this->filterReferralRole = 'all';
+
+        if ($this->isSupervisor()) {
+            $this->lockCabangFilter = true;
+            $this->enforceSupervisorCabangFilter();
+        }
     }
 
     public function updatedFilterCabang(): void
     {
+        $this->enforceSupervisorCabangFilter();
         $this->dispatch('nominatif-report-refresh');
+    }
+
+    protected function currentUserRole(): string
+    {
+        return strtoupper(trim((string) (Auth::user()->role ?? '')));
+    }
+
+    protected function authorizeAccess(): void
+    {
+        abort_unless(in_array($this->currentUserRole(), self::ALLOWED_ROLES, true), 403);
+    }
+
+    protected function isSupervisor(): bool
+    {
+        return $this->currentUserRole() === 'SUPERVISOR';
+    }
+
+    protected function supervisorCabangId(): ?int
+    {
+        $cabangId = (int) (Auth::user()->cabang_id ?? 0);
+
+        return $cabangId > 0 ? $cabangId : null;
+    }
+
+    protected function enforceSupervisorCabangFilter(): void
+    {
+        $this->lockCabangFilter = $this->isSupervisor();
+
+        if (!$this->lockCabangFilter) {
+            return;
+        }
+
+        $cabangId = $this->supervisorCabangId();
+        $this->filterCabang = $cabangId ? (string) $cabangId : '';
     }
 
     public function updatedFilterReferralRole(): void
@@ -166,7 +217,16 @@ class Index extends Component
             ->where('prospects.no_rekening', '!=', '')
             ->whereIn(DB::raw('UPPER(prospects.jenis_produk)'), array_keys($this->productMap));
 
-        if ($applyCabangFilter && $this->filterCabang !== '' && ctype_digit((string) $this->filterCabang)) {
+        if ($this->isSupervisor()) {
+            $cabangId = $this->supervisorCabangId();
+
+            if ($cabangId) {
+                $query->where('prospects.cabang_id', $cabangId);
+            } else {
+                // Supervisor tanpa cabang harus gagal tertutup, bukan melihat seluruh data.
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($applyCabangFilter && $this->filterCabang !== '' && ctype_digit((string) $this->filterCabang)) {
             $query->where('prospects.cabang_id', (int) $this->filterCabang);
         }
 
@@ -383,7 +443,18 @@ class Index extends Component
 
     protected function buildReport(): array
     {
+        $this->enforceSupervisorCabangFilter();
+
         $report = $this->emptyReport();
+
+        if ($this->filterCabang !== '' && ctype_digit((string) $this->filterCabang)) {
+            $selectedId = (int) $this->filterCabang;
+            $report['selectedCabang'] = Cabang::query()->find($selectedId);
+        }
+
+        if ($this->isSupervisor()) {
+            $report['rankTotalCabang'] = $this->supervisorCabangId() ? 1 : 0;
+        }
 
         $selectColumns = [
             'prospects.id',
@@ -531,8 +602,6 @@ class Index extends Component
 
         if ($this->filterCabang !== '' && ctype_digit((string) $this->filterCabang)) {
             $selectedId = (int) $this->filterCabang;
-            $selectedCabang = Cabang::query()->find($selectedId);
-            $report['selectedCabang'] = $selectedCabang;
             $ranked = $topCabangRows->firstWhere('cabang_id', $selectedId);
             $report['rank'] = $ranked['rank'] ?? null;
         }
@@ -544,6 +613,9 @@ class Index extends Component
 
     public function render()
     {
+        $this->authorizeAccess();
+        $this->enforceSupervisorCabangFilter();
+
         $connectionOk = false;
         $errorMessage = null;
         $report = $this->emptyReport();
@@ -559,6 +631,13 @@ class Index extends Component
         $cabangs = Cabang::query()
             ->where('aktif', 1)
             ->whereRaw('CAST(kode_cabang AS UNSIGNED) BETWEEN 1 AND 28')
+            ->when($this->isSupervisor(), function ($query) {
+                $cabangId = $this->supervisorCabangId();
+
+                return $cabangId
+                    ? $query->whereKey($cabangId)
+                    : $query->whereRaw('1 = 0');
+            })
             ->orderByRaw('CAST(kode_cabang AS UNSIGNED) ASC')
             ->get(['id', 'kode_cabang', 'nama_cabang']);
 
@@ -577,6 +656,7 @@ class Index extends Component
             'errorMessage' => $errorMessage,
             'report' => $report,
             'productMap' => $this->productMap,
+            'lockCabangFilter' => $this->lockCabangFilter,
         ])->layout('layouts.bootstrap');
     }
 }

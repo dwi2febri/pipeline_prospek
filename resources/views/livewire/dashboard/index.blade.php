@@ -337,66 +337,249 @@
       flex:0 0 auto;
     }
 
-    .leaflet-popup-content-wrapper{
-      border-radius:16px;
+    .dashboard-prospect-popup .leaflet-popup-content-wrapper{
+      overflow:hidden;
+      border:1px solid rgba(203,213,225,.85);
+      border-radius:18px;
+      background:rgba(255,255,255,.98);
+      box-shadow:0 18px 44px rgba(15,23,42,.2);
+      backdrop-filter:blur(12px);
     }
 
-    .leaflet-popup-content{
-      margin:14px 16px;
+    .dashboard-prospect-popup .leaflet-popup-content{
+      margin:0;
+      color:#334155;
+      line-height:1.35;
+    }
+
+    .dashboard-prospect-popup .leaflet-popup-content.leaflet-popup-scrolled{
+      overflow-x:hidden;
+      overflow-y:auto;
+      overscroll-behavior:contain;
+      border:0;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    .dashboard-prospect-popup .leaflet-popup-tip{
+      background:#fff;
+      box-shadow:3px 3px 8px rgba(15,23,42,.08);
+    }
+
+    .dashboard-prospect-popup .leaflet-popup-close-button{
+      top:8px;
+      right:8px;
+      z-index:3;
+      width:28px;
+      height:28px;
+      display:grid;
+      place-items:center;
+      padding:0;
+      border:1px solid #dbe4f0;
+      border-radius:10px;
+      color:#64748b;
+      background:rgba(255,255,255,.9);
+      font-size:19px;
+      line-height:1;
+    }
+
+    .map-popup-card{
+      width:100%;
+      min-width:0;
+    }
+
+    .map-popup-head{
+      padding:13px 44px 11px 14px;
+      border-bottom:1px solid #e7eef8;
+      background:
+        radial-gradient(circle at top right,rgba(59,130,246,.15),transparent 46%),
+        linear-gradient(145deg,#f8fbff,#eef5ff);
     }
 
     .map-popup-title{
-      font-weight:700;
-      font-size:14px;
-      margin-bottom:8px;
+      overflow:hidden;
       color:#0f172a;
+      font-size:14px;
+      font-weight:900;
+      line-height:1.2;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
-    .map-popup-row{
-      margin-bottom:4px;
-      font-size:13px;
-      color:#334155;
+    .map-popup-subtitle{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      margin-top:5px;
+      overflow:hidden;
+      color:#64748b;
+      font-size:11px;
+      font-weight:700;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .map-popup-subtitle i{
+      flex:0 0 auto;
+      color:#3b82f6;
+    }
+
+    .map-popup-body{
+      padding:10px 14px 13px;
+    }
+
+    .map-popup-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+      margin-bottom:8px;
     }
 
     .map-popup-badge{
-      display:inline-block;
-      padding:4px 10px;
+      display:inline-flex;
+      align-items:center;
+      padding:4px 8px;
+      border:1px solid #cfe0fa;
       border-radius:999px;
-      font-size:11px;
-      font-weight:700;
-      margin-top:4px;
-      margin-right:4px;
-      border:1px solid rgba(15,23,42,.08);
-      background:#f8fafc;
+      color:#2456a6;
+      background:#edf5ff;
+      font-size:10px;
+      font-weight:850;
+      line-height:1;
+    }
+
+    .map-popup-row{
+      display:grid;
+      grid-template-columns:17px minmax(0,1fr);
+      gap:7px;
+      margin-bottom:6px;
+      color:#475569;
+      font-size:11.5px;
+      line-height:1.32;
+      overflow-wrap:anywhere;
+    }
+
+    .map-popup-row:last-child{
+      margin-bottom:0;
+    }
+
+    .map-popup-row > i{
+      margin-top:1px;
+      color:#3b82f6;
+      text-align:center;
+    }
+
+    .map-popup-row strong{
+      color:#1e293b;
+      font-weight:850;
     }
 
     .map-popup-photo{
-      border-radius:12px;
       width:100%;
-      max-width:220px;
-      height:140px;
-      object-fit:cover;
-      border:1px solid #e5e7eb;
+      height:96px;
       display:block;
+      object-fit:cover;
+      border:1px solid #dbe4f0;
+      border-radius:12px;
     }
 
     .map-popup-photo-link{
       display:block;
-      width:220px;
-      max-width:100%;
-      margin-top:10px;
+      width:100%;
+      margin-top:9px;
       cursor:zoom-in;
     }
 
     .map-popup-photo-empty{
-      margin-top:10px;
-      padding:9px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      margin-top:8px;
+      padding:6px 9px;
       border:1px dashed #cbd5e1;
       border-radius:10px;
-      background:#f8fafc;
       color:#64748b;
-      font-size:12px;
+      background:#f8fafc;
+      font-size:10px;
+      font-weight:700;
       text-align:center;
+    }
+
+    @media (max-width:767.98px){
+      .dashboard-prospect-popup{
+        max-width:calc(100vw - 56px) !important;
+      }
+
+      .dashboard-prospect-popup .leaflet-popup-content-wrapper{
+        border-radius:15px;
+        box-shadow:0 14px 32px rgba(15,23,42,.22);
+      }
+
+      .dashboard-prospect-popup .leaflet-popup-content{
+        max-width:calc(100vw - 72px) !important;
+        max-height:138px !important;
+        overflow-x:hidden;
+        overflow-y:auto;
+        overscroll-behavior:contain;
+        -webkit-overflow-scrolling:touch;
+      }
+
+      .dashboard-prospect-popup .leaflet-popup-close-button{
+        top:6px;
+        right:6px;
+        width:27px;
+        height:27px;
+        border-radius:9px;
+      }
+
+      .map-popup-head{
+        padding:10px 39px 8px 11px;
+      }
+
+      .map-popup-title{
+        font-size:12px;
+      }
+
+      .map-popup-subtitle{
+        margin-top:3px;
+        font-size:9.5px;
+      }
+
+      .map-popup-body{
+        padding:8px 11px 10px;
+      }
+
+      .map-popup-badges{
+        margin-bottom:6px;
+      }
+
+      .map-popup-badge{
+        padding:3px 7px;
+        font-size:8.5px;
+      }
+
+      .map-popup-row{
+        grid-template-columns:15px minmax(0,1fr);
+        gap:5px;
+        margin-bottom:4px;
+        font-size:9.5px;
+        line-height:1.25;
+      }
+
+      .map-popup-photo{
+        height:72px;
+        border-radius:9px;
+      }
+
+      .map-popup-photo-link{
+        margin-top:7px;
+      }
+
+      .map-popup-photo-empty{
+        margin-top:6px;
+        padding:5px 7px;
+        font-size:8.5px;
+      }
     }
 
 
@@ -1812,6 +1995,25 @@
         mapLayerGroup.clearLayers();
 
         const bounds = [];
+        const isMobilePopup = window.matchMedia('(max-width: 767.98px)').matches;
+        const mapWidth = mapEl.clientWidth || window.innerWidth || 320;
+        const mapHeight = mapEl.clientHeight || 250;
+        const popupMaxWidth = isMobilePopup
+          ? Math.min(252, Math.max(180, mapWidth - 44))
+          : 300;
+        const popupMaxHeight = isMobilePopup
+          ? Math.max(112, Math.min(138, Math.floor(mapHeight * .55)))
+          : 380;
+        const popupOptions = {
+          className: 'dashboard-prospect-popup',
+          minWidth: isMobilePopup ? Math.min(205, popupMaxWidth) : 240,
+          maxWidth: popupMaxWidth,
+          maxHeight: popupMaxHeight,
+          autoPan: true,
+          keepInView: true,
+          autoPanPaddingTopLeft: L.point(14, isMobilePopup ? 54 : 18),
+          autoPanPaddingBottomRight: L.point(14, 14)
+        };
 
         items.forEach(item => {
           const lat = parseFloat(item.latitude ?? item.lat ?? 0);
@@ -1855,30 +2057,36 @@
             ? '<a class="map-popup-photo-link" href="' + esc(fotoUrl) + '" target="_blank" rel="noopener noreferrer" title="Buka foto ukuran penuh">' +
                 '<img class="map-popup-photo" src="' + esc(fotoUrl) + '" alt="Foto ' + esc(nama) + '" loading="lazy">' +
               '</a>'
-            : '<div class="map-popup-photo-empty">Foto belum tersedia</div>';
+            : '<div class="map-popup-photo-empty"><i class="bi bi-image"></i> Foto belum tersedia</div>';
 
           const alamatHtml = alamat
-            ? '<div class="map-popup-row"><strong>Alamat:</strong> ' + esc(alamat) + '</div>'
+            ? '<div class="map-popup-row"><i class="bi bi-geo-alt"></i><div><strong>Alamat:</strong> ' + esc(alamat) + '</div></div>'
             : '';
 
           const wilayahHtml = wilayah
-            ? '<div class="map-popup-row"><strong>Wilayah:</strong> ' + esc(wilayah) + '</div>'
+            ? '<div class="map-popup-row"><i class="bi bi-map"></i><div><strong>Wilayah:</strong> ' + esc(wilayah) + '</div></div>'
             : '';
 
           const popupHtml =
-            '<div class="map-popup-title">' + esc(nama) + '</div>' +
-            '<div class="map-popup-row"><strong>Cabang:</strong> ' + esc(cabang) + '</div>' +
-            '<div class="map-popup-row"><strong>No HP:</strong> ' + esc(noHp) + '</div>' +
-            '<div class="map-popup-row"><strong>Status:</strong> ' + esc(status) + '</div>' +
-            '<div class="map-popup-row"><strong>Produk:</strong> ' + esc(produk) + '</div>' +
-            '<div class="map-popup-row"><strong>Usaha:</strong> ' + esc(usaha) + '</div>' +
-            alamatHtml +
-            wilayahHtml +
-            '<div class="map-popup-badge">' + esc(status) + '</div>' +
-            '<div class="map-popup-badge">' + esc(produk) + '</div>' +
-            foto;
+            '<div class="map-popup-card">' +
+              '<div class="map-popup-head">' +
+                '<div class="map-popup-title">' + esc(nama) + '</div>' +
+                '<div class="map-popup-subtitle"><i class="bi bi-building"></i><span>' + esc(cabang) + '</span></div>' +
+              '</div>' +
+              '<div class="map-popup-body">' +
+                '<div class="map-popup-badges">' +
+                  '<span class="map-popup-badge">' + esc(status) + '</span>' +
+                  '<span class="map-popup-badge">' + esc(produk) + '</span>' +
+                '</div>' +
+                '<div class="map-popup-row"><i class="bi bi-telephone"></i><div><strong>No HP:</strong> ' + esc(noHp) + '</div></div>' +
+                '<div class="map-popup-row"><i class="bi bi-briefcase"></i><div><strong>Usaha:</strong> ' + esc(usaha) + '</div></div>' +
+                alamatHtml +
+                wilayahHtml +
+                foto +
+              '</div>' +
+            '</div>';
 
-          marker.bindPopup(popupHtml);
+          marker.bindPopup(popupHtml, popupOptions);
           marker.on('popupopen', function (event) {
             const popupElement = event.popup && event.popup.getElement
               ? event.popup.getElement()
@@ -1886,16 +2094,27 @@
             const image = popupElement
               ? popupElement.querySelector('.map-popup-photo')
               : null;
+            const updatePopup = function () {
+              window.requestAnimationFrame(function () {
+                if (event.popup && event.popup.isOpen && event.popup.isOpen()) {
+                  event.popup.update();
+                }
+              });
+            };
 
             if (image && image.dataset.errorBound !== '1') {
               image.dataset.errorBound = '1';
+              image.addEventListener('load', updatePopup, { once: true });
               image.addEventListener('error', function () {
                 const link = image.closest('.map-popup-photo-link');
                 if (link) {
-                  link.outerHTML = '<div class="map-popup-photo-empty">Foto gagal dimuat</div>';
+                  link.outerHTML = '<div class="map-popup-photo-empty"><i class="bi bi-image"></i> Foto gagal dimuat</div>';
                 }
+                updatePopup();
               }, { once: true });
             }
+
+            updatePopup();
           });
           marker.addTo(mapLayerGroup);
           bounds.push([lat, lng]);

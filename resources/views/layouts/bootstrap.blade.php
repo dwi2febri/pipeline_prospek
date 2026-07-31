@@ -2890,6 +2890,11 @@
       box-shadow:0 0 0 3px rgba(99,83,255,.15);
     }
 
+    .searchable-filter-trigger:disabled{
+      cursor:not-allowed;
+      opacity:1;
+    }
+
     .searchable-filter-trigger.is-sm{
       min-height:31px;
       padding:.25rem 2rem .25rem .5rem;
@@ -3097,7 +3102,7 @@
   $canUsers             = $isAdmin;
   $canKontenApp         = $isAdmin;
   $canSimulasiKredit    = auth()->check();
-  $canNominatifKredit   = auth()->check();
+  $canNominatifKredit   = $isAdmin || $isManajemen || $isSupervisor;
 
   $displayName = auth()->user()->nama_lengkap ?: auth()->user()->name ?: 'User';
   $displayInitial = strtoupper(substr($displayName, 0, 1));
@@ -4876,6 +4881,9 @@
           if (previous.buttonText.textContent !== latestLabel) {
             previous.buttonText.textContent = latestLabel;
           }
+          previous.button.disabled = select.disabled;
+          previous.button.setAttribute('aria-disabled', select.disabled ? 'true' : 'false');
+          if (select.disabled && active === previous) closePanel(previous);
           return;
         }
 
@@ -4896,6 +4904,8 @@
           + (select.classList.contains('form-select-sm') ? ' is-sm' : '');
         button.setAttribute('aria-haspopup', 'listbox');
         button.setAttribute('aria-expanded', 'false');
+        button.setAttribute('aria-disabled', select.disabled ? 'true' : 'false');
+        button.disabled = select.disabled;
         buttonText.textContent = selectedLabel(select);
         button.appendChild(buttonText);
         select.insertAdjacentElement('afterend', button);
@@ -4931,6 +4941,8 @@
         instances.set(select, instance);
 
         button.addEventListener('click', function(){
+          if (select.disabled) return;
+
           if (panel.classList.contains('is-open')) {
             closePanel(instance);
           } else {
@@ -4939,6 +4951,8 @@
         });
 
         button.addEventListener('keydown', function(event){
+          if (select.disabled) return;
+
           if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             openPanel(instance);

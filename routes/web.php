@@ -208,7 +208,7 @@ Route::middleware(['auth'])->group(function () {
 
     // ===== NOMINATIF KREDIT =====
     Route::get('/nominatif-kredit', NominatifKreditIndex::class)
-        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR,AO,AO_KREDIT,AO_DANA,AO_REMEDIAL,PEGAWAI')
+        ->middleware('role:ADMIN,MANAJEMEN,MANAJEMEN KANWIL,SUPERVISOR')
         ->name('nominatif-kredit.index');
 
     // ===== RECYCLE BIN =====
