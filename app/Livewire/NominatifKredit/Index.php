@@ -20,12 +20,19 @@ class Index extends Component
     ];
 
     public ?string $filterCabang = '';
+
     public string $filterDateMode = 'monthly';
+
     public ?string $filterBulan = '';
+
     public ?string $filterTahun = '';
+
     public ?string $filterTanggalAwal = '';
+
     public ?string $filterTanggalAkhir = '';
+
     public string $filterReferralRole = 'all';
+
     public bool $lockCabangFilter = false;
 
     protected array $productMap = [
@@ -104,7 +111,7 @@ class Index extends Component
     {
         $this->lockCabangFilter = $this->isSupervisor();
 
-        if (!$this->lockCabangFilter) {
+        if (! $this->lockCabangFilter) {
             return;
         }
 
@@ -245,11 +252,11 @@ class Index extends Component
             $product = $this->normalizeProduct($row->jenis_produk);
             $rekening = trim((string) $row->no_rekening);
 
-            if (!$product || $rekening === '') {
+            if (! $product || $rekening === '') {
                 continue;
             }
 
-            $recordKey = $product . '|' . $row->cabang_id . '|' . $rekening;
+            $recordKey = $product.'|'.$row->cabang_id.'|'.$rekening;
 
             if (isset($records[$recordKey])) {
                 continue;
@@ -307,13 +314,13 @@ class Index extends Component
         )));
 
         $quotedColumns = array_map(function ($column) {
-            return '`' . str_replace('`', '', $column) . '`';
+            return '`'.str_replace('`', '', $column).'`';
         }, $amountColumns);
 
         if (count($quotedColumns) === 1) {
-            $amountExpression = 'COALESCE(' . $quotedColumns[0] . ', 0)';
+            $amountExpression = 'COALESCE('.$quotedColumns[0].', 0)';
         } elseif (count($quotedColumns) > 1) {
-            $amountExpression = 'COALESCE(' . implode(', ', $quotedColumns) . ', 0)';
+            $amountExpression = 'COALESCE('.implode(', ', $quotedColumns).', 0)';
         } else {
             $amountExpression = '0';
         }
@@ -327,7 +334,7 @@ class Index extends Component
 
             $rows = DB::connection('dpk')
                 ->table($meta['table'])
-                ->select('no_rekening', DB::raw($amountExpression . ' as nominal'))
+                ->select('no_rekening', DB::raw($amountExpression.' as nominal'))
                 ->whereIn('no_rekening', $chunk)
                 ->get();
 
@@ -431,6 +438,17 @@ class Index extends Component
             'selectedCabang' => null,
             'jenisUsahaRows' => collect(),
             'topCabangRows' => collect(),
+            'topCabangRowsByProduct' => collect([
+                'ALL' => collect(),
+                'KREDIT' => collect(),
+                'TABUNGAN' => collect(),
+                'DEPOSITO' => collect(),
+            ]),
+            'matchedRowsByProduct' => collect([
+                'KREDIT' => collect(),
+                'TABUNGAN' => collect(),
+                'DEPOSITO' => collect(),
+            ]),
             'unmatchedRows' => collect(),
 
             'barChartLabels' => [],
@@ -504,7 +522,17 @@ class Index extends Component
         }
 
         $jenisUsahaMap = [];
-        $branchMap = [];
+        $branchMaps = [
+            'ALL' => [],
+            'KREDIT' => [],
+            'TABUNGAN' => [],
+            'DEPOSITO' => [],
+        ];
+        $matchedRowsByProduct = [
+            'KREDIT' => [],
+            'TABUNGAN' => [],
+            'DEPOSITO' => [],
+        ];
         $unmatchedRows = [];
         $matched = 0;
 
@@ -512,7 +540,7 @@ class Index extends Component
             $product = $record['product'];
             $rekening = $record['rekening'];
 
-            if (!array_key_exists($rekening, $amountsByProduct[$product] ?? [])) {
+            if (! array_key_exists($rekening, $amountsByProduct[$product] ?? [])) {
                 $unmatchedRows[] = [
                     'prospect_id' => $record['prospect_id'],
                     'tanggal_prospek' => $record['tanggal_prospek'],
@@ -522,7 +550,7 @@ class Index extends Component
                     'jenis_produk_label' => $this->productMap[$product]['label'],
                     'no_rekening' => $rekening,
                     'jenis_usaha' => $record['jenis_usaha'] ?: 'LAINNYA',
-                    'keterangan' => 'No rekening tidak ditemukan pada tabel ' . $this->productMap[$product]['table'],
+                    'keterangan' => 'No rekening tidak ditemukan pada tabel '.$this->productMap[$product]['table'],
                 ];
 
                 continue;
@@ -531,12 +559,24 @@ class Index extends Component
             $amount = (float) $amountsByProduct[$product][$rekening];
             $matched++;
 
+            $matchedRowsByProduct[$product][] = [
+                'prospect_id' => $record['prospect_id'],
+                'tanggal_prospek' => $record['tanggal_prospek'],
+                'kode_cabang' => $record['kode_cabang'],
+                'nama_cabang' => $record['nama_cabang'],
+                'jenis_produk' => $product,
+                'jenis_produk_label' => $this->productMap[$product]['label'],
+                'no_rekening' => $rekening,
+                'jenis_usaha' => $record['jenis_usaha'] ?: 'LAINNYA',
+                'realisasi' => $amount,
+            ];
+
             $report['summary'][$product]['noa']++;
             $report['summary'][$product]['realisasi'] += $amount;
 
             $jenis = $record['jenis_usaha'] ?: 'LAINNYA';
 
-            if (!isset($jenisUsahaMap[$jenis])) {
+            if (! isset($jenisUsahaMap[$jenis])) {
                 $jenisUsahaMap[$jenis] = [
                     'jenis_usaha' => $jenis,
                     'KREDIT' => 0.0,
@@ -556,25 +596,27 @@ class Index extends Component
             $product = $record['product'];
             $rekening = $record['rekening'];
 
-            if (!array_key_exists($rekening, $amountsByProduct[$product] ?? [])) {
+            if (! array_key_exists($rekening, $amountsByProduct[$product] ?? [])) {
                 continue;
             }
 
             $amount = (float) $amountsByProduct[$product][$rekening];
             $branchId = $record['cabang_id'];
 
-            if (!isset($branchMap[$branchId])) {
-                $branchMap[$branchId] = [
-                    'cabang_id' => $branchId,
-                    'kode_cabang' => $record['kode_cabang'],
-                    'nama_cabang' => $record['nama_cabang'],
-                    'realisasi' => 0.0,
-                    'noa' => 0,
-                ];
-            }
+            foreach (['ALL', $product] as $group) {
+                if (! isset($branchMaps[$group][$branchId])) {
+                    $branchMaps[$group][$branchId] = [
+                        'cabang_id' => $branchId,
+                        'kode_cabang' => $record['kode_cabang'],
+                        'nama_cabang' => $record['nama_cabang'],
+                        'realisasi' => 0.0,
+                        'noa' => 0,
+                    ];
+                }
 
-            $branchMap[$branchId]['realisasi'] += $amount;
-            $branchMap[$branchId]['noa']++;
+                $branchMaps[$group][$branchId]['realisasi'] += $amount;
+                $branchMaps[$group][$branchId]['noa']++;
+            }
         }
 
         $report['matchedNoa'] = $matched;
@@ -587,28 +629,96 @@ class Index extends Component
             ->values();
 
         $report['unmatchedRows'] = collect($unmatchedRows)
-            ->sortBy(fn ($row) => ($row['kode_cabang'] ?? '') . '|' . ($row['jenis_produk'] ?? '') . '|' . ($row['no_rekening'] ?? ''))
+            ->sortBy(fn ($row) => ($row['kode_cabang'] ?? '').'|'.($row['jenis_produk'] ?? '').'|'.($row['no_rekening'] ?? ''))
             ->values();
 
-        $topCabangRows = collect($branchMap)
-            ->sortByDesc('realisasi')
-            ->values()
-            ->map(function ($row, $index) {
-                $row['rank'] = $index + 1;
-                return $row;
-            });
+        $report['matchedRowsByProduct'] = collect($matchedRowsByProduct)
+            ->map(fn ($rows) => collect($rows)
+                ->sortBy(fn ($row) => ($row['tanggal_prospek'] ?? '').'|'.($row['kode_cabang'] ?? '').'|'.($row['no_rekening'] ?? ''))
+                ->values());
 
-        $report['topCabangRows'] = $topCabangRows->take(10)->values();
+        $rankedCabangRowsByProduct = collect($branchMaps)->map(function ($rows) {
+            return collect($rows)
+                ->sortByDesc('realisasi')
+                ->values()
+                ->map(function ($row, $index) {
+                    $row['rank'] = $index + 1;
+
+                    return $row;
+                });
+        });
+
+        $topCabangRowsByProduct = $rankedCabangRowsByProduct
+            ->map(fn ($rows) => $rows->take(10)->values());
+
+        $topCabangRows = $topCabangRowsByProduct->get('ALL', collect());
+
+        $report['topCabangRows'] = $topCabangRows;
+        $report['topCabangRowsByProduct'] = $topCabangRowsByProduct;
 
         if ($this->filterCabang !== '' && ctype_digit((string) $this->filterCabang)) {
             $selectedId = (int) $this->filterCabang;
-            $ranked = $topCabangRows->firstWhere('cabang_id', $selectedId);
+            $ranked = $rankedCabangRowsByProduct->get('ALL', collect())->firstWhere('cabang_id', $selectedId);
             $report['rank'] = $ranked['rank'] ?? null;
         }
 
         $chartData = $this->buildJenisUsahaCharts($report['jenisUsahaRows']);
 
         return array_merge($report, $chartData);
+    }
+
+    protected function exportPeriodLabel(): string
+    {
+        if ($this->filterDateMode === 'range') {
+            return trim(($this->filterTanggalAwal ?: '-').' s.d. '.($this->filterTanggalAkhir ?: '-'));
+        }
+
+        if ($this->filterDateMode === 'monthly') {
+            $month = (int) ($this->filterBulan !== '' ? $this->filterBulan : now()->month);
+            $year = (int) ($this->filterTahun !== '' ? $this->filterTahun : now()->year);
+
+            return Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y');
+        }
+
+        return 'Semua Periode';
+    }
+
+    public function exportRealisasiNoa(string $product)
+    {
+        $this->authorizeAccess();
+        $product = strtoupper(trim($product));
+        abort_unless(array_key_exists($product, $this->productMap), 404);
+
+        $report = $this->buildReport();
+        $rows = $report['matchedRowsByProduct']->get($product, collect());
+        $productLabel = $this->productMap[$product]['label'];
+        $periodLabel = $this->exportPeriodLabel();
+        $branchLabel = $report['selectedCabang']
+            ? $report['selectedCabang']->kode_cabang.' - '.$report['selectedCabang']->nama_cabang
+            : 'Semua Cabang';
+        $filename = 'noa_realisasi_'.strtolower($product).'_'.now()->format('Ymd_His').'.xls';
+
+        return response()->streamDownload(function () use ($rows, $productLabel, $periodLabel, $branchLabel) {
+            echo '<html><head><meta charset="UTF-8"></head><body><table border="1">';
+            echo '<tr><th colspan="7" style="font-weight:bold;font-size:16px;">NOA REALISASI '.e(strtoupper($productLabel)).'</th></tr>';
+            echo '<tr><td colspan="7">Periode: '.e($periodLabel).' | Cabang: '.e($branchLabel).'</td></tr>';
+            echo '<tr><th>No</th><th>Tanggal</th><th>Kode Cabang</th><th>Nama Cabang</th><th>No Rekening</th><th>Jenis Usaha</th><th>Realisasi</th></tr>';
+
+            foreach ($rows as $index => $row) {
+                $date = $row['tanggal_prospek'] ? Carbon::parse($row['tanggal_prospek'])->format('d/m/Y') : '-';
+                echo '<tr>';
+                echo '<td>'.($index + 1).'</td>';
+                echo '<td>'.e($date).'</td>';
+                echo '<td style="mso-number-format:\'@\';">'.e($row['kode_cabang']).'</td>';
+                echo '<td>'.e($row['nama_cabang']).'</td>';
+                echo '<td style="mso-number-format:\'@\';">'.e($row['no_rekening']).'</td>';
+                echo '<td>'.e($this->formatJenisUsahaLabel($row['jenis_usaha'])).'</td>';
+                echo '<td style="mso-number-format:\'0\';">'.(float) $row['realisasi'].'</td>';
+                echo '</tr>';
+            }
+
+            echo '</table></body></html>';
+        }, $filename, ['Content-Type' => 'application/vnd.ms-excel; charset=UTF-8']);
     }
 
     public function render()

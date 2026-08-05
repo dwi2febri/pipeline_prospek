@@ -376,6 +376,67 @@
       font-size:.86rem;
     }
 
+    .report-tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:14px;
+      border:0;
+    }
+
+    .report-tabs .nav-link{
+      border:1px solid #dbeafe;
+      border-radius:999px;
+      padding:8px 14px;
+      background:#f8fafc;
+      color:#475569;
+      font-size:.82rem;
+      font-weight:900;
+      line-height:1.2;
+    }
+
+    .report-tabs .nav-link.active{
+      border-color:#2563eb;
+      background:#2563eb;
+      color:#fff;
+      box-shadow:0 8px 18px rgba(37,99,235,.2);
+    }
+
+    .excel-button{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:40px;
+      padding:8px 14px;
+      border:1px solid #bbf7d0;
+      border-radius:12px;
+      background:#f0fdf4;
+      color:#15803d;
+      font-size:.82rem;
+      font-weight:900;
+      transition:.18s ease;
+    }
+
+    .excel-button:hover{
+      border-color:#22c55e;
+      background:#dcfce7;
+      color:#166534;
+    }
+
+    .excel-button:disabled{
+      cursor:wait;
+      opacity:.65;
+    }
+
+    .tab-table-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
     @media (max-width: 767.98px){
       .pro-filter-shell{
         padding:14px;
@@ -454,6 +515,21 @@
 
       .pro-filter-badge span{
         display:none;
+      }
+
+      .report-tabs{
+        flex-wrap:nowrap;
+        overflow-x:auto;
+        padding-bottom:4px;
+      }
+
+      .report-tabs .nav-link{
+        white-space:nowrap;
+      }
+
+      .tab-table-toolbar{
+        align-items:stretch;
+        flex-direction:column;
       }
     }
   </style>
@@ -690,35 +766,61 @@
         <div class="panel-head">
           <div class="panel-title">Top Cabang</div>
           <div class="panel-sub">Peringkat realisasi closing pada filter aktif.</div>
+          <ul class="nav report-tabs" id="topCabangTabs" role="tablist">
+            @foreach(['ALL' => 'All', 'KREDIT' => 'Kredit', 'TABUNGAN' => 'Tabungan', 'DEPOSITO' => 'Deposito'] as $key => $label)
+              <li class="nav-item" role="presentation">
+                <button class="nav-link {{ $key === 'ALL' ? 'active' : '' }}"
+                        id="top-cabang-{{ strtolower($key) }}-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#top-cabang-{{ strtolower($key) }}"
+                        type="button"
+                        role="tab"
+                        aria-controls="top-cabang-{{ strtolower($key) }}"
+                        aria-selected="{{ $key === 'ALL' ? 'true' : 'false' }}">
+                  {{ $label }}
+                </button>
+              </li>
+            @endforeach
+          </ul>
         </div>
         <div class="panel-body">
-          <div class="table-responsive">
-            <table class="table report-table mb-0">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Cabang</th>
-                  <th class="text-end">Realisasi</th>
-                  <th class="text-end">NOA</th>
-                </tr>
-              </thead>
-              <tbody>
-                @forelse($report['topCabangRows'] as $row)
-                  <tr>
-                    <td class="fw-bold">#{{ $row['rank'] }}</td>
-                    <td>{{ $row['kode_cabang'] }} - {{ $row['nama_cabang'] }}</td>
-                    <td class="text-end fw-bold">{{ $money($row['realisasi']) }}</td>
-                    <td class="text-end fw-bold">{{ number_format($row['noa']) }}</td>
-                  </tr>
-                @empty
-                  <tr>
-                    <td colspan="4">
-                      <div class="empty-state">Belum ada data ranking.</div>
-                    </td>
-                  </tr>
-                @endforelse
-              </tbody>
-            </table>
+          <div class="tab-content" id="topCabangTabContent">
+            @foreach(['ALL' => 'All', 'KREDIT' => 'Kredit', 'TABUNGAN' => 'Tabungan', 'DEPOSITO' => 'Deposito'] as $key => $label)
+              <div class="tab-pane fade {{ $key === 'ALL' ? 'show active' : '' }}"
+                   id="top-cabang-{{ strtolower($key) }}"
+                   role="tabpanel"
+                   aria-labelledby="top-cabang-{{ strtolower($key) }}-tab"
+                   tabindex="0">
+                <div class="table-responsive">
+                  <table class="table report-table mb-0">
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Cabang</th>
+                        <th class="text-end">Realisasi</th>
+                        <th class="text-end">NOA</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @forelse($report['topCabangRowsByProduct']->get($key, collect()) as $row)
+                        <tr>
+                          <td class="fw-bold">#{{ $row['rank'] }}</td>
+                          <td>{{ $row['kode_cabang'] }} - {{ $row['nama_cabang'] }}</td>
+                          <td class="text-end fw-bold">{{ $money($row['realisasi']) }}</td>
+                          <td class="text-end fw-bold">{{ number_format($row['noa']) }}</td>
+                        </tr>
+                      @empty
+                        <tr>
+                          <td colspan="4">
+                            <div class="empty-state">Belum ada data ranking {{ strtolower($label) }}.</div>
+                          </td>
+                        </tr>
+                      @endforelse
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            @endforeach
           </div>
         </div>
       </div>
@@ -795,6 +897,91 @@
             @endforelse
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-panel mb-3">
+    <div class="panel-head">
+      <div class="panel-title">NOA Realisasi</div>
+      <div class="panel-sub">Detail rekening prospek yang sudah match dengan nominatif, dikelompokkan berdasarkan produk.</div>
+      <ul class="nav report-tabs" id="noaRealisasiTabs" role="tablist">
+        @foreach(['KREDIT' => 'Kredit', 'TABUNGAN' => 'Tabungan', 'DEPOSITO' => 'Deposito'] as $key => $label)
+          <li class="nav-item" role="presentation">
+            <button class="nav-link {{ $key === 'KREDIT' ? 'active' : '' }}"
+                    id="noa-{{ strtolower($key) }}-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#noa-{{ strtolower($key) }}"
+                    type="button"
+                    role="tab"
+                    aria-controls="noa-{{ strtolower($key) }}"
+                    aria-selected="{{ $key === 'KREDIT' ? 'true' : 'false' }}">
+              {{ $label }}
+              <span class="ms-1">({{ number_format($report['matchedRowsByProduct']->get($key, collect())->count()) }})</span>
+            </button>
+          </li>
+        @endforeach
+      </ul>
+    </div>
+
+    <div class="panel-body">
+      <div class="tab-content" id="noaRealisasiTabContent">
+        @foreach(['KREDIT' => 'Kredit', 'TABUNGAN' => 'Tabungan', 'DEPOSITO' => 'Deposito'] as $key => $label)
+          @php($productRows = $report['matchedRowsByProduct']->get($key, collect()))
+          <div class="tab-pane fade {{ $key === 'KREDIT' ? 'show active' : '' }}"
+               id="noa-{{ strtolower($key) }}"
+               role="tabpanel"
+               aria-labelledby="noa-{{ strtolower($key) }}-tab"
+               tabindex="0">
+            <div class="tab-table-toolbar">
+              <div class="text-muted small fw-bold">
+                {{ number_format($productRows->count()) }} NOA {{ $label }} sudah match nominatif
+              </div>
+              <button type="button"
+                      class="excel-button"
+                      wire:click="exportRealisasiNoa('{{ $key }}')"
+                      wire:loading.attr="disabled"
+                      wire:target="exportRealisasiNoa('{{ $key }}')">
+                <i class="bi bi-file-earmark-excel"></i>
+                <span wire:loading.remove wire:target="exportRealisasiNoa('{{ $key }}')">Cetak Excel {{ $label }}</span>
+                <span wire:loading wire:target="exportRealisasiNoa('{{ $key }}')">Menyiapkan Excel...</span>
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table report-table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Cabang</th>
+                    <th>No Rekening</th>
+                    <th>Jenis Usaha</th>
+                    <th class="text-end">Realisasi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @forelse($productRows as $index => $row)
+                    <tr>
+                      <td class="fw-bold">{{ $index + 1 }}</td>
+                      <td>{{ $tanggalView($row['tanggal_prospek']) }}</td>
+                      <td class="fw-bold">{{ $row['kode_cabang'] }} - {{ $row['nama_cabang'] }}</td>
+                      <td class="fw-bold">{{ $row['no_rekening'] }}</td>
+                      <td>{{ $formatJenisUsaha($row['jenis_usaha']) }}</td>
+                      <td class="text-end fw-bold">{{ $money($row['realisasi']) }}</td>
+                    </tr>
+                  @empty
+                    <tr>
+                      <td colspan="6">
+                        <div class="empty-state">Belum ada NOA realisasi {{ strtolower($label) }} pada filter ini.</div>
+                      </td>
+                    </tr>
+                  @endforelse
+                </tbody>
+              </table>
+            </div>
+          </div>
+        @endforeach
       </div>
     </div>
   </div>

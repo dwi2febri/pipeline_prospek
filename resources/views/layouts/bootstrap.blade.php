@@ -3333,6 +3333,12 @@
             </a>
           @endif
 
+          @if($canNominatifKredit)
+            <a href="{{ route('nominatif-kredit.index') }}" class="navlink {{ request()->is('nominatif-kredit') ? 'active' : '' }}">
+              <i class="bi bi-database"></i><span>Realisasi</span>
+            </a>
+          @endif
+
           @if($canProspects)
             <a href="/prospects" class="navlink {{ request()->is('prospects') || request()->is('prospects/create') || request()->is('prospects/*/edit') ? 'active' : '' }}">
               <i class="bi bi-grid"></i><span>Prospek Saya</span>
@@ -3354,12 +3360,6 @@
           @if($canSimulasiKredit)
             <a href="{{ route('simulasi-kredit.index') }}" class="navlink {{ request()->is('simulasi-kredit') ? 'active' : '' }}">
               <i class="bi bi-calculator"></i><span>Simulasi Kredit</span>
-            </a>
-          @endif
-
-          @if($canNominatifKredit)
-            <a href="{{ route('nominatif-kredit.index') }}" class="navlink {{ request()->is('nominatif-kredit') ? 'active' : '' }}">
-              <i class="bi bi-database"></i><span>Realisasi</span>
             </a>
           @endif
 
