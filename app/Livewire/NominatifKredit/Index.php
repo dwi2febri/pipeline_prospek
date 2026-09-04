@@ -21,6 +21,11 @@ class Index extends Component
 
     public ?string $filterCabang = '';
 
+    // Menentukan sumber tanggal untuk filter dashboard:
+    // prospek = prospects.tanggal_prospek (internal key tetap: pengajuan)
+    // realisasi = tgl_realisasi pada tabel nominatif DPK
+    public string $filterDataMode = 'pengajuan';
+
     public string $filterDateMode = 'monthly';
 
     public ?string $filterBulan = '';
@@ -41,6 +46,7 @@ class Index extends Component
             'table' => 'nominatif',
             'amount' => 'jml_pinjaman',
             'fallback_amounts' => [],
+            'date_column' => 'tgl_realisasi',
             'color' => '#2563eb',
             'icon' => 'bi-bank',
         ],
@@ -49,6 +55,7 @@ class Index extends Component
             'table' => 'nominatif_tabungan',
             'amount' => 'saldo',
             'fallback_amounts' => [],
+            'date_column' => 'tgl_register',
             'color' => '#06b6d4',
             'icon' => 'bi-wallet2',
         ],
@@ -57,6 +64,7 @@ class Index extends Component
             'table' => 'nominatif_deposito',
             'amount' => 'saldo_akhir',
             'fallback_amounts' => [],
+            'date_column' => 'tgl_registrasi',
             'color' => '#f97316',
             'icon' => 'bi-safe2',
         ],
@@ -66,6 +74,7 @@ class Index extends Component
     {
         $this->authorizeAccess();
 
+        $this->filterDataMode = 'pengajuan';
         $this->filterDateMode = 'monthly';
         $this->filterBulan = (string) now()->month;
         $this->filterTahun = (string) now()->year;
@@ -117,6 +126,15 @@ class Index extends Component
 
         $cabangId = $this->supervisorCabangId();
         $this->filterCabang = $cabangId ? (string) $cabangId : '';
+    }
+
+    public function updatedFilterDataMode(): void
+    {
+        if (! in_array($this->filterDataMode, ['pengajuan', 'realisasi'], true)) {
+            $this->filterDataMode = 'pengajuan';
+        }
+
+        $this->dispatch('nominatif-report-refresh');
     }
 
     public function updatedFilterReferralRole(): void
@@ -185,6 +203,12 @@ class Index extends Component
 
     protected function applyDateFilter($query): void
     {
+        // Pada mode realisasi, tanggal tidak boleh difilter dari tabel prospects.
+        // Filter periode akan diterapkan ke kolom tgl_realisasi pada DB nominatif.
+        if ($this->filterDataMode === 'realisasi') {
+            return;
+        }
+
         $this->normalizeDateRange();
 
         if ($this->filterDateMode === 'monthly') {
@@ -200,6 +224,31 @@ class Index extends Component
 
             if ($this->filterTanggalAkhir !== '') {
                 $query->whereDate('prospects.tanggal_prospek', '<=', $this->filterTanggalAkhir);
+            }
+        }
+    }
+
+    protected function applyDpkDateFilter($query, string $dateColumn): void
+    {
+        if ($this->filterDataMode !== 'realisasi') {
+            return;
+        }
+
+        $this->normalizeDateRange();
+
+        if ($this->filterDateMode === 'monthly') {
+            $bulan = (int) ($this->filterBulan !== '' ? $this->filterBulan : now()->month);
+            $tahun = (int) ($this->filterTahun !== '' ? $this->filterTahun : now()->year);
+
+            $query->whereMonth($dateColumn, $bulan)
+                ->whereYear($dateColumn, $tahun);
+        } elseif ($this->filterDateMode === 'range') {
+            if ($this->filterTanggalAwal !== '') {
+                $query->whereDate($dateColumn, '>=', $this->filterTanggalAwal);
+            }
+
+            if ($this->filterTanggalAkhir !== '') {
+                $query->whereDate($dateColumn, '<=', $this->filterTanggalAkhir);
             }
         }
     }
@@ -304,7 +353,7 @@ class Index extends Component
         return $summary;
     }
 
-    protected function fetchDpkAmounts(string $product, array $rekenings): array
+    protected function fetchDpkData(string $product, array $rekenings): array
     {
         $meta = $this->productMap[$product];
 
@@ -325,26 +374,96 @@ class Index extends Component
             $amountExpression = '0';
         }
 
-        $amounts = [];
+        // Sumber nama nasabah HARUS dari tabel nominatif DPK, bukan prospects.
+        // Nama kolom bisa berbeda antar dump/database, jadi dideteksi dari schema tabel terkait.
+        $tableColumns = DB::connection('dpk')
+            ->getSchemaBuilder()
+            ->getColumnListing($meta['table']);
+
+        $columnMap = [];
+        foreach ($tableColumns as $column) {
+            $columnMap[strtolower((string) $column)] = (string) $column;
+        }
+
+        $nameColumn = null;
+        $nameCandidates = [
+            'nama_nasabah',
+            'nama',
+            'nama_rekening',
+            'nama_debitur',
+            'nm_nasabah',
+            'nama_pemilik',
+        ];
+
+        foreach ($nameCandidates as $candidate) {
+            if (isset($columnMap[strtolower($candidate)])) {
+                $nameColumn = $columnMap[strtolower($candidate)];
+                break;
+            }
+        }
+
+        // Fallback aman: pilih kolom yang mengandung kata "nama" pada tabel nominatif itu sendiri.
+        if ($nameColumn === null) {
+            foreach ($tableColumns as $column) {
+                if (str_contains(strtolower((string) $column), 'nama')) {
+                    $nameColumn = (string) $column;
+                    break;
+                }
+            }
+        }
+
+        $nameExpression = $nameColumn !== null
+            ? '`'.str_replace('`', '', $nameColumn).'`'
+            : 'NULL';
+
+        // Kolom tanggal realisasi/registrasi berbeda untuk tiap produk.
+        // Semua mode tetap membaca tanggal ini agar tabel dapat menampilkan
+        // Tanggal Prospek DAN Tanggal Realisasi secara bersamaan.
+        $dateColumn = match ($product) {
+            'KREDIT' => 'tgl_realisasi',
+            'TABUNGAN' => 'tgl_register',
+            'DEPOSITO' => 'tgl_registrasi',
+            default => $meta['date_column'] ?? 'tgl_realisasi',
+        };
+
+        $quotedDateColumn = '`'.str_replace('`', '', $dateColumn).'`';
+        $data = [];
 
         foreach (array_chunk(array_values(array_unique($rekenings)), 800) as $chunk) {
             if (empty($chunk)) {
                 continue;
             }
 
-            $rows = DB::connection('dpk')
+            $query = DB::connection('dpk')
                 ->table($meta['table'])
-                ->select('no_rekening', DB::raw($amountExpression.' as nominal'))
-                ->whereIn('no_rekening', $chunk)
-                ->get();
+                ->select(
+                    'no_rekening',
+                    DB::raw($quotedDateColumn.' as tgl_realisasi'),
+                    DB::raw($nameExpression.' as nama_nasabah'),
+                    DB::raw($amountExpression.' as nominal')
+                );
+
+            if ($this->filterDataMode === 'realisasi') {
+                // Filter Bulanan/Range memakai tanggal dari tabel nominatif masing-masing produk.
+                $this->applyDpkDateFilter($query, $dateColumn);
+            }
+
+            $query->whereIn('no_rekening', $chunk);
+
+            $rows = $query->get();
 
             foreach ($rows as $row) {
                 $rekening = trim((string) $row->no_rekening);
-                $amounts[$rekening] = (float) ($row->nominal ?? 0);
+
+                $data[$rekening] = [
+                    'nominal' => (float) ($row->nominal ?? 0),
+                    'tgl_realisasi' => $row->tgl_realisasi ?? null,
+                    'nama_nasabah' => trim((string) ($row->nama_nasabah ?? '')),
+                ];
             }
         }
 
-        return $amounts;
+        return $data;
     }
 
     protected function formatJenisUsahaLabel(string $value): string
@@ -515,10 +634,10 @@ class Index extends Component
             $rankingRecords = $uniqueRecords;
         }
 
-        $amountsByProduct = [];
+        $dpkDataByProduct = [];
 
         foreach (array_keys($this->productMap) as $product) {
-            $amountsByProduct[$product] = $this->fetchDpkAmounts($product, $rekeningsByProduct[$product] ?? []);
+            $dpkDataByProduct[$product] = $this->fetchDpkData($product, $rekeningsByProduct[$product] ?? []);
         }
 
         $jenisUsahaMap = [];
@@ -540,7 +659,13 @@ class Index extends Component
             $product = $record['product'];
             $rekening = $record['rekening'];
 
-            if (! array_key_exists($rekening, $amountsByProduct[$product] ?? [])) {
+            if (! array_key_exists($rekening, $dpkDataByProduct[$product] ?? [])) {
+                // Pada mode tgl realisasi, rekening yang tidak masuk periode tgl_realisasi
+                // tidak boleh dianggap sebagai unmatched; cukup dikeluarkan dari dashboard.
+                if ($this->filterDataMode === 'realisasi') {
+                    continue;
+                }
+
                 $unmatchedRows[] = [
                     'prospect_id' => $record['prospect_id'],
                     'tanggal_prospek' => $record['tanggal_prospek'],
@@ -556,14 +681,23 @@ class Index extends Component
                 continue;
             }
 
-            $amount = (float) $amountsByProduct[$product][$rekening];
+            $dpkRow = $dpkDataByProduct[$product][$rekening];
+            $amount = (float) ($dpkRow['nominal'] ?? 0);
+            $tanggalRealisasi = $dpkRow['tgl_realisasi'] ?? null;
+            $tanggalData = $this->filterDataMode === 'realisasi'
+                ? $tanggalRealisasi
+                : $record['tanggal_prospek'];
+
             $matched++;
 
             $matchedRowsByProduct[$product][] = [
                 'prospect_id' => $record['prospect_id'],
                 'tanggal_prospek' => $record['tanggal_prospek'],
+                'tanggal_realisasi' => $tanggalRealisasi,
+                'tanggal_data' => $tanggalData,
                 'kode_cabang' => $record['kode_cabang'],
                 'nama_cabang' => $record['nama_cabang'],
+                'nama_nasabah' => (string) ($dpkRow['nama_nasabah'] ?? ''),
                 'jenis_produk' => $product,
                 'jenis_produk_label' => $this->productMap[$product]['label'],
                 'no_rekening' => $rekening,
@@ -596,11 +730,11 @@ class Index extends Component
             $product = $record['product'];
             $rekening = $record['rekening'];
 
-            if (! array_key_exists($rekening, $amountsByProduct[$product] ?? [])) {
+            if (! array_key_exists($rekening, $dpkDataByProduct[$product] ?? [])) {
                 continue;
             }
 
-            $amount = (float) $amountsByProduct[$product][$rekening];
+            $amount = (float) ($dpkDataByProduct[$product][$rekening]['nominal'] ?? 0);
             $branchId = $record['cabang_id'];
 
             foreach (['ALL', $product] as $group) {
@@ -620,7 +754,15 @@ class Index extends Component
         }
 
         $report['matchedNoa'] = $matched;
-        $report['unmatchedNoa'] = max(count($uniqueRecords) - $matched, 0);
+
+        if ($this->filterDataMode === 'realisasi') {
+            // Seluruh angka dashboard pada mode ini hanya menghitung data nominatif
+            // yang tgl_realisasi-nya masuk filter aktif.
+            $report['closingProspects'] = $matched;
+            $report['unmatchedNoa'] = 0;
+        } else {
+            $report['unmatchedNoa'] = max(count($uniqueRecords) - $matched, 0);
+        }
         $report['totalRealisasi'] = collect($report['summary'])->sum('realisasi');
         $report['totalNoa'] = collect($report['summary'])->sum('noa');
 
@@ -634,7 +776,7 @@ class Index extends Component
 
         $report['matchedRowsByProduct'] = collect($matchedRowsByProduct)
             ->map(fn ($rows) => collect($rows)
-                ->sortBy(fn ($row) => ($row['tanggal_prospek'] ?? '').'|'.($row['kode_cabang'] ?? '').'|'.($row['no_rekening'] ?? ''))
+                ->sortBy(fn ($row) => ($row['tanggal_data'] ?? '').'|'.($row['kode_cabang'] ?? '').'|'.($row['no_rekening'] ?? ''))
                 ->values());
 
         $rankedCabangRowsByProduct = collect($branchMaps)->map(function ($rows) {
@@ -693,24 +835,28 @@ class Index extends Component
         $rows = $report['matchedRowsByProduct']->get($product, collect());
         $productLabel = $this->productMap[$product]['label'];
         $periodLabel = $this->exportPeriodLabel();
+        $dataModeLabel = $this->filterDataMode === 'realisasi' ? 'Tanggal Realisasi' : 'Tanggal Prospek';
         $branchLabel = $report['selectedCabang']
             ? $report['selectedCabang']->kode_cabang.' - '.$report['selectedCabang']->nama_cabang
             : 'Semua Cabang';
         $filename = 'noa_realisasi_'.strtolower($product).'_'.now()->format('Ymd_His').'.xls';
 
-        return response()->streamDownload(function () use ($rows, $productLabel, $periodLabel, $branchLabel) {
+        return response()->streamDownload(function () use ($rows, $productLabel, $periodLabel, $branchLabel, $dataModeLabel) {
             echo '<html><head><meta charset="UTF-8"></head><body><table border="1">';
-            echo '<tr><th colspan="7" style="font-weight:bold;font-size:16px;">NOA REALISASI '.e(strtoupper($productLabel)).'</th></tr>';
-            echo '<tr><td colspan="7">Periode: '.e($periodLabel).' | Cabang: '.e($branchLabel).'</td></tr>';
-            echo '<tr><th>No</th><th>Tanggal</th><th>Kode Cabang</th><th>Nama Cabang</th><th>No Rekening</th><th>Jenis Usaha</th><th>Realisasi</th></tr>';
+            echo '<tr><th colspan="9" style="font-weight:bold;font-size:16px;">NOA REALISASI '.e(strtoupper($productLabel)).'</th></tr>';
+            echo '<tr><td colspan="9">Mode Data: '.e($dataModeLabel).' | Periode: '.e($periodLabel).' | Cabang: '.e($branchLabel).'</td></tr>';
+            echo '<tr><th>No</th><th>Tanggal Prospek</th><th>Tanggal Realisasi</th><th>Kode Cabang</th><th>Nama Cabang</th><th>Nama Nasabah</th><th>No Rekening</th><th>Jenis Usaha</th><th>Realisasi</th></tr>';
 
             foreach ($rows as $index => $row) {
-                $date = $row['tanggal_prospek'] ? Carbon::parse($row['tanggal_prospek'])->format('d/m/Y') : '-';
+                $tanggalProspek = ! empty($row['tanggal_prospek']) ? Carbon::parse($row['tanggal_prospek'])->format('d/m/Y') : '-';
+                $tanggalRealisasi = ! empty($row['tanggal_realisasi']) ? Carbon::parse($row['tanggal_realisasi'])->format('d/m/Y') : '-';
                 echo '<tr>';
                 echo '<td>'.($index + 1).'</td>';
-                echo '<td>'.e($date).'</td>';
+                echo '<td>'.e($tanggalProspek).'</td>';
+                echo '<td>'.e($tanggalRealisasi).'</td>';
                 echo '<td style="mso-number-format:\'@\';">'.e($row['kode_cabang']).'</td>';
                 echo '<td>'.e($row['nama_cabang']).'</td>';
+                echo '<td>'.e($row['nama_nasabah'] ?: '-').'</td>';
                 echo '<td style="mso-number-format:\'@\';">'.e($row['no_rekening']).'</td>';
                 echo '<td>'.e($this->formatJenisUsahaLabel($row['jenis_usaha'])).'</td>';
                 echo '<td style="mso-number-format:\'0\';">'.(float) $row['realisasi'].'</td>';
