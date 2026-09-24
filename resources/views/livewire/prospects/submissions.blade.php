@@ -1,4 +1,12 @@
-<div class="container-fluid px-0">
+@php
+  $loggedRole = strtoupper(trim((string)(auth()->user()->role ?? '')));
+  $canManageAssignment = in_array($loggedRole, ['ADMIN','MANAJEMEN','SUPERVISOR']);
+  $isAoRole = $loggedRole === 'AO';
+  $isSupervisorRole = $loggedRole === 'SUPERVISOR';
+  $isManagementRole = in_array($loggedRole, ['ADMIN', 'MANAJEMEN', 'MANAJEMEN KANWIL'], true);
+  $usePipelineCard = $isAoRole || $isSupervisorRole || $isManagementRole;
+@endphp
+<div class="container-fluid px-0 {{ $usePipelineCard ? 'styled-pipeline' : '' }} {{ $isSupervisorRole ? 'supervisor-pipeline' : '' }} {{ $isManagementRole ? 'management-pipeline' : '' }}">
 
   <style>
     .sub-card{
@@ -458,6 +466,65 @@
       color:#64748b;
     }
 
+    @media (min-width:768px){
+      .styled-pipeline .pipeline-controls-card{padding:24px;border:1px solid #e1e8f3;border-radius:22px;background:#fff;box-shadow:0 8px 28px rgba(15,23,42,.04);margin-bottom:20px;}
+      .styled-pipeline .submissions-page-head{
+        align-items:center !important;
+        padding:0;
+        border:0;
+        background:transparent;
+      }
+      .styled-pipeline .submissions-title{color:#172b50;letter-spacing:-.03em;}
+      .styled-pipeline .submissions-subtitle{margin-top:6px;font-size:.9rem;}
+      .styled-pipeline .pipeline-header-total{align-self:flex-start;white-space:nowrap;padding:8px 14px;border:1px solid #e1e8f3;border-radius:12px;background:#f7f9fc;color:#536581;}
+      .styled-pipeline .submissions-export{min-width:0 !important;font-weight:600;}
+      .styled-pipeline .soft-filter-card{padding:0 !important;border:0;border-radius:0;background:transparent;box-shadow:none;}
+      .styled-pipeline .pipeline-filter-heading{display:flex;align-items:center;gap:10px;margin-bottom:18px;color:#263b60;font-weight:700;}
+      .styled-pipeline .pipeline-filter-heading i{color:#4263cf;}
+      .styled-pipeline .pipeline-filter-grid{display:flex;flex-wrap:nowrap;gap:12px;margin:0;overflow-x:auto;padding-bottom:4px;}
+      /* Reset Tailwind grid positions attached to Bootstrap column names. */
+      .styled-pipeline .pipeline-filter-grid > [class*="col-"]{grid-column:auto;grid-row:auto;flex:1 0 130px;width:auto;padding:0;margin:0;min-width:0;}
+      .styled-pipeline .pipeline-filter-grid > [data-mobile-filter-primary]{flex:2.4 0 240px;}
+      .styled-pipeline .soft-filter-card .form-label{font-size:.78rem;font-weight:650;color:#536581 !important;margin-bottom:8px;}
+      .styled-pipeline .soft-filter-card .form-control,
+      .styled-pipeline .soft-filter-card .form-select,
+      .styled-pipeline .soft-filter-card .input-group-text{min-height:44px;border-color:#dde5f0;background-color:#fff;}
+      .styled-pipeline .soft-filter-card .form-select{border-radius:10px;}
+      .styled-pipeline .soft-filter-card .input-group-text{border-radius:10px 0 0 10px;color:#647a9c;padding-left:16px;}
+      .styled-pipeline .soft-filter-card .input-group .form-control{border-radius:0 10px 10px 0;}
+      .styled-pipeline .soft-filter-card .form-control:focus,
+      .styled-pipeline .soft-filter-card .form-select:focus{border-color:#829ced;box-shadow:0 0 0 3px rgba(66,99,207,.12);}
+      .styled-pipeline .soft-filter-card .btn{min-height:44px;border:1px solid #dde5f0;border-radius:10px !important;color:#425577;background:#f7f9fc;}
+      .styled-pipeline .pipeline-filter-total{text-align:left !important;margin-top:10px;}
+      .styled-pipeline .pipeline-controls-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;}
+      .styled-pipeline .submission-quick-tabs{display:grid;flex:0 1 680px;min-width:0;margin:0;box-shadow:none;}
+      .styled-pipeline .pipeline-controls-footer .submissions-export{flex-shrink:0;white-space:nowrap;}
+      .styled-pipeline .sub-card{border:1px solid #e4eaf3;border-radius:20px;box-shadow:0 8px 28px rgba(15,23,42,.04);}
+      .styled-pipeline .modern-table thead th{padding:16px;font-size:.76rem;color:#60718c;background:#f6f8fc !important;}
+      .styled-pipeline .modern-table tbody td{padding:18px 16px;}
+      .styled-pipeline .modern-table .prospect-name{font-size:.92rem;line-height:1.4;}
+      .styled-pipeline .modern-table .prospect-sub{font-size:.78rem;line-height:1.6;}
+      .styled-pipeline .modern-table .badge-modern{min-height:30px;padding:6px 12px;font-size:.72rem;box-shadow:none;}
+      .styled-pipeline .modern-table .badge-status-follow{background:#fff3cd;color:#8a5b00;}
+      .styled-pipeline .modern-table .badge-status-closing{background:#dcf7eb;color:#087a51;}
+      .styled-pipeline .modern-table .badge-status-rejected{background:#ffe4ea;color:#bb244b;}
+      .styled-pipeline .modern-table .badge-produk-kredit{background:#eaf0ff;color:#315dcc;}
+      .styled-pipeline .modern-table .badge-produk-tabungan{background:#dcf7eb;color:#087a51;}
+      .styled-pipeline .modern-table .badge-produk-deposito{background:#fff3cd;color:#8a5b00;}
+      .styled-pipeline .modern-table .badge-produk-aset{background:#eef2f7;color:#475569;}
+      .styled-pipeline .modern-table .assignment-box{box-shadow:none;background:#f8faff;}
+      .supervisor-pipeline .pipeline-filter-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));overflow:visible;}
+      .supervisor-pipeline .pipeline-filter-grid > [data-mobile-filter-primary]{grid-column:span 2;}
+      .management-pipeline .pipeline-filter-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));overflow:visible;}
+      .management-pipeline .pipeline-filter-grid > [data-mobile-filter-primary],
+      .management-pipeline .pipeline-filter-grid > .pipeline-filter-reset{grid-column:span 2;}
+    }
+    @media (min-width:768px) and (max-width:1199.98px){
+      .supervisor-pipeline .pipeline-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+      .management-pipeline .pipeline-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+      .management-pipeline .pipeline-filter-grid > .pipeline-filter-reset{grid-column:auto;}
+    }
+
     @media (max-width:767.98px){
       .submission-quick-tabs{
         display:grid;
@@ -759,11 +826,6 @@
     }
   </style>
 
-  @php
-    $loggedRole = strtoupper(trim((string)(auth()->user()->role ?? '')));
-    $canManageAssignment = in_array($loggedRole, ['ADMIN','MANAJEMEN','SUPERVISOR']);
-    $isAoRole = $loggedRole === 'AO';
-  @endphp
 
   @if(session('ok'))
     <div class="alert alert-success rounded-4 shadow-sm">
@@ -771,13 +833,28 @@
     </div>
   @endif
 
+  <div class="pipeline-controls-card">
   <div class="submissions-page-head d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
     <div>
-      <div class="submissions-title fw-bold fs-3">Prospek Diajukan</div>
-      <div class="submissions-subtitle text-muted">Daftar prospek yang diajukan oleh pegawai / AO</div>
+      <div class="submissions-title fw-bold fs-3">{{ $isAoRole ? 'Pipeline' : 'Prospek Diajukan' }}</div>
+      <div class="submissions-subtitle text-muted">{{ $isAoRole ? 'Pantau perkembangan prospek dan tindak lanjut penugasan Anda.' : 'Daftar prospek yang diajukan oleh pegawai / AO' }}</div>
     </div>
 
-    <div class="submissions-export-wrap ms-auto">
+    @if($usePipelineCard)
+      <div class="d-none d-md-flex align-items-center gap-3 ms-auto">
+      @if($isSupervisorRole || $isManagementRole)
+        <button type="button" class="submissions-export btn btn-success rounded-pill px-4 py-2"
+                wire:click="exportExcel" wire:loading.attr="disabled" wire:target="exportExcel">
+          <span wire:loading.remove wire:target="exportExcel"><i class="bi bi-file-earmark-excel me-2"></i> Cetak Excel</span>
+          <span wire:loading wire:target="exportExcel">Menyiapkan...</span>
+        </button>
+      @endif
+      <div class="pipeline-header-total small">
+        Total: <span class="fw-bold">{{ $items->total() }}</span> pengajuan
+      </div>
+      </div>
+    @endif
+    <div class="submissions-export-wrap ms-auto {{ $usePipelineCard ? 'd-md-none' : '' }}">
       <button type="button"
               class="submissions-export btn btn-success rounded-pill px-4 py-2"
               wire:click="exportExcel"
@@ -798,7 +875,7 @@
      wire:ignore.self
      data-mobile-filter-panel
      data-mobile-filter-key="prospects-submissions">
-  <div class="row g-2 align-items-end">
+  <div class="row g-2 align-items-end pipeline-filter-grid">
 
     <div class="col-12 col-md-3" data-mobile-filter-primary>
       <label class="form-label small text-muted">Cari</label>
@@ -823,6 +900,7 @@
     </div>
 
     @if(!$isAoRole)
+    @if(!$isSupervisorRole)
     <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Kanwil</label>
       <select class="form-select"
@@ -835,6 +913,7 @@
       </select>
     </div>
 
+    @endif
     <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Cabang</label>
       <select class="form-select"
@@ -940,19 +1019,18 @@
       </div>
     @endif
 
-    <div class="col-12 col-md-2 mobile-filter-extra">
+    <div class="col-12 col-md-2 mobile-filter-extra pipeline-filter-reset">
       <label class="form-label small text-muted d-block">&nbsp;</label>
       <button type="button" class="btn btn-light w-100 rounded-pill" wire:click="resetFilter">
         <i class="bi bi-arrow-clockwise me-1"></i> Reset
       </button>
     </div>
 
-    <div class="col-12 col-md text-md-end text-muted small mobile-filter-extra">
+  </div>
+    <div class="text-md-end text-muted small mobile-filter-extra pipeline-filter-total {{ $usePipelineCard ? 'd-md-none' : '' }}">
       Total: <span class="fw-bold">{{ $items->total() }}</span> pengajuan
     </div>
-  </div>
-
-  <div class="mt-3 mobile-filter-extra">
+  <div class="mt-3 mobile-filter-extra {{ $usePipelineCard ? 'd-md-none' : '' }}">
     @if($filterMode === 'all')
       <div class="filter-mode-hint">
         Menampilkan <span class="fw-semibold">semua pengajuan</span> tanpa filter periode.
@@ -976,6 +1054,7 @@
 </div>
 
   @if($showQuickFilters)
+  <div class="pipeline-controls-footer">
   <div class="submission-quick-tabs" role="group" aria-label="Filter cepat pengajuan prospek">
     <button type="button"
             class="submission-quick-tab is-all {{ $quickFilter === '' ? 'active' : '' }}"
@@ -1007,7 +1086,15 @@
       </span>
     </button>
   </div>
+    <button type="button"
+            class="submissions-export btn btn-success rounded-pill px-4 py-2 d-none d-md-inline-flex align-items-center"
+            wire:click="exportExcel" wire:loading.attr="disabled" wire:target="exportExcel">
+      <span wire:loading.remove wire:target="exportExcel"><i class="bi bi-file-earmark-excel me-2"></i> Cetak Excel</span>
+      <span wire:loading wire:target="exportExcel">Menyiapkan...</span>
+    </button>
+  </div>
   @endif
+  </div>
 
   <div class="sub-card overflow-hidden d-none d-md-block">
     <div class="table-responsive">
@@ -1148,7 +1235,7 @@
               <td class="text-end">
                 @if($isAoRole)
                   <a href="{{ route('prospects.submissions.show', $p->id) }}"
-                     class="btn btn-primary btn-sm rounded-pill px-3">Lihat</a>
+                     class="btn btn-primary btn-sm rounded-pill px-3">Buka</a>
                 @else
                   <button type="button"
                           class="btn btn-outline-primary btn-sm rounded-pill px-3"
@@ -1277,7 +1364,7 @@
         <div class="mt-3">
           @if($isAoRole)
             <a href="{{ route('prospects.submissions.show', $p->id) }}"
-               class="btn btn-primary btn-sm w-100 rounded-pill">Lihat</a>
+               class="btn btn-primary btn-sm w-100 rounded-pill">Buka</a>
           @else
             <button type="button"
                     class="btn btn-outline-primary btn-sm w-100 rounded-pill"

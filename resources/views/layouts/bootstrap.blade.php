@@ -2905,9 +2905,10 @@
       position:fixed;
       z-index:13050;
       display:none;
-      padding:10px;
+      padding:6px;
       border:1px solid #e5e7eb;
-      border-radius:20px;
+      border-radius:12px;
+      font-size:12px;
       background:rgba(255,255,255,.98);
       box-shadow:0 18px 55px rgba(15,23,42,.2);
       backdrop-filter:blur(12px);
@@ -2919,12 +2920,12 @@
 
     .searchable-filter-search-wrap{
       position:relative;
-      margin-bottom:10px;
+      margin-bottom:5px;
     }
 
     .searchable-filter-search-wrap i{
       position:absolute;
-      left:15px;
+      left:12px;
       top:50%;
       transform:translateY(-50%);
       color:#94a3b8;
@@ -2933,19 +2934,21 @@
 
     .searchable-filter-search{
       width:100%;
-      min-height:48px;
-      padding:10px 14px 10px 43px;
+      min-height:30px;
+      padding:4px 8px 4px 30px;
       border:1.5px solid #8172ff;
-      border-radius:16px;
+      border-radius:8px;
       background:#fff;
       color:#1e293b;
       font:inherit;
+      font-size:12px;
+      line-height:1.4;
       outline:0;
       box-shadow:0 0 0 3px rgba(99,83,255,.08);
     }
 
     .searchable-filter-options{
-      max-height:min(310px,45vh);
+      max-height:min(190px,35vh);
       overflow-y:auto;
       overscroll-behavior:contain;
       scrollbar-width:thin;
@@ -2955,15 +2958,16 @@
       width:100%;
       display:flex;
       align-items:center;
-      gap:12px;
-      margin:0 0 7px;
-      padding:12px 14px;
+      gap:6px;
+      margin:0 0 2px;
+      padding:5px 8px;
       border:0;
-      border-radius:16px;
+      border-radius:8px;
       background:#f8fafc;
       color:#40516d;
       font:inherit;
-      line-height:1.3;
+      font-size:12px;
+      line-height:1.4;
       text-align:left;
       cursor:pointer;
     }
@@ -2985,16 +2989,16 @@
     }
 
     .searchable-filter-radio{
-      width:13px;
-      height:13px;
-      flex:0 0 13px;
+      width:10px;
+      height:10px;
+      flex:0 0 10px;
       border:2px solid #bdc9db;
       border-radius:50%;
       background:#fff;
     }
 
     .searchable-filter-option.is-selected .searchable-filter-radio{
-      border:4px solid #6d5dfc;
+      border:3px solid #6d5dfc;
     }
 
     .searchable-filter-empty{
@@ -3005,7 +3009,7 @@
 
     @media (max-width:767.98px){
       .searchable-filter-panel{
-        border-radius:18px;
+        border-radius:12px;
       }
 
       .searchable-filter-trigger{
@@ -3353,7 +3357,7 @@
 
           @if($canProspectsDiajukan)
             <a href="/prospects-diajukan" class="navlink {{ request()->is('prospects-diajukan*') ? 'active' : '' }}">
-              <i class="bi bi-send-check"></i><span>Prospek Diajukan</span>
+              <i class="bi bi-send-check"></i><span>{{ $role === 'AO' ? 'Pipeline' : 'Prospek Diajukan' }}</span>
             </a>
           @endif
 
