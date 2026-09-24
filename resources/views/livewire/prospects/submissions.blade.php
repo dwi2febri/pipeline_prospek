@@ -822,6 +822,7 @@
       </select>
     </div>
 
+    @if(!$isAoRole)
     <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Kanwil</label>
       <select class="form-select"
@@ -858,6 +859,8 @@
       </select>
     </div>
 
+    @endif
+
     <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Input Oleh</label>
       <select class="form-select" wire:model.live="filterInputRole">
@@ -868,6 +871,7 @@
       </select>
     </div>
 
+    @if(!$isAoRole)
     <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Penugasan</label>
       <select class="form-select" wire:model.live="filterPengambilan">
@@ -886,6 +890,8 @@
         @endforeach
       </select>
     </div>
+
+    @endif
 
     <div class="col-12 col-md-2 mobile-filter-extra">
       <label class="form-label small text-muted">Mode Filter Tanggal</label>

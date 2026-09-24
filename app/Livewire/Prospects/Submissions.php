@@ -31,7 +31,7 @@ class Submissions extends Component
     public string $filterBulan = '';
     public string $filterTahun = '';
     public string $filterMode = 'all';
-    public string $quickFilter = 'this_week';
+    public string $quickFilter = '';
 
     public ?string $filterTanggalAwal = null;
     public ?string $filterTanggalAkhir = null;
@@ -64,7 +64,7 @@ class Submissions extends Component
         'filterTahun' => ['except' => ''],
         'filterTanggalAwal' => ['except' => ''],
         'filterTanggalAkhir' => ['except' => ''],
-        'quickFilter' => ['except' => 'this_week'],
+        'quickFilter' => ['except' => ''],
     ];
 
     public function mount(): void
@@ -80,7 +80,7 @@ class Submissions extends Component
         $this->filterAo = '';
         $this->filterInputRole = '';
         $this->filterProduk = '';
-        $this->quickFilter = $this->isAoViewerRole($role) ? 'this_week' : '';
+        $this->quickFilter = '';
 
         if ($role === 'SUPERVISOR') {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
@@ -263,7 +263,7 @@ class Submissions extends Component
         $this->filterTahun = '';
         $this->filterTanggalAwal = null;
         $this->filterTanggalAkhir = null;
-        $this->quickFilter = $this->isAoViewerRole() ? 'this_week' : '';
+        $this->quickFilter = '';
 
         if ($this->lockCabangFilter) {
             $this->filterCabang = (int) (auth()->user()->cabang_id ?? 0);
