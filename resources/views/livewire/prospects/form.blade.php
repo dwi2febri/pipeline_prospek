@@ -1751,7 +1751,7 @@
       }
 
       if (!('contacts' in navigator) || !navigator.contacts || typeof navigator.contacts.select !== 'function') {
-        setContactHint('Browser ini belum mendukung akses kontak. Gunakan aplikasi Android atau Chrome Android.', true);
+        setContactHint('Browser ini belum mendukung akses kontak. Ketik nomor telepon atau salin nomor dari aplikasi Kontak lalu tempel di kolom nomor HP.', true);
         return;
       }
 

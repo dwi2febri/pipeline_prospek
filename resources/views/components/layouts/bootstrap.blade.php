@@ -37,6 +37,7 @@
     .bottom-nav a.active{color:#111827;font-weight:700}
     .content-wrap{padding-bottom:78px;}
   </style>
+  @include('partials.ios-compat')
 </head>
 <body>
 

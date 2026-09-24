@@ -30,6 +30,7 @@
     .form-control{padding:.75rem .9rem}
     .btn{padding:.8rem 1rem;font-weight:800}
   </style>
+  @include('partials.ios-compat')
 </head>
 
 <body class="d-flex align-items-center">

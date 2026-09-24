@@ -62,6 +62,7 @@
     .bottom-nav a.active{color:#111827;font-weight:800}
     @media (max-width:767.98px){ .page-wrap{padding-bottom:120px} }
   </style>
+  @include('partials.ios-compat')
 </head>
 <body>
 

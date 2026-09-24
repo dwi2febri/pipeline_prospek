@@ -2910,6 +2910,7 @@
       border-radius:12px;
       font-size:12px;
       background:rgba(255,255,255,.98);
+      box-sizing:border-box;
       box-shadow:0 18px 55px rgba(15,23,42,.2);
       backdrop-filter:blur(12px);
     }
@@ -2952,6 +2953,7 @@
       overflow-y:auto;
       overscroll-behavior:contain;
       scrollbar-width:thin;
+      -webkit-overflow-scrolling:touch;
     }
 
     .searchable-filter-option{
@@ -2970,6 +2972,15 @@
       line-height:1.4;
       text-align:left;
       cursor:pointer;
+    }
+
+    .searchable-filter-option > span:last-child{
+      min-width:0;
+      overflow-wrap:anywhere;
+    }
+
+    @supports (-webkit-touch-callout:none){
+      .searchable-filter-search{font-size:16px;min-height:36px;}
     }
 
     .searchable-filter-option:last-child{
@@ -3063,6 +3074,7 @@
     }
 
   </style>
+  @include('partials.ios-compat')
 </head>
 
 <body class="mobile-app-density mobile-page-entering {{ request()->is('dashboard') ? 'mobile-dashboard-home ' : '' }}{{ request()->is('prospects') ? 'mobile-prospects-home ' : '' }}{{ request()->is('dashboard') || request()->is('prospects') ? 'mobile-has-quick-actions' : '' }}">
@@ -4783,25 +4795,26 @@
         var rect = instance.button.getBoundingClientRect();
         var gap = 7;
         var viewportGap = 10;
-        var width = Math.max(rect.width, 260);
-
-        if (window.innerWidth <= 767) {
-          width = Math.min(window.innerWidth - (viewportGap * 2), Math.max(rect.width, 300));
-        } else {
-          width = Math.min(width, window.innerWidth - (viewportGap * 2));
-        }
-
-        var left = Math.min(
-          Math.max(viewportGap, rect.left),
-          window.innerWidth - width - viewportGap
-        );
-
+        var viewport = window.visualViewport;
+        var viewportLeft = viewport ? viewport.offsetLeft : 0;
+        var viewportTop = viewport ? viewport.offsetTop : 0;
+        var viewportWidth = viewport ? viewport.width : window.innerWidth;
+        var viewportHeight = viewport ? viewport.height : window.innerHeight;
+        var width = Math.min(Math.max(rect.width, 260), Math.max(0, viewportWidth - viewportGap * 2));
+        var left = Math.max(viewportLeft + viewportGap, Math.min(rect.left, viewportLeft + viewportWidth - width - viewportGap));
         instance.panel.style.width = width + 'px';
         instance.panel.style.left = left + 'px';
-        instance.panel.style.top = Math.min(
-          rect.bottom + gap,
-          window.innerHeight - Math.min(instance.panel.offsetHeight || 390, 390) - viewportGap
-        ) + 'px';
+        var availableHeight = Math.max(0, viewportHeight - viewportGap * 2);
+        instance.panel.style.maxHeight = availableHeight + 'px';
+        instance.panel.style.overflowY = 'auto';
+        var searchHeight = instance.search.parentElement.offsetHeight;
+        instance.options.style.maxHeight = Math.max(0, Math.min(190, viewportHeight * .35, availableHeight - searchHeight - 20)) + 'px';
+        var panelHeight = instance.panel.offsetHeight;
+        var preferredTop = rect.bottom + gap;
+        if (preferredTop + panelHeight > viewportTop + viewportHeight - viewportGap && rect.top - gap - panelHeight >= viewportTop + viewportGap) {
+          preferredTop = rect.top - gap - panelHeight;
+        }
+        instance.panel.style.top = Math.max(viewportTop + viewportGap, Math.min(preferredTop, viewportTop + viewportHeight - panelHeight - viewportGap)) + 'px';
       }
 
       function closePanel(instance){
@@ -4870,7 +4883,10 @@
         positionPanel(instance);
 
         window.setTimeout(function(){
-          instance.search.focus();
+          if (active !== instance) return;
+          if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+            instance.search.focus({preventScroll:true});
+          }
           var current = instance.options.querySelector('.is-selected');
           if (current) current.scrollIntoView({block:'nearest'});
         }, 0);
@@ -5026,6 +5042,15 @@
       window.addEventListener('resize', function(){
         if (active) positionPanel(active);
       });
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', function(){
+          if (active) positionPanel(active);
+        });
+        window.visualViewport.addEventListener('scroll', function(){
+          if (active) positionPanel(active);
+        });
+      }
 
       window.addEventListener('scroll', function(){
         if (active) positionPanel(active);

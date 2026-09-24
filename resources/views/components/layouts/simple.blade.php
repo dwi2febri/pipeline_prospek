@@ -29,6 +29,7 @@
     a{color:#cfe0ff}
     a:hover{color:#ffffff}
   </style>
+  @include('partials.ios-compat')
 </head>
 <body class="d-flex align-items-center">
 

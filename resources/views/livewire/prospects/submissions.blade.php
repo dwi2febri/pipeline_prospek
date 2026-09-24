@@ -526,6 +526,14 @@
     }
 
     @media (max-width:767.98px){
+      .pipeline-controls-card,
+      .submissions-page-head > div{min-width:0;max-width:100%;}
+
+      @supports (-webkit-touch-callout:none){
+        .soft-filter-card input.form-control,
+        .soft-filter-card select.form-select{font-size:16px !important;min-width:0;max-width:100%;}
+      }
+
       .submission-quick-tabs{
         display:grid;
       }

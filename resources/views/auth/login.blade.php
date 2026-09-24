@@ -547,6 +547,7 @@
             .desktop-login-form-column{min-height:0;padding:clamp(32px,5vh,46px) 48px}
         }
     </style>
+  @include('partials.ios-compat')
 </head>
 
 <body class="eprospek-login-page" style="margin:0; min-height:100vh; background: radial-gradient(900px 520px at 50% -10%, rgba(111,142,232,.68) 0%, rgba(53,70,157,1) 56%, rgba(27,35,82,1) 100%);">

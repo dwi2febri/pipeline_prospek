@@ -22,6 +22,7 @@
             pointer-events:none;
         }
     </style>
+  @include('partials.ios-compat')
 </head>
 <body style="margin:0; min-height:100vh; background: radial-gradient(1100px 520px at 50% -15%, rgba(75,123,236,.55) 0%, rgba(11,18,32,1) 55%, rgba(5,7,13,1) 100%);">
 
