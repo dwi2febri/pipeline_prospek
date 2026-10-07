@@ -41,7 +41,7 @@ class Form extends Component
     public ?string $kecamatan = null;
     public ?string $desa = null;
 
-    public ?string $kode_provinsi = '33';
+    public ?string $kode_provinsi = null;
     public ?string $kode_kab_kota = null;
     public ?string $kode_kecamatan = null;
     public ?string $kode_desa = null;
@@ -119,7 +119,9 @@ class Form extends Component
             $this->kecamatan        = $p->kecamatan;
             $this->desa             = $p->desa;
 
-            $this->kode_provinsi    = $p->kode_provinsi ?: '33';
+            $this->kode_provinsi    = $p->kode_kab_kota
+                ? substr($p->kode_kab_kota, 0, 2)
+                : $p->kode_provinsi;
             $this->kode_kab_kota    = $p->kode_kab_kota;
             $this->kode_kecamatan   = $p->kode_kecamatan;
             $this->kode_desa        = $p->kode_desa;
@@ -141,7 +143,7 @@ class Form extends Component
             $u = auth()->user();
             $this->cabang_id = $u && $u->cabang_id ? (int) $u->cabang_id : null;
 
-            $this->kode_provinsi = '33';
+            $this->kode_provinsi = null;
             $this->status = 'OPEN';
             $this->jenis_produk = 'KREDIT';
         }
@@ -283,7 +285,9 @@ class Form extends Component
 
         $this->no_hp = $this->normalizeDigits($this->no_hp);
         $this->nik   = $this->normalizeDigits($this->nik);
-        $this->kode_provinsi = '33';
+        $this->kode_provinsi = $this->kode_kab_kota
+            ? substr($this->kode_kab_kota, 0, 2)
+            : null;
 
         $this->validate();
 
@@ -316,7 +320,7 @@ class Form extends Component
         $p->kecamatan         = $this->kecamatan ?: null;
         $p->desa              = $this->desa ?: null;
 
-        $p->kode_provinsi     = '33';
+        $p->kode_provinsi     = $this->kode_provinsi;
         $p->kode_kab_kota     = $this->kode_kab_kota ?: null;
         $p->kode_kecamatan    = $this->kode_kecamatan ?: null;
         $p->kode_desa         = $this->kode_desa ?: null;

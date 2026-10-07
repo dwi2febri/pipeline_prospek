@@ -8,6 +8,7 @@
 
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   @livewireStyles
+  <script src="{{ asset('js/google-maps.js') }}" data-key="{{ config('services.google_maps.key') }}" data-map-id="{{ config('services.google_maps.map_id') }}"></script>
 
   <style>
     :root{
@@ -672,14 +673,7 @@
       z-index:2001 !important;
     }
 
-    .leaflet-control-attribution {
-      display: none !important;
-    }
 
-    .leaflet-control-zoom {
-      margin-top: 12px !important;
-      margin-right: 12px !important;
-    }
 
     .notif-wrap{
       position: relative;

@@ -649,7 +649,6 @@ class Index extends Component
                 'cabangs.nama_cabang',
                 'docs.file_path'
             )
-            ->limit(500)
             ->get();
 
         $mapItems = $mapQuery->map(function ($p) use ($usahaNameMap) {

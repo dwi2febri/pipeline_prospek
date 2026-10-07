@@ -338,7 +338,6 @@
       border-color:#eef2f7 !important;
     }
 
-    #mapPicker .leaflet-container,
     #mapPicker{
       background:#f8fafc !important;
     }
@@ -501,6 +500,49 @@
       font-weight:800;
     }
 
+    .prospect-native-select{
+      position:absolute !important;
+      width:1px !important;
+      height:1px !important;
+      min-height:1px !important;
+      padding:0 !important;
+      opacity:0 !important;
+      pointer-events:none !important;
+    }
+
+    .prospect-select-control{
+      position:relative;
+    }
+
+    .prospect-dropdown-panel{
+      position:absolute;
+      top:calc(100% + 6px);
+      left:0;
+      right:0;
+      z-index:50;
+      padding:12px;
+      border:1px solid #dce5f4;
+      border-radius:18px;
+      background:#fff;
+      box-shadow:0 16px 36px rgba(15,23,42,.14);
+    }
+
+    .prospect-dropdown-panel .prospect-select-list{
+      min-height:0;
+      max-height:240px;
+    }
+
+    .prospect-dropdown-panel .prospect-select-option{
+      min-height:42px;
+      padding:9px 12px;
+      border-radius:10px;
+      margin-bottom:4px;
+    }
+
+    .card-soft.prospect-dropdown-open{
+      overflow:visible;
+    }
+
     .prospect-mobile-select{
       width:100%;
       min-height:54px;
@@ -516,6 +558,67 @@
       box-shadow:0 6px 18px rgba(15,23,42,.04);
       font-size:16px;
       text-align:left;
+      transition:border-color .18s, box-shadow .18s;
+    }
+
+    .prospect-mobile-select:not(:disabled):hover,
+    .prospect-mobile-select:focus-visible{
+      border-color:#9db8ff;
+      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+      outline:none;
+    }
+
+    .prospect-mobile-select-label{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .prospect-mobile-select.is-placeholder{
+      color:#7a879b;
+    }
+
+    .prospect-mobile-select > i{
+      display:grid;
+      place-items:center;
+      flex:0 0 28px;
+      height:28px;
+      border-radius:9px;
+      color:#4268ca;
+      background:#eef3ff;
+    }
+
+    .prospect-select-modal .modal-dialog{
+      max-width:480px;
+      margin:6vh auto;
+    }
+
+    .prospect-select-modal .modal-content{
+      max-height:88dvh;
+      border-radius:24px;
+      box-shadow:0 24px 80px rgba(15,23,42,.2);
+    }
+
+    .prospect-select-modal .modal-header{
+      padding:20px 20px 12px;
+    }
+
+    .prospect-select-modal .modal-body{
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      padding:4px 20px 20px;
+    }
+
+    .prospect-select-meta{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 2px 8px;
+      font-size:12px;
+      color:#7a879b;
+      flex-shrink:0;
     }
 
     .prospect-mobile-select:disabled{
@@ -525,11 +628,42 @@
 
     .prospect-select-search{
       position:relative;
+      flex-shrink:0;
+    }
+
+    .prospect-select-search > i{
+      position:absolute;
+      top:50%;
+      left:16px;
+      transform:translateY(-50%);
+      color:#7284a0;
+      pointer-events:none;
+    }
+
+    .prospect-select-search-clear{
+      position:absolute;
+      right:8px;
+      top:50%;
+      transform:translateY(-50%);
+      width:36px;
+      height:36px;
+      border:0;
+      border-radius:10px;
+      color:#71829d;
+      background:#eef2f8;
     }
 
     .prospect-select-search .form-control{
-      padding-left:16px !important;
-      padding-right:16px !important;
+      min-height:50px;
+      padding-left:44px !important;
+      padding-right:48px !important;
+      border-radius:15px !important;
+      background:#f8faff;
+      font-size:16px !important;
+    }
+
+    .prospect-select-search input::-webkit-search-cancel-button{
+      -webkit-appearance:none;
     }
 
     .prospect-select-list{
@@ -537,6 +671,8 @@
       overflow-y:auto;
       overscroll-behavior:contain;
       scrollbar-width:thin;
+      flex:1 1 auto;
+      -webkit-overflow-scrolling:touch;
     }
 
     .prospect-select-option{
@@ -551,9 +687,27 @@
       border-radius:16px;
       color:#33445f;
       background:#f8fafc;
-      font-size:13px;
+      font-size:14px;
       line-height:1.35;
       text-align:left;
+      transition:background .15s, border-color .15s;
+    }
+
+    .prospect-select-option:not(:disabled):hover,
+    .prospect-select-option:focus-visible{
+      background:#eef3ff;
+      border-color:#adc2ff;
+      outline:none;
+    }
+
+    .prospect-select-option:disabled{
+      opacity:.5;
+    }
+
+    .prospect-select-option-check{
+      margin-left:auto;
+      color:#5264db;
+      font-size:18px;
     }
 
     .prospect-select-option-dot{
@@ -676,7 +830,7 @@
         min-height:46px !important;
         padding:10px 12px !important;
         border-radius:14px;
-        font-size:11px !important;
+        font-size:13px !important;
         line-height:1.4 !important;
       }
 
@@ -689,7 +843,7 @@
         color:#2f3d53 !important;
         background-color:#fafcff !important;
         box-shadow:none !important;
-        font-size:11px !important;
+        font-size:13px !important;
         line-height:1.4 !important;
       }
 
@@ -939,8 +1093,8 @@
       }
 
       body.mobile-app-density .prospect-select-modal .prospect-select-search .form-control{
-        padding-left:16px !important;
-        padding-right:16px !important;
+        padding-left:44px !important;
+        padding-right:48px !important;
       }
 
       .prospect-select-list{
@@ -1218,7 +1372,7 @@
                       <input type="hidden" id="kode_desa_hidden" wire:model="kode_desa">
                       @error('desa')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
-                    <input type="hidden" id="kode_provinsi_hidden" wire:model="kode_provinsi" value="33">
+                    <input type="hidden" id="kode_provinsi_hidden" wire:model="kode_provinsi" value="{{ $kode_provinsi }}">
                   @endif
                 </div>
               </div>
@@ -1387,7 +1541,7 @@
     </div>
   </div>
 
-  <div class="modal fade prospect-select-modal" id="modalProspectSelect" tabindex="-1" aria-hidden="true" wire:ignore.self>
+  <div class="modal fade prospect-select-modal" id="modalProspectSelect" tabindex="-1" aria-labelledby="prospectSelectTitle" aria-hidden="true" wire:ignore.self>
     <div class="modal-dialog">
       <div class="modal-content border-0">
         <span class="prospect-sheet-handle" aria-hidden="true"></span>
@@ -1410,13 +1564,23 @@
 
         <div class="modal-body">
           <div class="prospect-select-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
             <input type="search"
                    class="form-control"
                    id="prospectSelectSearch"
                    placeholder="Cari data..."
+                   aria-label="Cari pilihan"
+                   aria-controls="prospectSelectList"
                    autocomplete="off">
+            <button type="button" class="prospect-select-search-clear" id="prospectSelectClear" aria-label="Hapus pencarian" hidden>
+              <i class="bi bi-x" aria-hidden="true"></i>
+            </button>
           </div>
-          <div class="prospect-select-list" id="prospectSelectList" role="listbox"></div>
+          <div class="prospect-select-meta">
+            <span id="prospectSelectCount" role="status" aria-live="polite"></span>
+            <span>Pilih satu</span>
+          </div>
+          <div class="prospect-select-list" id="prospectSelectList" role="listbox" aria-labelledby="prospectSelectTitle"></div>
         </div>
       </div>
     </div>
@@ -1516,9 +1680,9 @@
     </div>
   @endif
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
   (function () {
     if (window.__prospectFormLocationBound) return;
@@ -1686,47 +1850,28 @@
       setContactHint('Nomor dari kontak "' + (name || 'Kontak') + '" berhasil diisi ✅', false);
     };
 
+    async function fetchMapData(url) {
+      const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.message || 'Data lokasi belum dapat dimuat.');
+      return payload.data;
+    }
+
     async function reverseGeocode(lat, lng) {
-      const url1 = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
-      const url2 = 'https://geocode.maps.co/reverse?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
-
-      async function tryFetch(url) {
-        try {
-          const res = await fetch(url, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
-          });
-          if (!res.ok) return null;
-          const data = await res.json();
-          if (data && data.display_name) return data.display_name;
-          if (data && data.address) return Object.values(data.address).filter(Boolean).join(', ');
-          return null;
-        } catch (e) {
-          return null;
-        }
+      try {
+        const result = await fetchMapData('/api-map/reverse?' + new URLSearchParams({ lat, lng }));
+        return result?.display_name || null;
+      } catch (error) {
+        console.error(error.message);
+        return null;
       }
-
-      return (await tryFetch(url1)) || (await tryFetch(url2)) || null;
     }
 
     async function searchLocation(keyword) {
       const q = String(keyword || '').trim();
       if (!q) return [];
-
-      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=' + encodeURIComponent(q);
-
-      try {
-        const res = await fetch(url, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
-
-        if (!res.ok) return [];
-        const data = await res.json();
-        return Array.isArray(data) ? data : [];
-      } catch (e) {
-        return [];
-      }
+      const results = await fetchMapData('/api-map/search?' + new URLSearchParams({ q }));
+      return Array.isArray(results) ? results : [];
     }
 
     async function pickPhoneFromContacts() {
@@ -1898,7 +2043,6 @@
     }
 
     async function initWilayahProspek() {
-      const PROV_ID = '33';
       const requestSerial = window.__prospectWilayahRequestSerial
         || (window.__prospectWilayahRequestSerial = {
           kabupaten: 0,
@@ -1931,16 +2075,17 @@
       }
 
       kabSelect.dataset.wilayahState = 'loading';
-      setInputValue(kodeProvHidden, PROV_ID);
 
       async function loadKabupaten(initialName) {
         const requestId = ++requestSerial.kabupaten;
         resetSelect(kabSelect, '-- Loading Kab/Kota --', true);
 
-        const json = await fetchJson('/api-wilayah/regencies/' + PROV_ID);
+        const json = await fetchJson('/api-wilayah/regencies-java');
         if (requestId !== requestSerial.kabupaten) return [];
 
-        const list = Array.isArray(json.data) ? json.data : [];
+        const list = json.data.slice().sort(function (a, b) {
+          return a.name.localeCompare(b.name, 'id');
+        });
 
         kabSelect.innerHTML = '<option value="">-- Pilih Kab/Kota --</option>';
 
@@ -1960,6 +2105,7 @@
             kabSelect.value = found.code;
             setInputValue(kabHidden, found.name);
             setInputValue(kodeKabHidden, found.code);
+            setInputValue(kodeProvHidden, String(found.code).slice(0, 2));
           }
         }
 
@@ -2076,6 +2222,7 @@
 
           setInputValue(kabHidden, selectedText);
           setInputValue(kodeKabHidden, this.value || '');
+          setInputValue(kodeProvHidden, this.value ? this.value.slice(0, 2) : '');
           setInputValue(kecHidden, '');
           setInputValue(desaHidden, '');
           setInputValue(kodeKecHidden, '');
@@ -2181,6 +2328,7 @@
     let pickedAddress = '';
     let prospectDateView = null;
     let activeMobileSelect = null;
+    let activeDesktopPanel = null;
     const mobileSelectObservers = new WeakMap();
 
     function isMobileDevice() {
@@ -2392,81 +2540,68 @@
       const latEl = getEl('pickedLatPreview');
       const lngEl = getEl('pickedLngPreview');
 
-      if (addrEl) addrEl.textContent = pickedAddress || 'Belum ada titik dipilih.';
+      if (addrEl) addrEl.textContent = pickedAddress || (pickedLat && pickedLng
+        ? 'Titik sudah dipilih. Alamat belum tersedia.'
+        : 'Belum ada titik dipilih.');
       if (latEl) latEl.textContent = pickedLat || '-';
       if (lngEl) lngEl.textContent = pickedLng || '-';
     }
 
-    async function setPickedPoint(lat, lng, addressText) {
-      pickedLat = String(lat || '');
-      pickedLng = String(lng || '');
+    let pickedPointRequest = 0;
 
-      if (mapPickerMarker && mapPickerInstance) {
+    async function setPickedPoint(lat, lng, addressText) {
+      const request = ++pickedPointRequest;
+      pickedLat = String(lat);
+      pickedLng = String(lng);
+      pickedAddress = addressText || '';
+      updatePickedPreview();
+      if (mapPickerMarker) {
         mapPickerMarker.setLatLng([lat, lng]);
       } else if (mapPickerInstance) {
         mapPickerMarker = L.marker([lat, lng], { draggable: true }).addTo(mapPickerInstance);
-
-        mapPickerMarker.on('dragend', async function(e) {
-          const pos = e.target.getLatLng();
-          pickedLat = String(pos.lat);
-          pickedLng = String(pos.lng);
-          const addr = await reverseGeocode(pos.lat, pos.lng);
-          pickedAddress = addr || '';
-          updatePickedPreview();
+        mapPickerMarker.on('dragend', function (event) {
+          const point = event.target.getLatLng();
+          setPickedPoint(point.lat, point.lng, '');
         });
       }
-
-      if (addressText) {
-        pickedAddress = addressText;
-      } else {
-        const addr = await reverseGeocode(lat, lng);
-        pickedAddress = addr || '';
+      if (!addressText) {
+        const address = await reverseGeocode(lat, lng);
+        if (request !== pickedPointRequest) return;
+        pickedAddress = address || '';
       }
-
       updatePickedPreview();
     }
 
-    function initMapPicker() {
+    async function initMapPicker() {
       const mapEl = getEl('mapPicker');
-      if (!mapEl || typeof L === 'undefined') return;
-
-      if (!mapPickerInstance) {
-        mapPickerInstance = L.map(mapEl, {
-          zoomControl: true
-        }).setView([-7.150975, 110.140259], 8);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap'
+      if (!mapEl) return;
+      if (!window.L) {
+        const hint = getEl('mapSearchHint');
+        if (hint) hint.textContent = 'Peta gagal dimuat. Periksa koneksi lalu muat ulang halaman.';
+        return;
+      }
+      if (!mapPickerInstance || mapPickerInstance.getContainer() !== mapEl) {
+        if (mapPickerInstance) mapPickerInstance.remove();
+        mapPickerMarker = null;
+        mapPickerInstance = L.map(mapEl).setView([-7.150975, 110.140259], 8);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
         }).addTo(mapPickerInstance);
-
-        mapPickerInstance.on('click', async function(e) {
-          const lat = e.latlng.lat;
-          const lng = e.latlng.lng;
-          await setPickedPoint(lat, lng, '');
+        mapPickerInstance.on('click', function (event) {
+          setPickedPoint(event.latlng.lat, event.latlng.lng, '');
         });
       }
-
-      const currentLat = parseFloat(getEl('lokasi_lat')?.value || '');
-      const currentLng = parseFloat(getEl('lokasi_lng')?.value || '');
-
-      if (!isNaN(currentLat) && !isNaN(currentLng)) {
-        mapPickerInstance.setView([currentLat, currentLng], 16);
-        setPickedPoint(currentLat, currentLng, getEl('alamat_input')?.value || '');
+      const lat = parseFloat(getEl('lokasi_lat')?.value || '');
+      const lng = parseFloat(getEl('lokasi_lng')?.value || '');
+      mapPickerInstance.invalidateSize();
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        mapPickerInstance.setView([lat, lng], 16);
+        await setPickedPoint(lat, lng, getEl('alamat_input')?.value || '');
       } else {
         mapPickerInstance.setView([-7.150975, 110.140259], 8);
-        pickedLat = '';
-        pickedLng = '';
-        pickedAddress = '';
-        if (mapPickerMarker) {
-          mapPickerInstance.removeLayer(mapPickerMarker);
-          mapPickerMarker = null;
-        }
-        updatePickedPreview();
+        resetPickedPoint();
       }
-
-      setTimeout(function() {
-        mapPickerInstance.invalidateSize();
-      }, 250);
     }
 
     function openMapPicker() {
@@ -2479,9 +2614,6 @@
 
       mapPickerModalInstance.show();
 
-      setTimeout(function() {
-        initMapPicker();
-      }, 250);
     }
 
     async function doMapSearch() {
@@ -2498,7 +2630,13 @@
 
       if (hint) hint.innerHTML = 'Mencari lokasi...';
 
-      const results = await searchLocation(keyword);
+      let results;
+      try {
+        results = await searchLocation(keyword);
+      } catch (error) {
+        if (hint) hint.textContent = error.message;
+        return;
+      }
 
       if (!results.length) {
         if (hint) hint.innerHTML = 'Lokasi tidak ditemukan. Coba kata kunci lain.';
@@ -2547,6 +2685,7 @@
     }
 
     function resetPickedPoint() {
+      pickedPointRequest++;
       pickedLat = '';
       pickedLng = '';
       pickedAddress = '';
@@ -2609,11 +2748,7 @@
 
         modalMap.addEventListener('shown.bs.modal', function() {
           setTimeout(function() {
-            if (mapPickerInstance) {
-              mapPickerInstance.invalidateSize();
-            } else {
-              initMapPicker();
-            }
+            initMapPicker();
           }, 250);
         });
       }
@@ -2755,24 +2890,53 @@
       const isDisabled = select.matches(':disabled');
       if (label) label.textContent = selectedOptionText(select);
       button.disabled = isDisabled;
+      button.classList.toggle('is-placeholder', !select.value);
+      button.setAttribute('aria-label', (select.dataset.mobileTitle || 'Pilih data') + ': ' + selectedOptionText(select));
       button.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
     }
 
+    function selectPanelElement(id) {
+      return activeDesktopPanel
+        ? activeDesktopPanel.querySelector('[data-select-part="' + id + '"]')
+        : getEl(id);
+    }
+
+    function closeDesktopSelect(restoreFocus) {
+      if (!activeDesktopPanel) return;
+      const control = activeDesktopPanel.parentElement;
+      const button = control.querySelector('.prospect-mobile-select');
+      const card = control.closest('.card-soft');
+      activeDesktopPanel.hidden = true;
+      if (card) card.classList.remove('prospect-dropdown-open');
+      if (button) {
+        button.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) button.focus();
+      }
+      activeDesktopPanel = null;
+      activeMobileSelect = null;
+    }
+
     function renderMobileSelectOptions(keyword) {
-      const list = getEl('prospectSelectList');
+      const list = selectPanelElement('prospectSelectList');
       if (!list || !activeMobileSelect) return;
 
       const query = String(keyword || '').trim().toLowerCase();
       const options = Array.from(activeMobileSelect.options || []).filter(function(option) {
-        return !query || String(option.textContent || '').toLowerCase().includes(query);
+        return !option.hidden && (!query || String(option.textContent || '').toLowerCase().includes(query));
       });
+      const count = selectPanelElement('prospectSelectCount');
+      const clear = selectPanelElement('prospectSelectClear');
+      if (count) count.textContent = options.filter(function(option) { return option.value !== ''; }).length
+        + (query ? ' hasil pencarian' : ' pilihan tersedia');
+      if (clear) clear.hidden = !String(keyword || '').length;
 
       list.innerHTML = '';
+      list.scrollTop = 0;
 
       if (!options.length) {
         const empty = document.createElement('div');
         empty.className = 'text-center text-muted py-4';
-        empty.textContent = 'Data tidak ditemukan.';
+        empty.textContent = 'Tidak ada pilihan yang cocok. Coba kata lain.';
         list.appendChild(empty);
         return;
       }
@@ -2796,12 +2960,23 @@
 
         item.appendChild(dot);
         item.appendChild(text);
+        if (isSelected) {
+          const check = document.createElement('i');
+          check.className = 'bi bi-check2 prospect-select-option-check';
+          check.setAttribute('aria-hidden', 'true');
+          item.appendChild(check);
+        }
 
         item.addEventListener('click', function () {
           if (!activeMobileSelect || option.disabled) return;
 
           setInputValue(activeMobileSelect, option.value);
           syncMobileSelectButton(activeMobileSelect);
+
+          if (activeDesktopPanel) {
+            closeDesktopSelect(true);
+            return;
+          }
 
           const modalEl = getEl('modalProspectSelect');
           if (modalEl && window.bootstrap) {
@@ -2815,6 +2990,30 @@
     }
 
     function openMobileSelect(select) {
+      if (!select || select.matches(':disabled')) return;
+      const button = document.querySelector('.prospect-mobile-select[data-select-id="' + select.id + '"]');
+      if (window.matchMedia('(min-width: 768px)').matches) {
+        if (!button) return;
+        const panel = button.parentElement.querySelector('.prospect-dropdown-panel');
+        if (activeDesktopPanel === panel) {
+          closeDesktopSelect(true);
+          return;
+        }
+        closeDesktopSelect(false);
+        activeMobileSelect = select;
+        activeDesktopPanel = panel;
+        panel.hidden = false;
+        const card = button.closest('.card-soft');
+        if (card) card.classList.add('prospect-dropdown-open');
+        const search = selectPanelElement('prospectSelectSearch');
+        search.value = '';
+        search.placeholder = 'Cari ' + (select.dataset.mobileTitle || 'data').replace(/^Pilih\s+/i, '').toLowerCase() + '...';
+        renderMobileSelectOptions('');
+        button.setAttribute('aria-expanded', 'true');
+        search.focus();
+        return;
+      }
+      closeDesktopSelect(false);
       const modalEl = getEl('modalProspectSelect');
       const title = getEl('prospectSelectTitle');
       const search = getEl('prospectSelectSearch');
@@ -2822,23 +3021,27 @@
 
       activeMobileSelect = select;
       if (title) title.textContent = select.dataset.mobileTitle || 'Pilih Data';
-      if (search) search.value = '';
+      if (search) {
+        search.value = '';
+        search.placeholder = 'Cari ' + (select.dataset.mobileTitle || 'data').replace(/^Pilih\s+/i, '').toLowerCase() + '...';
+      }
       renderMobileSelectOptions('');
+      if (button) button.setAttribute('aria-expanded', 'true');
 
       bootstrap.Modal.getOrCreateInstance(modalEl).show();
-
-      window.setTimeout(function () {
-        if (search && modalEl.classList.contains('show')) search.focus();
-      }, 180);
     }
 
     function bindMobileSelectSheets() {
+      if (activeDesktopPanel && !activeDesktopPanel.isConnected) closeDesktopSelect(false);
       const modalEl = getEl('modalProspectSelect');
       const search = getEl('prospectSelectSearch');
+      const clear = getEl('prospectSelectClear');
 
       document.querySelectorAll('select.form-select[data-mobile-title]').forEach(function(select, index) {
         if (!select.id) select.id = 'prospectMobileSelect' + index;
         select.classList.add('prospect-native-select');
+        select.setAttribute('tabindex', '-1');
+        select.setAttribute('aria-hidden', 'true');
 
         let button = document.querySelector(
           '.prospect-mobile-select[data-select-id="' + select.id + '"]'
@@ -2847,14 +3050,57 @@
         if (!button) {
           button = document.createElement('button');
           button.type = 'button';
-          button.className = 'prospect-mobile-select d-md-none';
+          button.className = 'prospect-mobile-select';
           button.dataset.selectId = select.id;
           button.setAttribute('aria-haspopup', 'dialog');
           button.setAttribute('aria-controls', 'modalProspectSelect');
+          button.setAttribute('aria-expanded', 'false');
           button.innerHTML = '<span class="prospect-mobile-select-label"></span>'
             + '<i class="bi bi-chevron-down" aria-hidden="true"></i>';
-          select.insertAdjacentElement('afterend', button);
+          const control = document.createElement('div');
+          control.className = 'prospect-select-control';
+          const panel = document.createElement('div');
+          panel.className = 'prospect-dropdown-panel';
+          panel.id = 'prospectDropdown-' + select.id;
+          panel.hidden = true;
+          panel.innerHTML = '<div class="prospect-select-search">'
+            + '<i class="bi bi-search" aria-hidden="true"></i>'
+            + '<input type="search" class="form-control" data-select-part="prospectSelectSearch" aria-label="Cari pilihan" autocomplete="off">'
+            + '<button type="button" class="prospect-select-search-clear" data-select-part="prospectSelectClear" aria-label="Hapus pencarian" hidden><i class="bi bi-x" aria-hidden="true"></i></button></div>'
+            + '<div class="prospect-select-meta"><span data-select-part="prospectSelectCount" role="status" aria-live="polite"></span><span>Pilih satu</span></div>'
+            + '<div class="prospect-select-list" data-select-part="prospectSelectList" role="listbox"></div>';
+          const panelSearch = panel.querySelector('[data-select-part="prospectSelectSearch"]');
+          const panelList = panel.querySelector('[data-select-part="prospectSelectList"]');
+          panelList.id = panel.id + '-list';
+          panelList.setAttribute('aria-label', select.dataset.mobileTitle || 'Pilih data');
+          panelSearch.setAttribute('aria-controls', panelList.id);
+          panelSearch.addEventListener('input', function () { renderMobileSelectOptions(this.value); });
+          panel.addEventListener('keydown', function (event) {
+            const options = Array.from(panelList.querySelectorAll('button:not(:disabled)'));
+            if (event.key === 'Enter' && event.target === panelSearch) {
+              event.preventDefault();
+              if (options[0]) options[0].click();
+            } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault();
+              const current = options.indexOf(document.activeElement);
+              const next = event.key === 'ArrowDown' ? current + 1 : current - 1;
+              if (next < 0) panelSearch.focus();
+              else if (options[next]) options[next].focus();
+            }
+          });
+          panel.querySelector('[data-select-part="prospectSelectClear"]').addEventListener('click', function () {
+            panelSearch.value = '';
+            renderMobileSelectOptions('');
+            panelSearch.focus();
+          });
+          control.appendChild(button);
+          control.appendChild(panel);
+          select.insertAdjacentElement('afterend', control);
         }
+
+        const desktop = window.matchMedia('(min-width: 768px)').matches;
+        button.setAttribute('aria-haspopup', desktop ? 'listbox' : 'dialog');
+        button.setAttribute('aria-controls', desktop ? 'prospectDropdown-' + select.id : 'modalProspectSelect');
 
         if (button.dataset.bound !== '1') {
           button.dataset.bound = '1';
@@ -2873,6 +3119,10 @@
         if (!mobileSelectObservers.has(select)) {
           const observer = new MutationObserver(function () {
             syncMobileSelectButton(select);
+            if (activeDesktopPanel && activeMobileSelect === select) {
+              if (select.matches(':disabled')) closeDesktopSelect(false);
+              else renderMobileSelectOptions(selectPanelElement('prospectSelectSearch').value);
+            }
             if (activeMobileSelect === select && modalEl && modalEl.classList.contains('show')) {
               renderMobileSelectOptions(search ? search.value : '');
             }
@@ -2880,7 +3130,7 @@
 
           observer.observe(select, {
             attributes: true,
-            attributeFilter: ['disabled'],
+            attributeFilter: ['disabled', 'selected', 'value'],
             childList: true,
             subtree: true
           });
@@ -2897,14 +3147,55 @@
         });
       }
 
+      if (clear && clear.dataset.bound !== '1') {
+        clear.dataset.bound = '1';
+        clear.addEventListener('click', function () {
+          if (!search) return;
+          search.value = '';
+          renderMobileSelectOptions('');
+          search.focus();
+        });
+      }
+
       if (modalEl && modalEl.dataset.selectBound !== '1') {
         modalEl.dataset.selectBound = '1';
+        modalEl.addEventListener('shown.bs.modal', function () {
+          if (search && window.matchMedia('(min-width: 768px)').matches) search.focus();
+        });
         modalEl.addEventListener('hidden.bs.modal', function () {
+          const button = activeMobileSelect && document.querySelector(
+            '.prospect-mobile-select[data-select-id="' + activeMobileSelect.id + '"]'
+          );
+          if (button) {
+            button.setAttribute('aria-expanded', 'false');
+            button.focus();
+          }
           activeMobileSelect = null;
           if (search) search.value = '';
         });
       }
     }
+
+    document.addEventListener('click', function (event) {
+      if (activeDesktopPanel && !activeDesktopPanel.parentElement.contains(event.target)) closeDesktopSelect(false);
+    });
+    document.addEventListener('keydown', function (event) {
+      if (activeDesktopPanel && event.key === 'Escape') {
+        event.preventDefault();
+        closeDesktopSelect(true);
+      }
+    });
+    document.addEventListener('focusin', function (event) {
+      if (activeDesktopPanel && !activeDesktopPanel.parentElement.contains(event.target)) closeDesktopSelect(false);
+    });
+    window.addEventListener('resize', function () {
+      closeDesktopSelect(false);
+      document.querySelectorAll('.prospect-mobile-select[data-select-id]').forEach(function (button) {
+        const desktop = window.matchMedia('(min-width: 768px)').matches;
+        button.setAttribute('aria-haspopup', desktop ? 'listbox' : 'dialog');
+        button.setAttribute('aria-controls', desktop ? 'prospectDropdown-' + button.dataset.selectId : 'modalProspectSelect');
+      });
+    });
 
     function bindBottomSheetSwipe(modalEl) {
       if (!modalEl || modalEl.dataset.swipeBound === '1') return;
@@ -2929,7 +3220,7 @@
         const startedOnHeader = event.target.closest('.modal-header');
         const body = modalEl.querySelector('.modal-body');
         const startedOnInteractive = event.target.closest(
-          'input,button,select,textarea,a,.leaflet-container'
+          'input,button,select,textarea,a,#mapPicker'
         );
         const bodyAtTop = !body || body.scrollTop <= 0;
 

@@ -337,7 +337,7 @@
       flex:0 0 auto;
     }
 
-    .dashboard-prospect-popup .leaflet-popup-content-wrapper{
+    .dashboard-prospect-popup{
       overflow:hidden;
       border:1px solid rgba(203,213,225,.85);
       border-radius:18px;
@@ -346,13 +346,13 @@
       backdrop-filter:blur(12px);
     }
 
-    .dashboard-prospect-popup .leaflet-popup-content{
+    .dashboard-prospect-popup .map-popup-card{
       margin:0;
       color:#334155;
       line-height:1.35;
     }
 
-    .dashboard-prospect-popup .leaflet-popup-content.leaflet-popup-scrolled{
+    .dashboard-prospect-popup{
       overflow-x:hidden;
       overflow-y:auto;
       overscroll-behavior:contain;
@@ -360,27 +360,7 @@
       -webkit-overflow-scrolling:touch;
     }
 
-    .dashboard-prospect-popup .leaflet-popup-tip{
-      background:#fff;
-      box-shadow:3px 3px 8px rgba(15,23,42,.08);
-    }
 
-    .dashboard-prospect-popup .leaflet-popup-close-button{
-      top:8px;
-      right:8px;
-      z-index:3;
-      width:28px;
-      height:28px;
-      display:grid;
-      place-items:center;
-      padding:0;
-      border:1px solid #dbe4f0;
-      border-radius:10px;
-      color:#64748b;
-      background:rgba(255,255,255,.9);
-      font-size:19px;
-      line-height:1;
-    }
 
     .map-popup-card{
       width:100%;
@@ -510,12 +490,12 @@
         max-width:calc(100vw - 56px) !important;
       }
 
-      .dashboard-prospect-popup .leaflet-popup-content-wrapper{
+      .dashboard-prospect-popup{
         border-radius:15px;
         box-shadow:0 14px 32px rgba(15,23,42,.22);
       }
 
-      .dashboard-prospect-popup .leaflet-popup-content{
+      .dashboard-prospect-popup .map-popup-card{
         max-width:calc(100vw - 72px) !important;
         max-height:138px !important;
         overflow-x:hidden;
@@ -524,13 +504,6 @@
         -webkit-overflow-scrolling:touch;
       }
 
-      .dashboard-prospect-popup .leaflet-popup-close-button{
-        top:6px;
-        right:6px;
-        width:27px;
-        height:27px;
-        border-radius:9px;
-      }
 
       .map-popup-head{
         padding:10px 39px 8px 11px;
@@ -1694,9 +1667,7 @@
   </script>
 
   @push('scripts')
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
     (function () {
@@ -1709,7 +1680,8 @@
       let chartUsaha = null;
       let chartTrend = null;
       let mapInstance = null;
-      let mapLayerGroup = null;
+      let mapMarkers = [];
+      let mapInfoWindow = null;
       let mapDataSignature = null;
       let renderTimer = null;
 
@@ -1781,12 +1753,10 @@
       }
 
       function makeCircleIcon(color) {
-        return L.divIcon({
-          className: '',
-          html: '<div style="width:16px;height:16px;border-radius:999px;background:' + color + ';border:2px solid #fff;box-shadow:0 0 0 2px rgba(15,23,42,.12), 0 4px 10px rgba(15,23,42,.18);"></div>',
-          iconSize: [16, 16],
-          iconAnchor: [8, 8]
-        });
+        const dot = document.createElement('div');
+        dot.style.cssText = 'width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px rgba(15,23,42,.12),0 4px 10px rgba(15,23,42,.18);';
+        dot.style.backgroundColor = color;
+        return dot;
       }
 
       function setChartLoading(on) {
@@ -1963,20 +1933,27 @@
         });
       }
 
-      function renderMap() {
+      async function renderMap() {
         const payload = getDashboardPayload();
         const items = payload.mapItems || [];
         const mapEl = document.getElementById('jatengMap');
-        if (!mapEl || !window.L) return;
-
-        if (!mapInstance) {
-          mapInstance = L.map('jatengMap').setView([-7.150975, 110.140259], 8);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap'
-          }).addTo(mapInstance);
-
-          mapLayerGroup = L.layerGroup().addTo(mapInstance);
+        if (!mapEl) return;
+        mapEl.dataset.googleMap = 'dashboard';
+        let maps;
+        try {
+          maps = await PipelineMaps.load();
+        } catch (error) {
+          PipelineMaps.showError(mapEl, error);
+          return;
+        }
+        if (!mapEl.isConnected || document.getElementById('jatengMap') !== mapEl) return;
+        if (!mapInstance || mapInstance.getDiv() !== mapEl) {
+          mapMarkers.forEach(marker => { marker.map = null; });
+          mapMarkers = [];
+          if (mapInfoWindow) mapInfoWindow.close();
+          mapInstance = new maps.Map(mapEl, PipelineMaps.options());
+          mapInfoWindow = new maps.InfoWindow({ maxWidth: 300 });
+          mapDataSignature = null;
         }
 
         const nextMapDataSignature = JSON.stringify({
@@ -1987,14 +1964,17 @@
         // Jangan bangun ulang marker atau menjalankan fitBounds bila datanya
         // tidak berubah. Ini mempertahankan zoom, posisi, dan popup pengguna.
         if (mapDataSignature === nextMapDataSignature) {
-          mapInstance.invalidateSize();
+          google.maps.event.trigger(mapInstance, 'resize');
           return;
         }
 
         mapDataSignature = nextMapDataSignature;
-        mapLayerGroup.clearLayers();
+        mapInfoWindow.close();
+        mapMarkers.forEach(marker => { marker.map = null; });
+        mapMarkers = [];
 
-        const bounds = [];
+        const bounds = new maps.LatLngBounds();
+        let pointCount = 0;
         const isMobilePopup = window.matchMedia('(max-width: 767.98px)').matches;
         const mapWidth = mapEl.clientWidth || window.innerWidth || 320;
         const mapHeight = mapEl.clientHeight || 250;
@@ -2004,25 +1984,17 @@
         const popupMaxHeight = isMobilePopup
           ? Math.max(112, Math.min(138, Math.floor(mapHeight * .55)))
           : 380;
-        const popupOptions = {
-          className: 'dashboard-prospect-popup',
-          minWidth: isMobilePopup ? Math.min(205, popupMaxWidth) : 240,
-          maxWidth: popupMaxWidth,
-          maxHeight: popupMaxHeight,
-          autoPan: true,
-          keepInView: true,
-          autoPanPaddingTopLeft: L.point(14, isMobilePopup ? 54 : 18),
-          autoPanPaddingBottomRight: L.point(14, 14)
-        };
-
         items.forEach(item => {
           const lat = parseFloat(item.latitude ?? item.lat ?? 0);
           const lng = parseFloat(item.longitude ?? item.lng ?? 0);
 
-          if (!lat || !lng) return;
+          if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return;
 
           const color = getUsahaColor(item.kode_jenis_usaha || item.jenis_usaha_kode || item.jenis_usaha, payload);
-          const marker = L.marker([lat, lng], { icon: makeCircleIcon(color) });
+          const marker = new maps.marker.AdvancedMarkerElement({
+            map: mapInstance, position: { lat, lng }, title: String(item.nama || 'Lokasi prospek')
+          });
+          marker.appendChild(makeCircleIcon(color));
 
           const nama = pick(item, ['nama', 'nama_prospek', 'prospek', 'name'], '-');
           const cabang = pick(item, [
@@ -2086,49 +2058,35 @@
               '</div>' +
             '</div>';
 
-          marker.bindPopup(popupHtml, popupOptions);
-          marker.on('popupopen', function (event) {
-            const popupElement = event.popup && event.popup.getElement
-              ? event.popup.getElement()
-              : null;
-            const image = popupElement
-              ? popupElement.querySelector('.map-popup-photo')
-              : null;
-            const updatePopup = function () {
-              window.requestAnimationFrame(function () {
-                if (event.popup && event.popup.isOpen && event.popup.isOpen()) {
-                  event.popup.update();
-                }
-              });
-            };
-
-            if (image && image.dataset.errorBound !== '1') {
-              image.dataset.errorBound = '1';
-              image.addEventListener('load', updatePopup, { once: true });
-              image.addEventListener('error', function () {
-                const link = image.closest('.map-popup-photo-link');
-                if (link) {
-                  link.outerHTML = '<div class="map-popup-photo-empty"><i class="bi bi-image"></i> Foto gagal dimuat</div>';
-                }
-                updatePopup();
-              }, { once: true });
-            }
-
-            updatePopup();
+          marker.addListener('click', function () {
+            const content = document.createElement('div');
+            content.className = 'dashboard-prospect-popup';
+            content.style.maxWidth = popupMaxWidth + 'px';
+            content.style.maxHeight = popupMaxHeight + 'px';
+            content.style.overflowY = 'auto';
+            content.innerHTML = popupHtml;
+            const image = content.querySelector('.map-popup-photo');
+            if (image) image.addEventListener('error', function () {
+              const link = image.closest('.map-popup-photo-link');
+              if (link) link.outerHTML = '<div class="map-popup-photo-empty"><i class="bi bi-image"></i> Foto gagal dimuat</div>';
+            }, { once: true });
+            mapInfoWindow.setContent(content);
+            mapInfoWindow.open({ map: mapInstance, anchor: marker, shouldFocus: false });
           });
-          marker.addTo(mapLayerGroup);
-          bounds.push([lat, lng]);
+          mapMarkers.push(marker);
+          bounds.extend({ lat, lng });
+          pointCount++;
         });
 
-        if (bounds.length > 0) {
-          mapInstance.fitBounds(bounds, { padding: [30, 30] });
+        if (pointCount > 1) {
+          mapInstance.fitBounds(bounds, 30);
+        } else if (pointCount === 1) {
+          mapInstance.setCenter(bounds.getCenter());
+          mapInstance.setZoom(15);
         } else {
-          mapInstance.setView([-7.150975, 110.140259], 8);
+          mapInstance.setCenter({ lat: -7.150975, lng: 110.140259 });
+          mapInstance.setZoom(8);
         }
-
-        setTimeout(() => {
-          if (mapInstance) mapInstance.invalidateSize();
-        }, 120);
       }
 
       function renderAll() {

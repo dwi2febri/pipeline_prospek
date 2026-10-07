@@ -1800,63 +1800,68 @@
 </div>
 
 @push('scripts')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 document.addEventListener('livewire:init', function () {
     let detailMapInstance = null;
+    let detailMapMarker = null;
+    let detailMapInfoWindow = null;
+    let detailMapRequest = 0;
     let lastMapSignature = null;
 
     function destroyDetailMap() {
-        if (detailMapInstance) {
-            detailMapInstance.remove();
-            detailMapInstance = null;
+        detailMapRequest++;
+        if (detailMapInfoWindow) detailMapInfoWindow.close();
+        if (detailMapMarker) {
+            google.maps.event.clearInstanceListeners(detailMapMarker);
+            detailMapMarker.map = null;
         }
+        if (detailMapInstance) {
+            google.maps.event.clearInstanceListeners(detailMapInstance);
+            detailMapInstance.getDiv().replaceChildren();
+        }
+        detailMapInstance = null;
+        detailMapMarker = null;
+        detailMapInfoWindow = null;
         lastMapSignature = null;
     }
 
-    function renderDetailMap(force = false) {
+    async function renderDetailMap(force = false) {
         const mapEl = document.getElementById('detailProspectMap');
-        if (!mapEl || typeof L === 'undefined') return;
-
+        if (!mapEl) return;
         const lat = parseFloat(mapEl.dataset.lat || '');
         const lng = parseFloat(mapEl.dataset.lng || '');
         const title = mapEl.dataset.title || 'Lokasi Prospek';
         const alamat = mapEl.dataset.alamat || '-';
-
-        if (isNaN(lat) || isNaN(lng)) return;
-
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
         const currentSignature = [lat, lng, title, alamat].join('|');
-
-        if (detailMapInstance && !force && lastMapSignature === currentSignature) {
-            setTimeout(function () {
-                if (detailMapInstance) {
-                    detailMapInstance.invalidateSize();
-                }
-            }, 200);
+        if (detailMapInstance && detailMapInstance.getDiv() === mapEl && !force && lastMapSignature === currentSignature) {
+            google.maps.event.trigger(detailMapInstance, 'resize');
             return;
         }
-
-        destroyDetailMap();
-
-        detailMapInstance = L.map(mapEl).setView([lat, lng], 15);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(detailMapInstance);
-
-        L.marker([lat, lng]).addTo(detailMapInstance)
-            .bindPopup('<b>' + title + '</b><br>' + alamat)
-            .openPopup();
-
-        lastMapSignature = currentSignature;
-
-        setTimeout(function () {
-            if (detailMapInstance) {
-                detailMapInstance.invalidateSize();
-            }
-        }, 300);
+        const request = ++detailMapRequest;
+        mapEl.dataset.googleMap = 'detail';
+        try {
+            const maps = await PipelineMaps.load();
+            if (request !== detailMapRequest || !mapEl.isConnected) return;
+            destroyDetailMap();
+            detailMapInstance = new maps.Map(mapEl, PipelineMaps.options({ center: { lat, lng }, zoom: 15 }));
+            detailMapMarker = new maps.marker.AdvancedMarkerElement({ map: detailMapInstance, position: { lat, lng }, title });
+            const content = document.createElement('div');
+            const heading = document.createElement('strong');
+            const address = document.createElement('div');
+            heading.textContent = title;
+            address.textContent = alamat;
+            content.appendChild(heading);
+            content.appendChild(address);
+            detailMapInfoWindow = new maps.InfoWindow({ content, maxWidth: 280 });
+            const openInfo = () => detailMapInfoWindow.open({ map: detailMapInstance, anchor: detailMapMarker, shouldFocus: false });
+            detailMapMarker.addListener('click', openInfo);
+            openInfo();
+            lastMapSignature = currentSignature;
+        } catch (error) {
+            if (request === detailMapRequest) PipelineMaps.showError(mapEl, error);
+        }
     }
 
     function setupProspectModal() {

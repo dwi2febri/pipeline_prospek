@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Illuminate\Http\Client\Pool;
+use Illuminate\Http\Client\Response;
 
 use App\Livewire\Dashboard\Index as DashboardIndex;
 
@@ -107,6 +109,55 @@ $fetchWilayah = static function (string $endpoint, string $cacheKey) {
     }
 };
 
+Route::get('/api-wilayah/regencies-java', function () {
+    try {
+        $payload = Cache::remember('wilayah:regencies:java', now()->addDays(7), function () {
+            $provinceIds = ['31', '32', '33', '34', '35', '36'];
+            $responses = Http::pool(function (Pool $pool) use ($provinceIds) {
+                foreach ($provinceIds as $provinceId) {
+                    $pool->as($provinceId)
+                        ->acceptJson()
+                        ->connectTimeout(3)
+                        ->timeout(6)
+                        ->retry(2, 250, throw: false)
+                        ->get("https://wilayah.web.id/api/regencies/{$provinceId}");
+                }
+            });
+
+            $data = [];
+            foreach ($provinceIds as $provinceId) {
+                $response = $responses[$provinceId] ?? null;
+                if (!$response instanceof Response || !$response->successful()) {
+                    throw new \RuntimeException("API kabupaten/kota provinsi {$provinceId} gagal.");
+                }
+
+                $items = $response->json('data');
+                if (!is_array($items) || !$items) {
+                    throw new \RuntimeException("Data kabupaten/kota provinsi {$provinceId} kosong.");
+                }
+                foreach ($items as $item) {
+                    if (!is_array($item) || !isset($item['code'], $item['name'])
+                        || !str_starts_with((string) $item['code'], $provinceId)) {
+                        throw new \RuntimeException("Data kabupaten/kota provinsi {$provinceId} tidak valid.");
+                    }
+                    $data[] = ['code' => (string) $item['code'], 'name' => $item['name']];
+                }
+            }
+
+            return ['data' => $data];
+        });
+
+        return response()->json($payload);
+    } catch (\Throwable $e) {
+        Log::warning('API kabupaten/kota Jawa gagal dimuat.', ['message' => $e->getMessage()]);
+
+        return response()->json([
+            'data' => [],
+            'message' => 'Data wilayah sedang tidak dapat dimuat. Silakan coba lagi.',
+        ], 503);
+    }
+})->name('api.wilayah.regencies-java');
+
 Route::get('/api-wilayah/regencies/{provinceId}', function ($provinceId) use ($fetchWilayah) {
     abort_unless(preg_match('/^\d+$/', (string) $provinceId), 422);
 
@@ -136,6 +187,29 @@ Route::get('/api-wilayah/villages/{districtId}', function ($districtId) use ($fe
 
 // Semua halaman aplikasi harus login
 Route::middleware(['auth'])->group(function () {
+
+    Route::get('/api-map/search', function (Request $request, \App\Services\MapGeocodingService $geocoding) {
+        $data = $request->validate(['q' => ['required', 'string', 'max:200']]);
+        try {
+            return response()->json(['data' => $geocoding->search($data['q'])]);
+        } catch (\Throwable $e) {
+            Log::warning('Pencarian lokasi gagal.', ['exception' => get_class($e)]);
+            return response()->json(['message' => 'Pencarian lokasi sedang tidak tersedia. Silakan coba lagi.'], 503);
+        }
+    })->name('api.map.search');
+
+    Route::get('/api-map/reverse', function (Request $request, \App\Services\MapGeocodingService $geocoding) {
+        $data = $request->validate([
+            'lat' => ['required', 'numeric', 'between:-90,90'],
+            'lng' => ['required', 'numeric', 'between:-180,180'],
+        ]);
+        try {
+            return response()->json(['data' => $geocoding->reverse((float) $data['lat'], (float) $data['lng'])]);
+        } catch (\Throwable $e) {
+            Log::warning('Alamat titik peta gagal dimuat.', ['exception' => get_class($e)]);
+            return response()->json(['message' => 'Alamat titik belum dapat dimuat. Silakan coba lagi.'], 503);
+        }
+    })->name('api.map.reverse');
 
     // ===== SAVE FCM TOKEN DARI WEBVIEW ANDROID =====
     Route::post('/mobile/save-fcm-token', function () {
