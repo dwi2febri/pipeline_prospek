@@ -454,6 +454,18 @@
       padding:6px 2px 0;
     }
 
+    .assignment-warning{
+      margin-top:8px;
+      padding:9px 10px;
+      border-radius:10px;
+      background:#fff3cd;
+      color:#875508;
+      overflow-wrap:anywhere;
+    }
+    .assignment-warning-title{display:flex;align-items:center;gap:7px;font-size:.8rem;font-weight:800;}
+    .assignment-warning-note{margin-top:4px;font-size:.78rem;line-height:1.4;}
+    .assignment-reassign-note{margin-top:7px;color:#64748b;font-size:.75rem;line-height:1.4;}
+
     .filter-mode-card{
       border:1px solid #e7edf5;
       border-radius:16px;
@@ -1192,19 +1204,6 @@
                     </div>
 
                     <div class="assignment-box">
-                      <select class="form-select form-select-sm assignment-select"
-                              data-searchable-filter
-                              data-search-placeholder="Cari nama, kode, atau posisi AO..."
-                              wire:key="assignment-select-{{ $p->id }}-{{ md5((string)($p->diambil_oleh ?? '')) }}"
-                              wire:change="assignProspect({{ $p->id }}, $event.target.value)">
-                        <option value="">-- Pilih AO --</option>
-                        @foreach($assignmentOptions as $ao)
-                          <option value="{{ $ao['username'] }}" @selected((string)$p->diambil_oleh === (string)$ao['username'])>
-                            {{ $ao['label'] }}
-                          </option>
-                        @endforeach
-                      </select>
-
                       @if((int)($p->is_diambil ?? 0) === 1)
                         <div class="assignment-current">
                           <div class="assignment-current-code">
@@ -1213,12 +1212,31 @@
                           <div class="assignment-current-name">
                             {{ $namaPengambilLengkap ?: '-' }}
                           </div>
+                          @include('livewire.prospects.assignment-warning')
                         </div>
                       @else
                         <div class="assignment-empty">
                           Belum ada AO yang ditugaskan.
                         </div>
                       @endif
+
+                      <select class="form-select form-select-sm assignment-select"
+                              data-searchable-filter
+                              data-search-placeholder="Cari nama, kode, atau posisi AO..."
+                              wire:key="assignment-select-{{ $p->id }}-{{ md5((string)($p->diambil_oleh ?? '')) }}"
+                              wire:change="assignProspect({{ $p->id }}, $event.target.value)">
+                        <option value="">{{ isset($assignmentWarningMap[$p->id]) ? '-- Pilih '.$assignmentWarningMap[$p->id]['replacement'].' pengganti --' : '-- Pilih AO --' }}</option>
+                        @if((int)($p->is_diambil ?? 0) === 1 && filled($p->diambil_oleh) && !collect($assignmentOptions)->contains('username', (string)$p->diambil_oleh))
+                          <option value="{{ $p->diambil_oleh }}" selected disabled>
+                            {{ $p->diambil_oleh }} - {{ $namaPengambilLengkap ?: $p->diambil_oleh }}
+                          </option>
+                        @endif
+                        @foreach($assignmentOptions as $ao)
+                          <option value="{{ $ao['username'] }}" @selected((string)$p->diambil_oleh === (string)$ao['username'])>
+                            {{ $ao['label'] }}
+                          </option>
+                        @endforeach
+                      </select>
                     </div>
                   @else
                     @if((int)($p->is_diambil ?? 0) === 1)
@@ -1232,6 +1250,7 @@
                         <div class="assignment-current-name">
                           {{ $namaPengambilLengkap ?: '-' }}
                         </div>
+                        @include('livewire.prospects.assignment-warning')
                       </div>
                     @else
                       <div class="assignment-empty">-</div>
@@ -1335,33 +1354,40 @@
 
           @if($canManageAssignment)
             <div class="assignment-box">
+              @if((int)($p->is_diambil ?? 0) === 1)
+                <div class="assignment-current mt-2">
+                  <div class="assignment-current-code">{{ $p->diambil_oleh ?: '-' }}</div>
+                  <div class="assignment-current-name">{{ $namaPengambilLengkap ?: '-' }}</div>
+                  @include('livewire.prospects.assignment-warning')
+                </div>
+              @else
+                <div class="assignment-empty mt-2">Belum ada AO yang ditugaskan.</div>
+              @endif
+
               <select class="form-select form-select-sm assignment-select"
                       data-searchable-filter
                       data-search-placeholder="Cari nama, kode, atau posisi AO..."
                       wire:key="mobile-assignment-select-{{ $p->id }}-{{ md5((string)($p->diambil_oleh ?? '')) }}"
                       wire:change="assignProspect({{ $p->id }}, $event.target.value)">
-                <option value="">-- Pilih AO --</option>
+                <option value="">{{ isset($assignmentWarningMap[$p->id]) ? '-- Pilih '.$assignmentWarningMap[$p->id]['replacement'].' pengganti --' : '-- Pilih AO --' }}</option>
+                @if((int)($p->is_diambil ?? 0) === 1 && filled($p->diambil_oleh) && !collect($assignmentOptions)->contains('username', (string)$p->diambil_oleh))
+                  <option value="{{ $p->diambil_oleh }}" selected disabled>
+                    {{ $p->diambil_oleh }} - {{ $namaPengambilLengkap ?: $p->diambil_oleh }}
+                  </option>
+                @endif
                 @foreach($assignmentOptions as $ao)
                   <option value="{{ $ao['username'] }}" @selected((string)$p->diambil_oleh === (string)$ao['username'])>
                     {{ $ao['label'] }}
                   </option>
                 @endforeach
               </select>
-
-              @if((int)($p->is_diambil ?? 0) === 1)
-                <div class="assignment-current mt-2">
-                  <div class="assignment-current-code">{{ $p->diambil_oleh ?: '-' }}</div>
-                  <div class="assignment-current-name">{{ $namaPengambilLengkap ?: '-' }}</div>
-                </div>
-              @else
-                <div class="assignment-empty mt-2">Belum ada AO yang ditugaskan.</div>
-              @endif
             </div>
           @else
             <div class="small">
               @if((int)($p->is_diambil ?? 0) === 1)
                 <div class="assignment-current-code">{{ $p->diambil_oleh ?: '-' }}</div>
                 <div class="text-muted">{{ $namaPengambilLengkap ?: '-' }}</div>
+                @include('livewire.prospects.assignment-warning')
               @else
                 -
               @endif

@@ -1444,6 +1444,10 @@
           </div>
         </div>
 
+      </div>
+      </fieldset>
+
+      <div class="row g-3">
         <div class="col-12">
           <div class="sticky-action-bar">
             <div class="sticky-action-grid {{ $id ? 'd-block' : '' }}">
@@ -1461,7 +1465,6 @@
         </div>
 
       </div>
-      </fieldset>
     </div>
   </div>
 

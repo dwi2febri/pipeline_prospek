@@ -1369,17 +1369,30 @@ class Submissions extends Component
             ->unique()
             ->values();
 
-        $namaPengambilMap = User::query()
+        $pengambilUsers = User::query()
             ->whereIn('name', $usernamesPengambil)
-            ->get(['name', 'nama_lengkap'])
+            ->get(['name', 'nama_lengkap', 'job_position'])
+            ->keyBy('name');
+
+        $namaPengambilMap = $pengambilUsers
             ->mapWithKeys(function ($u) {
                 return [$u->name => ($u->nama_lengkap ?: $u->name)];
             })
             ->toArray();
 
         $assignmentMap = [];
+        $assignmentWarningMap = [];
         foreach ($items as $p) {
             $assignmentMap[$p->id] = $this->getAssignableAoOptions($p->jenis_produk, (int) $p->cabang_id);
+            $position = strtoupper(trim((string) ($pengambilUsers->get($p->diambil_oleh)?->job_position ?? '')));
+            $expectedPositions = $this->getAssignmentJobPositionsByProduk($p->jenis_produk);
+            if ((int) $p->is_diambil === 1 && $position !== '' && $expectedPositions !== [] && !in_array($position, $expectedPositions, true)) {
+                $assignmentWarningMap[$p->id] = [
+                    'position' => $position,
+                    'product' => ucfirst(strtolower((string) $p->jenis_produk)),
+                    'replacement' => $expectedPositions[0],
+                ];
+            }
         }
 
         $detail = $this->detail;
@@ -1459,6 +1472,7 @@ class Submissions extends Component
             'tahunOptions',
             'namaPengambilMap',
             'assignmentMap',
+            'assignmentWarningMap',
             'filterModeOptions',
             'inputRoleOptions',
             'produkOptions',
