@@ -1635,7 +1635,7 @@
   <script type="application/json" id="dashboard-data-usaha-values">@json($usahaValues)</script>
   <script type="application/json" id="dashboard-data-trend-labels">@json($trendLabels)</script>
   <script type="application/json" id="dashboard-data-trend-values">@json($trendValues)</script>
-  <script type="application/json" id="dashboard-data-map-items">@json($mapItems)</script>
+  <div hidden id="dashboard-data-map-items">@json($mapItems)</div>
   <script type="application/json" id="dashboard-data-usaha-color-map">@json($usahaColorMap)</script>
 
   <div class="mobile-fab-stack d-md-none">
@@ -2106,7 +2106,7 @@
       }
 
       function watchDashboardJson() {
-        var targets = document.querySelectorAll('script[id^="dashboard-data-"]');
+        var targets = document.querySelectorAll('[id^="dashboard-data-"]');
         if (!targets.length || !window.MutationObserver) return;
 
         if (window.__crmDashboardJsonObserver) {
