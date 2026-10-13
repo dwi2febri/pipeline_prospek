@@ -331,3 +331,33 @@ test('PDF does not issue a letter with an unavailable nominatif source', functio
     expect($component->exportValidationPdf('pegawai'))->toBeNull()
         ->and($component->getErrorBag()->first('validationPdf'))->toContain('Data nominatif belum dapat dimuat');
 });
+
+test('missing Dompdf opens a printable letter for either modal instead of throwing a server error', function (string $scope, string $signer) {
+    seedValidationLetter();
+    $this->partialMock(ProspectValidationReport::class, function ($mock) {
+        $mock->shouldReceive('supportsPdf')->once()->andReturn(false);
+        $mock->shouldNotReceive('pdf');
+    });
+    $component = recapDetailComponent();
+    $component->detailPegawaiId = 10;
+    $component->detailKcCabangId = 1;
+
+    expect($component->exportValidationPdf($scope))->toBeNull();
+    $event = \Livewire\store($component)->get('dispatched')[0]->serialize();
+    expect($event['name'])->toBe('print-prospect-validation')
+        ->and($event['params']['scope'])->toBe($scope)
+        ->and($event['params']['filename'])->toEndWith('.pdf')
+        ->and($event['params']['html'])->toContain('SURAT VALIDASI PENGAJUAN CLOSING', $signer, 'size: A4 landscape')
+        ->and($component->getErrorBag()->isEmpty())->toBeTrue();
+})->with([['pegawai', 'Pegawai Pengaju'], ['kc', 'KEPALA KC UTAMA']]);
+
+test('installed Dompdf still downloads the PDF directly', function () {
+    seedValidationLetter();
+    $component = recapDetailComponent();
+    $component->detailPegawaiId = 10;
+    $response = $component->exportValidationPdf('pegawai');
+
+    expect($response)->toBeInstanceOf(\Symfony\Component\HttpFoundation\StreamedResponse::class)
+        ->and($response->headers->get('Content-Type'))->toBe('application/pdf')
+        ->and(\Livewire\store($component)->get('dispatched', []))->toBe([]);
+});

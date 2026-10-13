@@ -46,7 +46,7 @@
           <div class="row g-2 align-items-end">
             <div class="col-6 col-md-3">
               <label class="form-label fw-semibold mb-1" for="{{ $modalId }}-status">Status</label>
-              <select id="{{ $modalId }}-status" class="form-select" wire:model.live="{{ $statusModel }}">
+              <select id="{{ $modalId }}-status" class="form-select" data-searchable-filter wire:model.live="{{ $statusModel }}">
                 <option value="ALL">Semua Status</option><option value="OPEN">Open</option><option value="FOLLOW UP">Follow Up</option><option value="CLOSING">Closing</option><option value="REJECTED">Rejected</option>
               </select>
             </div>

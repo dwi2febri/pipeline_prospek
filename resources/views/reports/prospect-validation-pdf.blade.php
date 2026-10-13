@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>Surat Validasi Pengajuan Closing</title>
   <style>
-    @page { margin: 30px 38px 45px; }
+    @page { size: A4 landscape; margin: 30px 38px 45px; }
     body { font-family: "DejaVu Sans", sans-serif; font-size: 9px; color: #182538; line-height: 1.45; }
     .letterhead { border-bottom: 2px solid #234a7c; padding-bottom: 10px; margin-bottom: 15px; }
     .brand { font-size: 16px; font-weight: bold; color: #234a7c; }
@@ -29,6 +29,7 @@
     .signature { width: 260px; margin: 20px 0 0 auto; text-align: center; page-break-inside: avoid; }
     .signature-space { height: 62px; }
     .signer-name { font-weight: bold; text-decoration: underline; }
+    @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
   </style>
 </head>
 <body>

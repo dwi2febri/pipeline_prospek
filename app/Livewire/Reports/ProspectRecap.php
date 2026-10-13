@@ -1027,8 +1027,17 @@ class ProspectRecap extends Component
             $this->addError('validationPdf', 'Data nominatif belum dapat dimuat. Coba cetak kembali setelah data tersedia.');
             return;
         }
-        $pdf = app(ProspectValidationReport::class)->pdf($data);
         $filename = 'validasi-pengajuan-'.$scope.'-'.$data['subject']->id.'-'.now('Asia/Jakarta')->format('Ymd').'.pdf';
+        $report = app(ProspectValidationReport::class);
+        if (!$report->supportsPdf()) {
+            $this->dispatch('print-prospect-validation',
+                html: view('reports.prospect-validation-pdf', $data)->render(),
+                filename: $filename,
+                scope: $scope,
+            );
+            return;
+        }
+        $pdf = $report->pdf($data);
 
         return response()->streamDownload(static function () use ($pdf) { echo $pdf; }, $filename, ['Content-Type' => 'application/pdf']);
     }

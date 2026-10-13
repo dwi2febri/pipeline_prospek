@@ -743,6 +743,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('js/prospect-validation-print.js') }}?v={{ filemtime(public_path('js/prospect-validation-print.js')) }}" defer></script>
 <script>
 document.addEventListener('livewire:init', function () {
     let detailPegawaiModalInstance = null;

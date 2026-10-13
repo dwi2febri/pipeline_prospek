@@ -45,6 +45,11 @@ class ProspectValidationReport
         return $heads->count() === 1 ? $heads->first() : null;
     }
 
+    public function supportsPdf(): bool
+    {
+        return class_exists(Dompdf::class) && class_exists(Options::class);
+    }
+
     public function pdf(array $data): string
     {
         $options = new Options;
