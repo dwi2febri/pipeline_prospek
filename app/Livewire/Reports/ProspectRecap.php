@@ -902,9 +902,9 @@ class ProspectRecap extends Component
             ]);
     }
 
-    protected function getDetailRealisasi(Collection $items): array
+    protected function getDetailNominatif(Collection $items): array
     {
-        $amounts = [];
+        $details = [];
         $unavailable = false;
         // Use the same nominatif sources as the Realisasi report.
         $sources = [
@@ -913,10 +913,19 @@ class ProspectRecap extends Component
             'TABUNGAN' => ['nominatif_tabungan', 'saldo'],
         ];
 
+        foreach ($items as $item) {
+            $hasAccount = trim((string) $item->no_rekening) !== '';
+            $details[$item->id] = [
+                'nama' => '',
+                'nominal' => null,
+                'status' => $hasAccount ? 'unsupported' : 'missing_account',
+                'keterangan' => $hasAccount ? 'Produk belum didukung untuk pencocokan nominatif.' : 'Nomor rekening belum diisi di e-Prospek.',
+            ];
+        }
+
         foreach ($sources as $product => [$table, $column]) {
             $prospects = $items->filter(fn ($row) =>
                 strtoupper(trim((string) $row->jenis_produk)) === $product
-                && strtoupper(trim((string) $row->status)) === 'CLOSING'
                 && trim((string) $row->no_rekening) !== ''
             );
 
@@ -925,27 +934,69 @@ class ProspectRecap extends Component
             }
 
             try {
+                // Match the name-column detection used by the Realisasi report.
+                $columns = DB::connection('dpk')->getSchemaBuilder()->getColumnListing($table);
+                $columnMap = [];
+                foreach ($columns as $name) {
+                    $columnMap[strtolower((string) $name)] = (string) $name;
+                }
+                $nameColumn = null;
+                foreach (['nama_nasabah', 'nama', 'nama_rekening', 'nama_debitur', 'nm_nasabah', 'nama_pemilik'] as $candidate) {
+                    if (isset($columnMap[$candidate])) {
+                        $nameColumn = $columnMap[$candidate];
+                        break;
+                    }
+                }
+                if ($nameColumn === null) {
+                    foreach ($columns as $name) {
+                        if (str_contains(strtolower((string) $name), 'nama')) {
+                            $nameColumn = (string) $name;
+                            break;
+                        }
+                    }
+                }
+
                 $byAccount = [];
                 $accounts = $prospects->map(fn ($row) => trim((string) $row->no_rekening))->unique()->values()->all();
+                $selectColumns = ['no_rekening', $column];
+                if ($nameColumn !== null) {
+                    $selectColumns[] = $nameColumn;
+                }
                 foreach (array_chunk($accounts, 800) as $chunk) {
                     $rows = DB::connection('dpk')->table($table)
                         ->whereIn('no_rekening', $chunk)
-                        ->get(['no_rekening', $column]);
+                        ->get($selectColumns);
                     foreach ($rows as $row) {
-                        $byAccount[trim((string) $row->no_rekening)] = (float) ($row->{$column} ?? 0);
+                        $byAccount[trim((string) $row->no_rekening)] = [
+                            'nama' => $nameColumn !== null ? trim((string) ($row->{$nameColumn} ?? '')) : '',
+                            'nominal' => (float) ($row->{$column} ?? 0),
+                        ];
                     }
                 }
 
                 foreach ($prospects as $prospect) {
-                    $amounts[$prospect->id] = $byAccount[trim((string) $prospect->no_rekening)] ?? null;
+                    $matched = $byAccount[trim((string) $prospect->no_rekening)] ?? null;
+                    $isClosing = strtoupper(trim((string) $prospect->status)) === 'CLOSING';
+                    $details[$prospect->id] = [
+                        'nama' => $matched['nama'] ?? '',
+                        'nominal' => $isClosing ? ($matched['nominal'] ?? null) : null,
+                        'status' => $matched !== null ? 'matched' : 'unmatched',
+                        'keterangan' => $matched === null
+                            ? 'Rekening e-Prospek tidak ditemukan di nominatif '.strtolower($product).'.'
+                            : ($matched['nama'] === '' ? 'Nama nasabah belum tersedia di nominatif.' : ($isClosing ? '-' : 'Rekening cocok; status prospek belum Closing.')),
+                    ];
                 }
             } catch (\Throwable $exception) {
                 report($exception);
                 $unavailable = true;
+                foreach ($prospects as $prospect) {
+                    $details[$prospect->id]['status'] = 'unavailable';
+                    $details[$prospect->id]['keterangan'] = 'Data nominatif belum dapat dimuat; rekening belum dapat dicocokkan.';
+                }
             }
         }
 
-        return [$amounts, $unavailable];
+        return [$details, $unavailable];
     }
 
     protected function getPeriodeLabelForExport(): string
@@ -1182,7 +1233,7 @@ class ProspectRecap extends Component
 
         $detailPegawai = null;
         $detailItems = collect();
-        $detailRealisasi = [];
+        $detailNominatif = [];
         $detailRealisasiUnavailable = false;
 
         if ($this->detailPegawaiId) {
@@ -1201,7 +1252,7 @@ class ProspectRecap extends Component
                 ->first();
 
             $detailItems = $this->getDetailPegawaiQuery()->get();
-            [$detailRealisasi, $detailRealisasiUnavailable] = $this->getDetailRealisasi($detailItems);
+            [$detailNominatif, $detailRealisasiUnavailable] = $this->getDetailNominatif($detailItems);
         }
 
         $detailKcCabang = null;
@@ -1222,7 +1273,8 @@ class ProspectRecap extends Component
             'tahunOptions' => $tahunOptions,
             'detailPegawai' => $detailPegawai,
             'detailItems' => $detailItems,
-            'detailRealisasi' => $detailRealisasi,
+            'detailNominatif' => $detailNominatif,
+            'detailUnmatchedCount' => collect($detailNominatif)->where('status', 'unmatched')->count(),
             'detailRealisasiUnavailable' => $detailRealisasiUnavailable,
             'detailKcCabang' => $detailKcCabang,
             'detailKcItems' => $detailKcItems,

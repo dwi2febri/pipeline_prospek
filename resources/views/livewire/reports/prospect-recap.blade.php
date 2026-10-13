@@ -118,6 +118,28 @@
     .pegawai-product-tab:disabled{cursor:wait;opacity:.75;}
     .pegawai-detail-amount{font-variant-numeric:tabular-nums;}
 
+    #modalDetailPegawai .modal-content{font-size:12px;line-height:1.4;}
+    #modalDetailPegawai .modal-title{font-size:15px;}
+    #modalDetailPegawai .modal-header,
+    #modalDetailPegawai .modal-body{padding:12px 16px;}
+    #modalDetailPegawai .modal-footer{padding:8px 16px;}
+    #modalDetailPegawai .small{font-size:11px;}
+    #modalDetailPegawai .form-label,
+    #modalDetailPegawai .form-select,
+    #modalDetailPegawai .form-control,
+    #modalDetailPegawai .btn{font-size:12px;}
+    #modalDetailPegawai .form-select,
+    #modalDetailPegawai .form-control{min-height:32px;padding-top:5px;padding-bottom:5px;}
+    #modalDetailPegawai .pegawai-product-tabs{padding:4px;gap:4px;border-radius:12px;}
+    #modalDetailPegawai .pegawai-product-tab{font-size:12px;padding:7px 12px;gap:7px;border-radius:9px;}
+    #modalDetailPegawai .pegawai-product-tab > i{font-size:14px;}
+    #modalDetailPegawai .pegawai-product-tab small{font-size:10px;}
+    #modalDetailPegawai .recap-table table{font-size:11px;}
+    #modalDetailPegawai .recap-table th,
+    #modalDetailPegawai .recap-table td{padding:7px 8px;line-height:1.4;}
+    #modalDetailPegawai .pegawai-detail-note{min-width:200px;max-width:260px;white-space:normal;}
+    #modalDetailPegawai .alert{padding:8px 12px;margin-bottom:12px;}
+
     @media(max-width:575.98px){
       .pegawai-product-tabs{width:100%;gap:4px;}
       .pegawai-product-tab{flex:1;justify-content:center;padding:10px 6px;gap:6px;font-size:.85rem;}
@@ -767,37 +789,48 @@
             </div>
 
             @if($detailRealisasiUnavailable)
-              <div class="alert alert-warning small" role="status">Sebagian nominal realisasi belum dapat dimuat. Silakan coba kembali.</div>
+              <div class="alert alert-warning small" role="status">Sebagian nama dan nominal realisasi belum dapat dimuat dari nominatif. Silakan coba kembali.</div>
             @endif
+            @if($detailUnmatchedCount > 0)
+              <div class="alert alert-warning small" role="status">
+                <strong>{{ number_format($detailUnmatchedCount, 0, ',', '.') }} pengajuan</strong> memiliki nomor rekening e-Prospek yang tidak ditemukan di nominatif produk terkait. Periksa kolom No. Rekening dan Keterangan.
+              </div>
+            @endif
+            <div class="text-muted small mb-2">Nama prospek dan nominal realisasi bersumber dari nominatif sesuai produk dan nomor rekening. Nominal ditampilkan untuk status Closing; data yang belum tersedia ditandai "-".</div>
             <div class="table-responsive recap-table" wire:loading.class="opacity-50" wire:target="setDetailProductTab">
               <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th style="width:70px;">No</th>
-                    <th style="min-width:140px;">Tanggal</th>
-                    <th style="min-width:220px;">Nama Prospek</th>
-                    <th style="min-width:140px;">Produk</th>
-                    <th style="min-width:160px;">Jenis Usaha</th>
-                    <th style="min-width:120px;">Status</th>
-                    <th class="text-end" style="min-width:180px;">Realisasi</th>
+                    <th style="width:40px;">No</th>
+                    <th style="min-width:90px;">Tanggal</th>
+                    <th style="min-width:170px;">Nama Prospek</th>
+                    <th style="min-width:125px;">No. Rekening</th>
+                    <th style="min-width:85px;">Produk</th>
+                    <th style="min-width:100px;">Jenis Usaha</th>
+                    <th style="min-width:95px;">Status</th>
+                    <th class="text-end" style="min-width:130px;">Realisasi</th>
+                    <th class="pegawai-detail-note">Keterangan</th>
                   </tr>
                 </thead>
                 <tbody>
                   @forelse($detailItems as $i => $row)
+                    @php($nominatif = $detailNominatif[$row->id])
                     <tr wire:key="detail-pegawai-prospect-{{ $row->id }}">
                       <td>{{ $i + 1 }}</td>
                       <td>{{ \Carbon\Carbon::parse($row->tanggal_prospek)->format('d/m/Y') }}</td>
-                      <td>{{ $row->nama ?: '-' }}</td>
+                      <td>{{ $nominatif['nama'] ?: '-' }}</td>
+                      <td class="text-nowrap">{{ $row->no_rekening ?: '-' }}</td>
                       <td>{{ $row->jenis_produk ?: '-' }}</td>
                       <td>{{ $row->jenis_usaha ?: '-' }}</td>
                       <td>{{ $row->status ?: '-' }}</td>
-                      <td class="text-end text-nowrap fw-semibold pegawai-detail-amount {{ isset($detailRealisasi[$row->id]) ? 'text-success' : 'text-muted' }}">
-                        {{ isset($detailRealisasi[$row->id]) ? 'Rp ' . number_format($detailRealisasi[$row->id], 0, ',', '.') : '-' }}
+                      <td class="text-end text-nowrap fw-semibold pegawai-detail-amount {{ $nominatif['nominal'] !== null ? 'text-success' : 'text-muted' }}">
+                        {{ $nominatif['nominal'] !== null ? 'Rp ' . number_format($nominatif['nominal'], 0, ',', '.') : '-' }}
                       </td>
+                      <td class="pegawai-detail-note {{ $nominatif['status'] === 'unmatched' ? 'text-danger' : 'text-muted' }}">{{ $nominatif['keterangan'] }}</td>
                     </tr>
                   @empty
                     <tr>
-                      <td colspan="7" class="text-center text-muted p-4">Belum ada pengajuan untuk produk dan periode yang dipilih.</td>
+                      <td colspan="9" class="text-center text-muted p-4">Belum ada pengajuan untuk produk dan periode yang dipilih.</td>
                     </tr>
                   @endforelse
                 </tbody>
