@@ -6,6 +6,7 @@ use App\Models\Cabang;
 use App\Models\Prospect;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -38,6 +39,7 @@ class ProspectRecap extends Component
     public bool $lockCabangFilter = false;
 
     public ?int $detailPegawaiId = null;
+    public string $detailProductTab = 'all';
     public string $detailFilterMode = 'all';
     public string $detailFilterBulan = '';
     public string $detailFilterTahun = '';
@@ -764,11 +766,22 @@ class ProspectRecap extends Component
     public function openDetailPegawai(int $userId): void
     {
         $this->detailPegawaiId = $userId;
+        $this->detailProductTab = 'all';
         $this->detailFilterMode = $this->filterMode;
         $this->detailFilterBulan = $this->filterBulan;
         $this->detailFilterTahun = $this->filterTahun;
         $this->detailFilterTanggalAwal = $this->filterTanggalAwal;
         $this->detailFilterTanggalAkhir = $this->filterTanggalAkhir;
+        $this->dispatch('open-detail-pegawai-modal');
+    }
+
+    public function setDetailProductTab(string $tab): void
+    {
+        if (!in_array($tab, ['all', 'kredit', 'dana'], true)) {
+            return;
+        }
+
+        $this->detailProductTab = $tab;
         $this->dispatch('open-detail-pegawai-modal');
     }
 
@@ -860,6 +873,12 @@ class ProspectRecap extends Component
             ->where('input_by', $this->detailPegawaiId)
             ->whereNull('deleted_at');
 
+        if ($this->detailProductTab === 'kredit') {
+            $query->where('jenis_produk', 'KREDIT');
+        } elseif ($this->detailProductTab === 'dana') {
+            $query->whereIn('jenis_produk', ['DEPOSITO', 'TABUNGAN']);
+        }
+
         $this->applyProspectDateWhereFilter(
             $query,
             $this->detailFilterMode,
@@ -879,7 +898,54 @@ class ProspectRecap extends Component
                 'jenis_produk',
                 'jenis_usaha',
                 'status',
+                'no_rekening',
             ]);
+    }
+
+    protected function getDetailRealisasi(Collection $items): array
+    {
+        $amounts = [];
+        $unavailable = false;
+        // Use the same nominatif sources as the Realisasi report.
+        $sources = [
+            'KREDIT' => ['nominatif', 'jml_pinjaman'],
+            'DEPOSITO' => ['nominatif_deposito', 'saldo_akhir'],
+            'TABUNGAN' => ['nominatif_tabungan', 'saldo'],
+        ];
+
+        foreach ($sources as $product => [$table, $column]) {
+            $prospects = $items->filter(fn ($row) =>
+                strtoupper(trim((string) $row->jenis_produk)) === $product
+                && strtoupper(trim((string) $row->status)) === 'CLOSING'
+                && trim((string) $row->no_rekening) !== ''
+            );
+
+            if ($prospects->isEmpty()) {
+                continue;
+            }
+
+            try {
+                $byAccount = [];
+                $accounts = $prospects->map(fn ($row) => trim((string) $row->no_rekening))->unique()->values()->all();
+                foreach (array_chunk($accounts, 800) as $chunk) {
+                    $rows = DB::connection('dpk')->table($table)
+                        ->whereIn('no_rekening', $chunk)
+                        ->get(['no_rekening', $column]);
+                    foreach ($rows as $row) {
+                        $byAccount[trim((string) $row->no_rekening)] = (float) ($row->{$column} ?? 0);
+                    }
+                }
+
+                foreach ($prospects as $prospect) {
+                    $amounts[$prospect->id] = $byAccount[trim((string) $prospect->no_rekening)] ?? null;
+                }
+            } catch (\Throwable $exception) {
+                report($exception);
+                $unavailable = true;
+            }
+        }
+
+        return [$amounts, $unavailable];
     }
 
     protected function getPeriodeLabelForExport(): string
@@ -1116,6 +1182,8 @@ class ProspectRecap extends Component
 
         $detailPegawai = null;
         $detailItems = collect();
+        $detailRealisasi = [];
+        $detailRealisasiUnavailable = false;
 
         if ($this->detailPegawaiId) {
             $detailPegawai = User::query()
@@ -1133,6 +1201,7 @@ class ProspectRecap extends Component
                 ->first();
 
             $detailItems = $this->getDetailPegawaiQuery()->get();
+            [$detailRealisasi, $detailRealisasiUnavailable] = $this->getDetailRealisasi($detailItems);
         }
 
         $detailKcCabang = null;
@@ -1153,6 +1222,8 @@ class ProspectRecap extends Component
             'tahunOptions' => $tahunOptions,
             'detailPegawai' => $detailPegawai,
             'detailItems' => $detailItems,
+            'detailRealisasi' => $detailRealisasi,
+            'detailRealisasiUnavailable' => $detailRealisasiUnavailable,
             'detailKcCabang' => $detailKcCabang,
             'detailKcItems' => $detailKcItems,
             'detailKcStatusLabel' => $this->getDetailKcStatusLabel(),

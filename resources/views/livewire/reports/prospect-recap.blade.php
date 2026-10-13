@@ -81,6 +81,48 @@
     .recap-table .subcol-head{
       text-align:center;
     }
+
+    .pegawai-product-tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      padding:6px;
+      border:1px solid #e2e8f0;
+      border-radius:16px;
+      background:#f1f5f9;
+    }
+
+    .pegawai-product-tab{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid transparent;
+      border-radius:12px;
+      padding:10px 18px;
+      color:#475569;
+      background:transparent;
+      text-align:left;
+      font-weight:600;
+      transition:background .15s, color .15s, box-shadow .15s;
+    }
+
+    .pegawai-product-tab > i{font-size:1.15rem;}
+    .pegawai-product-tab small{display:block;font-size:.72rem;font-weight:400;opacity:.85;}
+    .pegawai-product-tab:hover{background:#e2e8f0;color:#1d4ed8;}
+    .pegawai-product-tab.is-active{
+      color:#fff;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      box-shadow:0 3px 8px rgba(37,99,235,.2);
+    }
+    .pegawai-product-tab:focus-visible{outline:3px solid #93c5fd;outline-offset:2px;}
+    .pegawai-product-tab:disabled{cursor:wait;opacity:.75;}
+    .pegawai-detail-amount{font-variant-numeric:tabular-nums;}
+
+    @media(max-width:575.98px){
+      .pegawai-product-tabs{width:100%;gap:4px;}
+      .pegawai-product-tab{flex:1;justify-content:center;padding:10px 6px;gap:6px;font-size:.85rem;}
+      .pegawai-product-tab small{font-size:.65rem;}
+    }
   </style>
 
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
@@ -656,6 +698,29 @@
           </div>
 
           <div class="modal-body">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+              <div class="pegawai-product-tabs" role="group" aria-label="Filter produk pengajuan pegawai">
+                <button type="button" class="pegawai-product-tab {{ $detailProductTab === 'all' ? 'is-active' : '' }}"
+                        aria-pressed="{{ $detailProductTab === 'all' ? 'true' : 'false' }}"
+                        wire:click="setDetailProductTab('all')" wire:loading.attr="disabled" wire:target="setDetailProductTab">
+                  <i class="bi bi-grid-1x2" aria-hidden="true"></i><span>All<small>Semua produk</small></span>
+                </button>
+                <button type="button" class="pegawai-product-tab {{ $detailProductTab === 'kredit' ? 'is-active' : '' }}"
+                        aria-pressed="{{ $detailProductTab === 'kredit' ? 'true' : 'false' }}"
+                        wire:click="setDetailProductTab('kredit')" wire:loading.attr="disabled" wire:target="setDetailProductTab">
+                  <i class="bi bi-bank" aria-hidden="true"></i><span>Kredit<small>Pengajuan kredit</small></span>
+                </button>
+                <button type="button" class="pegawai-product-tab {{ $detailProductTab === 'dana' ? 'is-active' : '' }}"
+                        aria-pressed="{{ $detailProductTab === 'dana' ? 'true' : 'false' }}"
+                        wire:click="setDetailProductTab('dana')" wire:loading.attr="disabled" wire:target="setDetailProductTab">
+                  <i class="bi bi-wallet2" aria-hidden="true"></i><span>Dana<small>Deposito / Tabungan</small></span>
+                </button>
+              </div>
+              <div class="text-muted small" aria-live="polite">
+                <span wire:loading.remove wire:target="setDetailProductTab"><strong class="text-dark">{{ number_format($detailItems->count(), 0, ',', '.') }}</strong> pengajuan</span>
+                <span wire:loading wire:target="setDetailProductTab">Memuat pengajuan...</span>
+              </div>
+            </div>
             <div class="card-soft p-3 mb-3"
                  data-mobile-filter-panel
                  data-mobile-filter-key="prospect-recap-detail-pegawai">
@@ -701,7 +766,10 @@
               </div>
             </div>
 
-            <div class="table-responsive">
+            @if($detailRealisasiUnavailable)
+              <div class="alert alert-warning small" role="status">Sebagian nominal realisasi belum dapat dimuat. Silakan coba kembali.</div>
+            @endif
+            <div class="table-responsive recap-table" wire:loading.class="opacity-50" wire:target="setDetailProductTab">
               <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                   <tr>
@@ -711,21 +779,25 @@
                     <th style="min-width:140px;">Produk</th>
                     <th style="min-width:160px;">Jenis Usaha</th>
                     <th style="min-width:120px;">Status</th>
+                    <th class="text-end" style="min-width:180px;">Realisasi</th>
                   </tr>
                 </thead>
                 <tbody>
                   @forelse($detailItems as $i => $row)
-                    <tr>
+                    <tr wire:key="detail-pegawai-prospect-{{ $row->id }}">
                       <td>{{ $i + 1 }}</td>
                       <td>{{ \Carbon\Carbon::parse($row->tanggal_prospek)->format('d/m/Y') }}</td>
                       <td>{{ $row->nama ?: '-' }}</td>
                       <td>{{ $row->jenis_produk ?: '-' }}</td>
                       <td>{{ $row->jenis_usaha ?: '-' }}</td>
                       <td>{{ $row->status ?: '-' }}</td>
+                      <td class="text-end text-nowrap fw-semibold pegawai-detail-amount {{ isset($detailRealisasi[$row->id]) ? 'text-success' : 'text-muted' }}">
+                        {{ isset($detailRealisasi[$row->id]) ? 'Rp ' . number_format($detailRealisasi[$row->id], 0, ',', '.') : '-' }}
+                      </td>
                     </tr>
                   @empty
                     <tr>
-                      <td colspan="6" class="text-center text-muted p-4">Belum ada data detail pengajuan.</td>
+                      <td colspan="7" class="text-center text-muted p-4">Belum ada pengajuan untuk produk dan periode yang dipilih.</td>
                     </tr>
                   @endforelse
                 </tbody>
