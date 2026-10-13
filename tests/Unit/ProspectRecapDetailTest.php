@@ -347,7 +347,9 @@ test('missing Dompdf opens a printable letter for either modal instead of throwi
     expect($event['name'])->toBe('print-prospect-validation')
         ->and($event['params']['scope'])->toBe($scope)
         ->and($event['params']['filename'])->toEndWith('.pdf')
-        ->and($event['params']['html'])->toContain('SURAT VALIDASI PENGAJUAN CLOSING', $signer, 'size: A4 landscape')
+        ->and($event['params']['html'])->toContain('SURAT VALIDASI PENGAJUAN CLOSING', $signer, 'size: 297mm 210mm')
+        ->and($event['params']['paper'])->toBe('A4')
+        ->and($event['params']['orientation'])->toBe('landscape')
         ->and($component->getErrorBag()->isEmpty())->toBeTrue();
 })->with([['pegawai', 'Pegawai Pengaju'], ['kc', 'KEPALA KC UTAMA']]);
 
@@ -360,4 +362,28 @@ test('installed Dompdf still downloads the PDF directly', function () {
     expect($response)->toBeInstanceOf(\Symfony\Component\HttpFoundation\StreamedResponse::class)
         ->and($response->headers->get('Content-Type'))->toBe('application/pdf')
         ->and(\Livewire\store($component)->get('dispatched', []))->toBe([]);
+});
+
+test('PDF page dimensions match the selected paper and orientation', function (string $paper, string $orientation, int $width, int $height) {
+    seedValidationLetter();
+    $component = recapDetailComponent();
+    $component->detailPegawaiId = 10;
+    $component->printPaper = $paper;
+    $component->printOrientation = $orientation;
+    $data = $component->letterData('pegawai');
+    expect($data['page'])->toBe(['paper' => $paper, 'orientation' => $orientation, 'widthMm' => $width, 'heightMm' => $height]);
+    $pdf = app(ProspectValidationReport::class)->pdf($data);
+    preg_match('/\/MediaBox\s*\[\s*0(?:\.0+)?\s+0(?:\.0+)?\s+([\d.]+)\s+([\d.]+)\s*\]/', $pdf, $size);
+    expect($size)->toHaveCount(3)
+        ->and(abs((float) $size[1] - $width * 72 / 25.4))->toBeLessThan(0.01)
+        ->and(abs((float) $size[2] - $height * 72 / 25.4))->toBeLessThan(0.01);
+})->with([
+    ['A4', 'portrait', 210, 297], ['A4', 'landscape', 297, 210],
+    ['F4', 'portrait', 210, 330], ['F4', 'landscape', 330, 210],
+]);
+
+test('invalid print settings use safe defaults', function () {
+    expect(app(ProspectValidationReport::class)->pageSettings('invalid', 'invalid'))->toBe([
+        'paper' => 'A4', 'orientation' => 'landscape', 'widthMm' => 297, 'heightMm' => 210,
+    ]);
 });

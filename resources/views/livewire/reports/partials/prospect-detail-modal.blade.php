@@ -102,7 +102,19 @@
         <div class="small text-muted">PDF memuat pengajuan Closing sesuai produk dan periode.
           @error('validationPdf')<div class="text-danger mt-1" role="alert">{{ $message }}</div>@enderror
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap align-items-end gap-2">
+          <div>
+            <label for="{{ $modalId }}-paper" class="form-label small mb-1">Kertas</label>
+            <select id="{{ $modalId }}-paper" class="form-select form-select-sm" wire:model="printPaper">
+              <option value="A4">A4 (210 × 297 mm)</option><option value="F4">F4 (210 × 330 mm)</option>
+            </select>
+          </div>
+          <div>
+            <label for="{{ $modalId }}-orientation" class="form-label small mb-1">Orientasi</label>
+            <select id="{{ $modalId }}-orientation" class="form-select form-select-sm" wire:model="printOrientation">
+              <option value="portrait">Vertikal</option><option value="landscape">Horizontal</option>
+            </select>
+          </div>
           <button type="button" class="btn btn-primary rounded-pill px-3" wire:click="exportValidationPdf('{{ $scope }}')" wire:loading.attr="disabled" wire:target="exportValidationPdf">
             <span wire:loading.remove wire:target="exportValidationPdf"><i class="bi bi-file-earmark-pdf me-1"></i>Cetak PDF</span><span wire:loading wire:target="exportValidationPdf">Menyiapkan PDF...</span>
           </button>

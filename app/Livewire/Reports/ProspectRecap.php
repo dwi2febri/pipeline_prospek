@@ -38,6 +38,8 @@ class ProspectRecap extends Component
     public string $sortDirectionPengaju = 'asc';
 
     public bool $lockCabangFilter = false;
+    public string $printPaper = 'A4';
+    public string $printOrientation = 'landscape';
 
     public ?int $detailPegawaiId = null;
     public string $detailProductTab = 'all';
@@ -1012,6 +1014,7 @@ class ProspectRecap extends Component
             'summary' => app(ProspectValidationReport::class)->summarize($items, $nominatif),
             'productLabel' => match ($product) { 'kredit' => 'Kredit', 'dana' => 'Dana (Deposito / Tabungan)', default => 'Semua produk' },
             'printedAt' => now('Asia/Jakarta')->locale('id'),
+            'page' => app(ProspectValidationReport::class)->pageSettings($this->printPaper, $this->printOrientation),
         ];
     }
 
@@ -1034,6 +1037,8 @@ class ProspectRecap extends Component
                 html: view('reports.prospect-validation-pdf', $data)->render(),
                 filename: $filename,
                 scope: $scope,
+                paper: $data['page']['paper'],
+                orientation: $data['page']['orientation'],
             );
             return;
         }

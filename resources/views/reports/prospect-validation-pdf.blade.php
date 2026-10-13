@@ -1,11 +1,13 @@
+@php($page = $page ?? app(\App\Services\ProspectValidationReport::class)->pageSettings())
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="utf-8">
   <title>Surat Validasi Pengajuan Closing</title>
   <style>
-    @page { size: A4 landscape; margin: 30px 38px 45px; }
-    body { font-family: "DejaVu Sans", sans-serif; font-size: 9px; color: #182538; line-height: 1.45; }
+    @page { size: {{ $page['widthMm'] }}mm {{ $page['heightMm'] }}mm; margin: 10mm; }
+    body { margin: 0; font-family: "DejaVu Sans", sans-serif; font-size: 9px; color: #182538; line-height: 1.45; }
+    .validation-sheet { margin: 0; padding: 0; }
     .letterhead { border-bottom: 2px solid #234a7c; padding-bottom: 10px; margin-bottom: 15px; }
     .brand { font-size: 16px; font-weight: bold; color: #234a7c; }
     .muted { color: #627085; }
@@ -30,9 +32,15 @@
     .signature-space { height: 62px; }
     .signer-name { font-weight: bold; text-decoration: underline; }
     @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+    @media screen {
+      html { background: #e9eef5; }
+      body { padding: 20px 16px; min-width: {{ $page['widthMm'] }}mm; }
+      .validation-sheet { box-sizing: border-box; width: {{ $page['widthMm'] }}mm; min-height: {{ $page['heightMm'] }}mm; padding: 10mm; margin: 0 auto; background: white; box-shadow: 0 5px 24px #18253818; }
+    }
   </style>
 </head>
 <body>
+<main class="validation-sheet">
   <div class="letterhead">
     <div class="brand">BANK BKK JATENG</div>
     <div>E-Prospek &nbsp; | &nbsp; {{ $branch ? $branch->kode_cabang.' - '.$branch->nama_cabang : 'Rekap Pengajuan Pegawai' }}</div>
@@ -51,7 +59,7 @@
   </tr></table>
   <table class="records">
     <thead><tr>
-      <th style="width:3%;">No</th><th style="width:9%;">Tanggal Prospek</th><th style="width:19%;">Nama Nasabah</th><th style="width:13%;">No. Rekening</th><th style="width:8%;">Produk</th><th style="width:10%;">Jenis Usaha</th><th style="width:7%;">Status</th><th class="right" style="width:13%;">Realisasi</th><th style="width:18%;">Keterangan</th>
+      <th style="width:4%;">No</th><th style="width:9%;">Tanggal Prospek</th><th style="width:16%;">Nama Nasabah</th><th style="width:13%;">No. Rekening</th><th style="width:8%;">Produk</th><th style="width:13%;">Jenis Usaha</th><th style="width:7%;">Status</th><th class="right" style="width:14%;">Realisasi</th><th style="width:16%;">Keterangan</th>
     </tr></thead>
     <tbody>
       @foreach($items as $row)
@@ -74,5 +82,6 @@
     <div class="signer-name">{{ $signer ? ($signer->nama_lengkap ?: $signer->name) : '(........................................)' }}</div>
     @if($signer)<div>ID Pegawai: {{ $signer->name }}</div>@else<div class="note">Nama Kepala Cabang belum dapat ditentukan dari data pegawai aktif.</div>@endif
   </div>
+</main>
 </body>
 </html>

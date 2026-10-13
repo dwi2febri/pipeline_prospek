@@ -20,7 +20,10 @@ function browser() {
     };
     if (tag === 'iframe') {
       el.contentWindow = { focus() {}, print() { prints++; } };
-      el.contentDocument = { fonts: { ready: Promise.resolve() } };
+      el.contentDocument = {
+        fonts: { ready: Promise.resolve() }, head: element('head'),
+        getElementById(id) { return this.head.children.find(child => child.id === id); },
+      };
     }
     elements.push(el);
     return el;
@@ -36,7 +39,7 @@ function browser() {
   const run = () => vm.runInContext(source, context);
   run();
   return { events, elements, modal, run, prints: () => prints,
-    open: () => events['print-prospect-validation']({ detail: { html: '<html><body>Validasi</body></html>', filename: 'validasi-kc.pdf', scope: 'kc' } }),
+    open: (settings = {}) => events['print-prospect-validation']({ detail: { html: '<html><body>Validasi</body></html>', filename: 'validasi-kc.pdf', scope: 'kc', ...settings } }),
   };
 }
 
@@ -46,6 +49,7 @@ test('preview prints only its ready letter frame and preserves the filename', as
   const frame = b.elements.find(el => el.tag === 'iframe');
   const print = b.elements.find(el => el.textContent === 'Cetak / Simpan PDF');
   assert.equal(dialog.open, true);
+  assert.match(dialog.style.cssText, /position:fixed;inset:0;margin:auto/);
   assert.equal(b.modal.children[0], dialog);
   assert.equal(frame.attributes.sandbox, 'allow-same-origin allow-modals');
   print.events.click();
@@ -75,4 +79,21 @@ test('reloading the script does not register duplicate handlers', () => {
   assert.equal(b.events['print-prospect-validation'], original);
   b.events['print-prospect-validation']({ detail: {} });
   assert.equal(b.elements.some(el => el.tag === 'dialog'), false);
+});
+
+test('preview switches paper dimensions without changing letter data', async () => {
+  const b = browser(); b.open({ paper: 'F4', orientation: 'portrait' });
+  const frame = b.elements.find(el => el.tag === 'iframe');
+  const paper = b.elements.find(el => el.attributes['aria-label'] === 'Kertas');
+  const orientation = b.elements.find(el => el.attributes['aria-label'] === 'Orientasi');
+  await frame.events.load();
+  const style = frame.contentDocument.head.children[0];
+  assert.match(style.textContent, /size: 210mm 330mm/);
+  for (const [p, o, expected] of [['A4', 'portrait', '210mm 297mm'], ['A4', 'landscape', '297mm 210mm'], ['F4', 'landscape', '330mm 210mm']]) {
+    paper.value = p; orientation.value = o;
+    paper.events.change(); orientation.events.change();
+    assert.ok(style.textContent.includes(`size: ${expected}`));
+  }
+  assert.equal(frame.contentDocument.head.children.length, 1);
+  assert.equal(frame.srcdoc, '<html><body>Validasi</body></html>');
 });

@@ -50,19 +50,37 @@ class ProspectValidationReport
         return class_exists(Dompdf::class) && class_exists(Options::class);
     }
 
+    public function pageSettings(string $paper = 'A4', string $orientation = 'landscape'): array
+    {
+        $paper = in_array($paper, ['A4', 'F4'], true) ? $paper : 'A4';
+        $orientation = in_array($orientation, ['portrait', 'landscape'], true) ? $orientation : 'landscape';
+        $width = 210;
+        $height = $paper === 'F4' ? 330 : 297;
+        if ($orientation === 'landscape') {
+            [$width, $height] = [$height, $width];
+        }
+
+        return ['paper' => $paper, 'orientation' => $orientation, 'widthMm' => $width, 'heightMm' => $height];
+    }
+
     public function pdf(array $data): string
     {
+        $page = $this->pageSettings($data['page']['paper'] ?? 'A4', $data['page']['orientation'] ?? 'landscape');
+        $data['page'] = $page;
         $options = new Options;
         $options->set('isRemoteEnabled', false);
         $options->set('isPhpEnabled', false);
         $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('defaultMediaType', 'print');
         $options->set('tempDir', storage_path('framework/cache'));
         $dompdf = new Dompdf($options);
-        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->setPaper([0, 0, $page['widthMm'] * 72 / 25.4, $page['heightMm'] * 72 / 25.4]);
         $dompdf->loadHtml(view('reports.prospect-validation-pdf', $data)->render(), 'UTF-8');
         $dompdf->render();
-        $dompdf->getCanvas()->page_text(38, 566, 'E-Prospek | Surat Validasi Pengajuan Closing', null, 8, [0.4, 0.45, 0.5]);
-        $dompdf->getCanvas()->page_text(708, 566, 'Halaman {PAGE_NUM} / {PAGE_COUNT}', null, 8, [0.4, 0.45, 0.5]);
+        $canvas = $dompdf->getCanvas();
+        $footerY = $canvas->get_height() - 22;
+        $canvas->page_text(28.35, $footerY, 'E-Prospek | Surat Validasi Pengajuan Closing', null, 7, [0.4, 0.45, 0.5]);
+        $canvas->page_text($canvas->get_width() - 125, $footerY, 'Halaman {PAGE_NUM} / {PAGE_COUNT}', null, 7, [0.4, 0.45, 0.5]);
 
         return $dompdf->output();
     }
