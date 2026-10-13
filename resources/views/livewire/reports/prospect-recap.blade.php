@@ -118,29 +118,49 @@
     .pegawai-product-tab:disabled{cursor:wait;opacity:.75;}
     .pegawai-detail-amount{font-variant-numeric:tabular-nums;}
 
-    #modalDetailPegawai .modal-content{font-size:12px;line-height:1.4;}
-    #modalDetailPegawai .modal-title{font-size:15px;}
-    #modalDetailPegawai .modal-header,
-    #modalDetailPegawai .modal-body{padding:12px 16px;}
-    #modalDetailPegawai .modal-footer{padding:8px 16px;}
-    #modalDetailPegawai .small{font-size:11px;}
-    #modalDetailPegawai .form-label,
-    #modalDetailPegawai .form-select,
-    #modalDetailPegawai .form-control,
-    #modalDetailPegawai .btn{font-size:12px;}
-    #modalDetailPegawai .form-select,
-    #modalDetailPegawai .form-control{min-height:32px;padding-top:5px;padding-bottom:5px;}
-    #modalDetailPegawai .pegawai-product-tabs{padding:4px;gap:4px;border-radius:12px;}
-    #modalDetailPegawai .pegawai-product-tab{font-size:12px;padding:7px 12px;gap:7px;border-radius:9px;}
-    #modalDetailPegawai .pegawai-product-tab > i{font-size:14px;}
-    #modalDetailPegawai .pegawai-product-tab small{font-size:10px;}
-    #modalDetailPegawai .recap-table table{font-size:11px;}
-    #modalDetailPegawai .recap-table th,
-    #modalDetailPegawai .recap-table td{padding:7px 8px;line-height:1.4;}
-    #modalDetailPegawai .pegawai-detail-note{min-width:200px;max-width:260px;white-space:normal;}
-    #modalDetailPegawai .alert{padding:8px 12px;margin-bottom:12px;}
+    .recap-detail-modal .modal-content{font-size:12px;line-height:1.4;}
+    .recap-detail-modal .modal-title{font-size:15px;}
+    .recap-detail-modal .modal-header,
+    .recap-detail-modal .modal-body{padding:12px 16px;}
+    .recap-detail-modal .modal-footer{padding:8px 16px;}
+    .recap-detail-modal .small{font-size:11px;}
+    .recap-detail-modal .form-label,
+    .recap-detail-modal .form-select,
+    .recap-detail-modal .form-control,
+    .recap-detail-modal .btn{font-size:12px;}
+    .recap-detail-modal .form-select,
+    .recap-detail-modal .form-control{min-height:32px;padding-top:5px;padding-bottom:5px;}
+    .recap-detail-modal .pegawai-product-tabs{padding:4px;gap:4px;border-radius:12px;}
+    .recap-detail-modal .pegawai-product-tab{font-size:12px;padding:7px 12px;gap:7px;border-radius:9px;}
+    .recap-detail-modal .pegawai-product-tab > i{font-size:14px;}
+    .recap-detail-modal .pegawai-product-tab small{font-size:10px;}
+    .recap-detail-modal .recap-table table{font-size:11px;}
+    .recap-detail-modal .recap-table th,
+    .recap-detail-modal .recap-table td{padding:7px 8px;line-height:1.4;}
+    .recap-detail-modal .pegawai-detail-note{min-width:200px;max-width:260px;white-space:normal;}
+    .recap-detail-modal .alert{padding:8px 12px;margin-bottom:12px;}
+    .recap-detail-modal .modal-body{background:#fbfcfe;}
+    .recap-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+    .recap-summary-card{padding:15px 17px;border:1px solid #e1e8f0;border-radius:15px;background:#fff;box-shadow:0 3px 12px rgba(24,45,78,.035);}
+    .recap-summary-all{background:linear-gradient(120deg,#eff5ff,#fff);border-color:#cfddfa;--summary-accent:#245cce;}
+    .recap-summary-kredit{background:linear-gradient(120deg,#f0f4ff,#fff);--summary-accent:#6552c5;}
+    .recap-summary-dana{background:linear-gradient(120deg,#edf9f5,#fff);border-color:#d4ebe2;--summary-accent:#087f63;}
+    .recap-summary-label{font-size:12px;font-weight:700;color:var(--summary-accent);}
+    .recap-summary-caption{font-size:10px;color:#778397;margin-top:2px;}
+    .recap-summary-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#fff;color:var(--summary-accent);box-shadow:0 2px 7px #1e293b08;font-size:15px;}
+    .recap-summary-value{font-size:19px;font-weight:750;letter-spacing:-.4px;color:#20324f;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+    .recap-summary-bottom{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:10px;color:#778397;}
+    .recap-noa{padding:3px 8px;border-radius:6px;background:#fff;color:var(--summary-accent);font-size:11px;font-weight:700;}
+    .recap-detail-filters{padding:12px;border:1px solid #e5eaf1;border-radius:13px;background:#fff;}
+    .recap-status{display:inline-block;padding:3px 7px;border-radius:6px;font-size:9px;font-weight:650;white-space:nowrap;background:#edf1f5;color:#536274;}
+    .recap-status-follow-up{background:#fff4d9;color:#93650e;}
+    .recap-status-closing{background:#e6f6ee;color:#08734d;}
+    .recap-status-rejected{background:#ffebee;color:#af364b;}
 
     @media(max-width:575.98px){
+      .recap-summary-grid{grid-template-columns:1fr;gap:8px;}
+      .recap-summary-card{padding:11px 13px;}
+      .recap-summary-value{font-size:17px;}
       .pegawai-product-tabs{width:100%;gap:4px;}
       .pegawai-product-tab{flex:1;justify-content:center;padding:10px 6px;gap:6px;font-size:.85rem;}
       .pegawai-product-tab small{font-size:.65rem;}
@@ -703,252 +723,22 @@
   @endif
 
   @if($detailPegawai)
-    <div class="modal fade" id="modalDetailPegawai" tabindex="-1" aria-hidden="true" wire:ignore.self>
-      <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down" style="max-width: 1500px; width: 96vw;">
-        <div class="modal-content border-0" style="border-radius:20px;overflow:hidden;">
-          <div class="modal-header">
-            <div>
-              <h5 class="modal-title fw-bold mb-0">Detail Pengajuan Pegawai</h5>
-              <div class="text-muted small">
-                {{ $detailPegawai->name ?? '-' }}
-                @if(!empty($detailPegawai->nama_lengkap))
-                  • {{ $detailPegawai->nama_lengkap }}
-                @endif
-              </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-
-          <div class="modal-body">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-              <div class="pegawai-product-tabs" role="group" aria-label="Filter produk pengajuan pegawai">
-                <button type="button" class="pegawai-product-tab {{ $detailProductTab === 'all' ? 'is-active' : '' }}"
-                        aria-pressed="{{ $detailProductTab === 'all' ? 'true' : 'false' }}"
-                        wire:click="setDetailProductTab('all')" wire:loading.attr="disabled" wire:target="setDetailProductTab">
-                  <i class="bi bi-grid-1x2" aria-hidden="true"></i><span>All<small>Semua produk</small></span>
-                </button>
-                <button type="button" class="pegawai-product-tab {{ $detailProductTab === 'kredit' ? 'is-active' : '' }}"
-                        aria-pressed="{{ $detailProductTab === 'kredit' ? 'true' : 'false' }}"
-                        wire:click="setDetailProductTab('kredit')" wire:loading.attr="disabled" wire:target="setDetailProductTab">
-                  <i class="bi bi-bank" aria-hidden="true"></i><span>Kredit<small>Pengajuan kredit</small></span>
-                </button>
-                <button type="button" class="pegawai-product-tab {{ $detailProductTab === 'dana' ? 'is-active' : '' }}"
-                        aria-pressed="{{ $detailProductTab === 'dana' ? 'true' : 'false' }}"
-                        wire:click="setDetailProductTab('dana')" wire:loading.attr="disabled" wire:target="setDetailProductTab">
-                  <i class="bi bi-wallet2" aria-hidden="true"></i><span>Dana<small>Deposito / Tabungan</small></span>
-                </button>
-              </div>
-              <div class="text-muted small" aria-live="polite">
-                <span wire:loading.remove wire:target="setDetailProductTab"><strong class="text-dark">{{ number_format($detailItems->count(), 0, ',', '.') }}</strong> pengajuan</span>
-                <span wire:loading wire:target="setDetailProductTab">Memuat pengajuan...</span>
-              </div>
-            </div>
-            <div class="card-soft p-3 mb-3"
-                 data-mobile-filter-panel
-                 data-mobile-filter-key="prospect-recap-detail-pegawai">
-              <div class="row g-2 align-items-end">
-                <div class="col-12 col-md-3">
-                  <label class="form-label fw-semibold mb-1">Mode Tanggal</label>
-                  <select class="form-select" wire:model.live="detailFilterMode">
-                    <option value="all">Semua</option>
-                    <option value="monthly">Bulanan</option>
-                    <option value="range">Range Tanggal</option>
-                  </select>
-                </div>
-
-                @if($detailFilterMode === 'monthly')
-                  <div class="col-6 col-md-3">
-                    <label class="form-label fw-semibold mb-1">Bulan</label>
-                    <select class="form-select" wire:model.live="detailFilterBulan">
-                      @foreach($bulanOptions as $b)
-                        <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
-                      @endforeach
-                    </select>
-                  </div>
-
-                  <div class="col-6 col-md-3">
-                    <label class="form-label fw-semibold mb-1">Tahun</label>
-                    <select class="form-select" wire:model.live="detailFilterTahun">
-                      @foreach($tahunOptions as $t)
-                        <option value="{{ $t }}">{{ $t }}</option>
-                      @endforeach
-                    </select>
-                  </div>
-                @elseif($detailFilterMode === 'range')
-                  <div class="col-6 col-md-3">
-                    <label class="form-label fw-semibold mb-1">Tanggal Awal</label>
-                    <input type="date" class="form-control" wire:model.live="detailFilterTanggalAwal">
-                  </div>
-
-                  <div class="col-6 col-md-3">
-                    <label class="form-label fw-semibold mb-1">Tanggal Akhir</label>
-                    <input type="date" class="form-control" wire:model.live="detailFilterTanggalAkhir">
-                  </div>
-                @endif
-              </div>
-            </div>
-
-            @if($detailRealisasiUnavailable)
-              <div class="alert alert-warning small" role="status">Sebagian nama dan nominal realisasi belum dapat dimuat dari nominatif. Silakan coba kembali.</div>
-            @endif
-            @if($detailUnmatchedCount > 0)
-              <div class="alert alert-warning small" role="status">
-                <strong>{{ number_format($detailUnmatchedCount, 0, ',', '.') }} pengajuan</strong> memiliki nomor rekening e-Prospek yang tidak ditemukan di nominatif produk terkait. Periksa kolom No. Rekening dan Keterangan.
-              </div>
-            @endif
-            <div class="text-muted small mb-2">Nama prospek dan nominal realisasi bersumber dari nominatif sesuai produk dan nomor rekening. Nominal ditampilkan untuk status Closing; data yang belum tersedia ditandai "-".</div>
-            <div class="table-responsive recap-table" wire:loading.class="opacity-50" wire:target="setDetailProductTab">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th style="width:40px;">No</th>
-                    <th style="min-width:90px;">Tanggal</th>
-                    <th style="min-width:170px;">Nama Prospek</th>
-                    <th style="min-width:125px;">No. Rekening</th>
-                    <th style="min-width:85px;">Produk</th>
-                    <th style="min-width:100px;">Jenis Usaha</th>
-                    <th style="min-width:95px;">Status</th>
-                    <th class="text-end" style="min-width:130px;">Realisasi</th>
-                    <th class="pegawai-detail-note">Keterangan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @forelse($detailItems as $i => $row)
-                    @php($nominatif = $detailNominatif[$row->id])
-                    <tr wire:key="detail-pegawai-prospect-{{ $row->id }}">
-                      <td>{{ $i + 1 }}</td>
-                      <td>{{ \Carbon\Carbon::parse($row->tanggal_prospek)->format('d/m/Y') }}</td>
-                      <td>{{ $nominatif['nama'] ?: '-' }}</td>
-                      <td class="text-nowrap">{{ $row->no_rekening ?: '-' }}</td>
-                      <td>{{ $row->jenis_produk ?: '-' }}</td>
-                      <td>{{ $row->jenis_usaha ?: '-' }}</td>
-                      <td>{{ $row->status ?: '-' }}</td>
-                      <td class="text-end text-nowrap fw-semibold pegawai-detail-amount {{ $nominatif['nominal'] !== null ? 'text-success' : 'text-muted' }}">
-                        {{ $nominatif['nominal'] !== null ? 'Rp ' . number_format($nominatif['nominal'], 0, ',', '.') : '-' }}
-                      </td>
-                      <td class="pegawai-detail-note {{ $nominatif['status'] === 'unmatched' ? 'text-danger' : 'text-muted' }}">{{ $nominatif['keterangan'] }}</td>
-                    </tr>
-                  @empty
-                    <tr>
-                      <td colspan="9" class="text-center text-muted p-4">Belum ada pengajuan untuk produk dan periode yang dipilih.</td>
-                    </tr>
-                  @endforelse
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    @include('livewire.reports.partials.prospect-detail-modal', [
+      'scope' => 'pegawai',
+      'subjectLine' => $detailPegawai->name.' - '.($detailPegawai->nama_lengkap ?? ''),
+      'rows' => $detailItems, 'nominatif' => $detailNominatif,
+      'summary' => $detailSummary, 'unavailable' => $detailRealisasiUnavailable,
+      'unmatchedCount' => $detailUnmatchedCount,
+    ])
   @endif
-
   @if($detailKcCabang)
-    <div class="modal fade" id="modalDetailKc" tabindex="-1" aria-hidden="true" wire:ignore.self>
-      <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
-        <div class="modal-content border-0" style="border-radius:20px;overflow:hidden;">
-          <div class="modal-header">
-            <div>
-              <h5 class="modal-title fw-bold mb-0">Detail Calon Nasabah Per KC</h5>
-              <div class="text-muted small">
-                {{ $detailKcCabang->kode_cabang ?? '-' }} - {{ $detailKcCabang->nama_cabang ?? '-' }}
-                • {{ $detailKcStatusLabel }}
-              </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-
-          <div class="modal-body">
-            <div class="card-soft p-3 mb-3"
-                 data-mobile-filter-panel
-                 data-mobile-filter-key="prospect-recap-detail-kc">
-              <div class="row g-2 align-items-end">
-                <div class="col-12 col-md-3">
-                  <label class="form-label fw-semibold mb-1">Mode Tanggal</label>
-                  <select class="form-select" wire:model.live="detailKcFilterMode">
-                    <option value="all">Semua</option>
-                    <option value="monthly">Bulanan</option>
-                    <option value="range">Range Tanggal</option>
-                  </select>
-                </div>
-
-                @if($detailKcFilterMode === 'monthly')
-                  <div class="col-6 col-md-3">
-                    <label class="form-label fw-semibold mb-1">Bulan</label>
-                    <select class="form-select" wire:model.live="detailKcFilterBulan">
-                      @foreach($bulanOptions as $b)
-                        <option value="{{ $b['id'] }}">{{ $b['label'] }}</option>
-                      @endforeach
-                    </select>
-                  </div>
-
-                  <div class="col-6 col-md-3">
-                    <label class="form-label fw-semibold mb-1">Tahun</label>
-                    <select class="form-select" wire:model.live="detailKcFilterTahun">
-                      @foreach($tahunOptions as $t)
-                        <option value="{{ $t }}">{{ $t }}</option>
-                      @endforeach
-                    </select>
-                  </div>
-                @elseif($detailKcFilterMode === 'range')
-                  <div class="col-6 col-md-3">
-                    <label class="form-label fw-semibold mb-1">Tanggal Awal</label>
-                    <input type="date" class="form-control" wire:model.live="detailKcFilterTanggalAwal">
-                  </div>
-
-                  <div class="col-6 col-md-3">
-                    <label class="form-label fw-semibold mb-1">Tanggal Akhir</label>
-                    <input type="date" class="form-control" wire:model.live="detailKcFilterTanggalAkhir">
-                  </div>
-                @endif
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th style="width:70px;">No</th>
-                    <th style="min-width:140px;">Tanggal</th>
-                    <th style="min-width:220px;">Nama Calon Nasabah</th>
-                    <th style="min-width:150px;">No HP</th>
-                    <th style="min-width:260px;">Alamat</th>
-                    <th style="min-width:140px;">Produk</th>
-                    <th style="min-width:160px;">Jenis Usaha</th>
-                    <th style="min-width:120px;">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @forelse($detailKcItems as $i => $row)
-                    <tr>
-                      <td>{{ $i + 1 }}</td>
-                      <td>{{ \Carbon\Carbon::parse($row->tanggal_prospek)->format('d/m/Y') }}</td>
-                      <td>{{ $row->nama ?: '-' }}</td>
-                      <td>{{ $row->no_hp ?: '-' }}</td>
-                      <td>{{ $row->alamat ?: '-' }}</td>
-                      <td>{{ $row->jenis_produk ?: '-' }}</td>
-                      <td>{{ $row->jenis_usaha ?: '-' }}</td>
-                      <td>{{ $row->status ?: '-' }}</td>
-                    </tr>
-                  @empty
-                    <tr>
-                      <td colspan="8" class="text-center text-muted p-4">Belum ada data calon nasabah untuk filter ini.</td>
-                    </tr>
-                  @endforelse
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    @include('livewire.reports.partials.prospect-detail-modal', [
+      'scope' => 'kc',
+      'subjectLine' => $detailKcCabang->kode_cabang.' - '.$detailKcCabang->nama_cabang,
+      'rows' => $detailKcItems, 'nominatif' => $detailKcDisplay['nominatif'],
+      'summary' => $detailKcDisplay['summary'], 'unavailable' => $detailKcDisplay['unavailable'],
+      'unmatchedCount' => $detailKcDisplay['unmatchedCount'],
+    ])
   @endif
 </div>
 

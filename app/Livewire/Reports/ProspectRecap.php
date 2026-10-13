@@ -5,6 +5,7 @@ namespace App\Livewire\Reports;
 use App\Models\Cabang;
 use App\Models\Prospect;
 use App\Models\User;
+use App\Services\ProspectValidationReport;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +41,7 @@ class ProspectRecap extends Component
 
     public ?int $detailPegawaiId = null;
     public string $detailProductTab = 'all';
+    public string $detailStatus = 'ALL';
     public string $detailFilterMode = 'all';
     public string $detailFilterBulan = '';
     public string $detailFilterTahun = '';
@@ -48,6 +50,7 @@ class ProspectRecap extends Component
 
     public ?int $detailKcCabangId = null;
     public string $detailKcStatus = 'ALL';
+    public string $detailKcProductTab = 'all';
     public string $detailKcFilterMode = 'all';
     public string $detailKcFilterBulan = '';
     public string $detailKcFilterTahun = '';
@@ -765,8 +768,10 @@ class ProspectRecap extends Component
 
     public function openDetailPegawai(int $userId): void
     {
+        $this->resetErrorBag('validationPdf');
         $this->detailPegawaiId = $userId;
         $this->detailProductTab = 'all';
+        $this->detailStatus = 'ALL';
         $this->detailFilterMode = $this->filterMode;
         $this->detailFilterBulan = $this->filterBulan;
         $this->detailFilterTahun = $this->filterTahun;
@@ -785,6 +790,31 @@ class ProspectRecap extends Component
         $this->dispatch('open-detail-pegawai-modal');
     }
 
+    public function setDetailKcProductTab(string $tab): void
+    {
+        if (in_array($tab, ['all', 'kredit', 'dana'], true)) {
+            $this->detailKcProductTab = $tab;
+            $this->dispatch('open-detail-kc-modal');
+        }
+    }
+
+    public function updatedDetailStatus(): void
+    {
+        $this->detailStatus = $this->validatedDetailStatus($this->detailStatus);
+        $this->dispatch('open-detail-pegawai-modal');
+    }
+
+    public function updatedDetailKcStatus(): void
+    {
+        $this->detailKcStatus = $this->validatedDetailStatus($this->detailKcStatus);
+        $this->dispatch('open-detail-kc-modal');
+    }
+
+    protected function validatedDetailStatus(string $status): string
+    {
+        return in_array($status, ['ALL', 'OPEN', 'FOLLOW UP', 'CLOSING', 'REJECTED'], true) ? $status : 'ALL';
+    }
+
     #[\Livewire\Attributes\On('closeDetailPegawaiModal')]
     public function closeDetailPegawaiModal(): void
     {
@@ -793,8 +823,10 @@ class ProspectRecap extends Component
 
     public function openDetailKc(int $cabangId, string $status = 'ALL'): void
     {
+        $this->resetErrorBag('validationPdf');
         $this->detailKcCabangId = $cabangId;
-        $this->detailKcStatus = strtoupper(trim($status)) ?: 'ALL';
+        $this->detailKcProductTab = 'all';
+        $this->detailKcStatus = $this->validatedDetailStatus(strtoupper(trim($status)));
         $this->detailKcFilterMode = $this->filterMode;
         $this->detailKcFilterBulan = $this->filterBulan;
         $this->detailKcFilterTahun = $this->filterTahun;
@@ -810,7 +842,7 @@ class ProspectRecap extends Component
         $this->detailKcStatus = 'ALL';
     }
 
-    protected function getDetailKcQuery()
+    protected function getDetailKcQuery(bool $applyDisplayFilters = true)
     {
         if (!$this->detailKcCabangId) {
             return Prospect::query()->whereRaw('1=0');
@@ -831,8 +863,11 @@ class ProspectRecap extends Component
             $this->detailKcFilterTanggalAkhir
         );
 
-        if ($this->detailKcStatus !== 'ALL') {
+        if ($applyDisplayFilters && $this->detailKcStatus !== 'ALL') {
             $query->where('status', $this->detailKcStatus);
+        }
+        if ($applyDisplayFilters) {
+            $this->applyDetailProductFilter($query, $this->detailKcProductTab);
         }
 
         return $query
@@ -844,6 +879,7 @@ class ProspectRecap extends Component
                 'nama',
                 'no_hp',
                 'alamat',
+                'no_rekening',
                 'jenis_produk',
                 'jenis_usaha',
                 'status',
@@ -861,7 +897,7 @@ class ProspectRecap extends Component
         };
     }
 
-    protected function getDetailPegawaiQuery()
+    protected function getDetailPegawaiQuery(bool $applyDisplayFilters = true)
     {
         if (!$this->detailPegawaiId) {
             return Prospect::query()->whereRaw('1=0');
@@ -873,10 +909,11 @@ class ProspectRecap extends Component
             ->where('input_by', $this->detailPegawaiId)
             ->whereNull('deleted_at');
 
-        if ($this->detailProductTab === 'kredit') {
-            $query->where('jenis_produk', 'KREDIT');
-        } elseif ($this->detailProductTab === 'dana') {
-            $query->whereIn('jenis_produk', ['DEPOSITO', 'TABUNGAN']);
+        if ($applyDisplayFilters) {
+            $this->applyDetailProductFilter($query, $this->detailProductTab);
+            if ($this->detailStatus !== 'ALL') {
+                $query->where('status', $this->detailStatus);
+            }
         }
 
         $this->applyProspectDateWhereFilter(
@@ -900,6 +937,100 @@ class ProspectRecap extends Component
                 'status',
                 'no_rekening',
             ]);
+    }
+
+    protected function applyDetailProductFilter($query, string $tab): void
+    {
+        if ($tab === 'kredit') {
+            $query->where('jenis_produk', 'KREDIT');
+        } elseif ($tab === 'dana') {
+            $query->whereIn('jenis_produk', ['DEPOSITO', 'TABUNGAN']);
+        }
+    }
+
+    protected function buildDetailDisplay(Collection $items, string $status, string $tab): array
+    {
+        if ($status !== 'ALL') {
+            $items = $items->where('status', $status)->values();
+        }
+        [$nominatif, $unavailable] = $this->getDetailNominatif($items);
+        $summary = app(ProspectValidationReport::class)->summarize($items, $nominatif);
+        $items = $items->filter(fn ($row) => match ($tab) {
+            'kredit' => $row->jenis_produk === 'KREDIT',
+            'dana' => in_array($row->jenis_produk, ['DEPOSITO', 'TABUNGAN'], true),
+            default => true,
+        })->values();
+        $nominatif = array_intersect_key($nominatif, array_flip($items->pluck('id')->all()));
+
+        return compact('items', 'nominatif', 'unavailable', 'summary') + [
+            'unmatchedCount' => collect($nominatif)->where('status', 'unmatched')->count(),
+        ];
+    }
+
+    protected function validationSubject(string $scope): User|Cabang
+    {
+        abort_unless(in_array($scope, ['pegawai', 'kc'], true), 404);
+        $role = $this->getRoleUserLogin();
+        abort_unless(in_array($role, ['ADMIN', 'MANAJEMEN', 'MANAJEMEN KANWIL', 'SUPERVISOR'], true), 403);
+        $subject = $scope === 'pegawai'
+            ? User::with('cabang')->findOrFail($this->detailPegawaiId)
+            : Cabang::findOrFail($this->detailKcCabangId);
+        $branch = $scope === 'pegawai' ? $subject->cabang : $subject;
+        if ($role === 'SUPERVISOR') {
+            abort_unless($branch && auth()->user()->cabang_id && (int) $branch->id === (int) auth()->user()->cabang_id, 403);
+        } elseif ($role === 'MANAJEMEN KANWIL') {
+            $code = $this->getUserKanwilKode();
+            abort_unless($branch && in_array($code, ['100', '200', '300', '400'], true), 403);
+            [$start, $end] = $this->getKanwilRange($code);
+            abort_unless($branch->kode_cabang === $code || ((int) $branch->kode_cabang >= $start && (int) $branch->kode_cabang <= $end), 403);
+        }
+
+        return $subject;
+    }
+
+    protected function validationData(string $scope): array
+    {
+        $subject = $this->validationSubject($scope);
+        $isKc = $scope === 'kc';
+        $query = $isKc ? $this->getDetailKcQuery(false) : $this->getDetailPegawaiQuery(false);
+        $product = $isKc ? $this->detailKcProductTab : $this->detailProductTab;
+        $this->applyDetailProductFilter($query, $product);
+        // A validation letter always contains Closing, regardless of the modal status filter.
+        $items = $query->where('status', 'CLOSING')->get();
+        [$nominatif, $unavailable] = $this->getDetailNominatif($items);
+        $branch = $isKc ? $subject : $subject->cabang;
+        $signer = $isKc ? app(ProspectValidationReport::class)->branchHead($subject->id) : $subject;
+        $prefix = $isKc ? 'detailKcFilter' : 'detailFilter';
+        $mode = $this->{$prefix.'Mode'};
+        $period = match ($mode) {
+            'monthly' => Carbon::createFromDate((int) ($this->{$prefix.'Tahun'} ?: now()->year), (int) ($this->{$prefix.'Bulan'} ?: now()->month), 1)->locale('id')->translatedFormat('F Y'),
+            'range' => ($this->{$prefix.'TanggalAwal'} ?: 'Awal').' s.d. '.($this->{$prefix.'TanggalAkhir'} ?: 'Akhir'),
+            default => 'Semua tanggal',
+        };
+
+        return compact('items', 'nominatif', 'unavailable', 'subject', 'branch', 'signer', 'period', 'scope') + [
+            'summary' => app(ProspectValidationReport::class)->summarize($items, $nominatif),
+            'productLabel' => match ($product) { 'kredit' => 'Kredit', 'dana' => 'Dana (Deposito / Tabungan)', default => 'Semua produk' },
+            'printedAt' => now('Asia/Jakarta')->locale('id'),
+        ];
+    }
+
+    public function exportValidationPdf(string $scope)
+    {
+        $this->resetErrorBag('validationPdf');
+        $data = $this->validationData($scope);
+        if ($data['items']->isEmpty()) {
+            $this->addError('validationPdf', 'Tidak ada pengajuan Closing pada produk dan periode yang dipilih.');
+            return;
+        }
+        if ($data['unavailable']) {
+            $this->addError('validationPdf', 'Data nominatif belum dapat dimuat. Coba cetak kembali setelah data tersedia.');
+            return;
+        }
+        $pdf = app(ProspectValidationReport::class)->pdf($data);
+        $filename = 'validasi-pengajuan-'.$scope.'-'.$data['subject']->id.'-'.now('Asia/Jakarta')->format('Ymd').'.pdf';
+
+        return response()->streamDownload(static function () use ($pdf) { echo $pdf; }, $filename, ['Content-Type' => 'application/pdf']);
     }
 
     protected function getDetailNominatif(Collection $items): array
@@ -1235,6 +1366,7 @@ class ProspectRecap extends Component
         $detailItems = collect();
         $detailNominatif = [];
         $detailRealisasiUnavailable = false;
+        $detailSummary = app(ProspectValidationReport::class)->summarize(collect(), []);
 
         if ($this->detailPegawaiId) {
             $detailPegawai = User::query()
@@ -1251,19 +1383,24 @@ class ProspectRecap extends Component
                 ])
                 ->first();
 
-            $detailItems = $this->getDetailPegawaiQuery()->get();
-            [$detailNominatif, $detailRealisasiUnavailable] = $this->getDetailNominatif($detailItems);
+            $display = $this->buildDetailDisplay($this->getDetailPegawaiQuery(false)->get(), $this->detailStatus, $this->detailProductTab);
+            $detailItems = $display['items'];
+            $detailNominatif = $display['nominatif'];
+            $detailRealisasiUnavailable = $display['unavailable'];
+            $detailSummary = $display['summary'];
         }
 
         $detailKcCabang = null;
         $detailKcItems = collect();
+        $detailKcDisplay = $this->buildDetailDisplay(collect(), 'ALL', 'all');
 
         if ($this->detailKcCabangId) {
             $detailKcCabang = Cabang::query()
                 ->where('id', $this->detailKcCabangId)
                 ->first(['id', 'kode_cabang', 'nama_cabang']);
 
-            $detailKcItems = $this->getDetailKcQuery()->get();
+            $detailKcDisplay = $this->buildDetailDisplay($this->getDetailKcQuery(false)->get(), $this->detailKcStatus, $this->detailKcProductTab);
+            $detailKcItems = $detailKcDisplay['items'];
         }
 
         return view('livewire.reports.prospect-recap', [
@@ -1276,6 +1413,8 @@ class ProspectRecap extends Component
             'detailNominatif' => $detailNominatif,
             'detailUnmatchedCount' => collect($detailNominatif)->where('status', 'unmatched')->count(),
             'detailRealisasiUnavailable' => $detailRealisasiUnavailable,
+            'detailSummary' => $detailSummary,
+            'detailKcDisplay' => $detailKcDisplay,
             'detailKcCabang' => $detailKcCabang,
             'detailKcItems' => $detailKcItems,
             'detailKcStatusLabel' => $this->getDetailKcStatusLabel(),
