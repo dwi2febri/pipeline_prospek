@@ -466,18 +466,28 @@
         }
 
         @media (min-width:992px){
-            .eprospek-login-container{max-width:1040px !important}
+            body.eprospek-login-page{overflow:auto;background:#fff !important}
+            .eprospek-login-shell{
+                height:auto;
+                padding:0;
+                overflow:visible;
+            }
+            .eprospek-login-container{max-width:none !important}
             .desktop-login-layout{
                 display:grid;
-                grid-template-columns:minmax(0,1.04fr) minmax(400px,.96fr);
+                grid-template-columns:minmax(0,3fr) minmax(380px,2fr);
                 width:100%;
-                height:min(650px,calc(100dvh - 36px));
-                min-height:0;
+                min-height:100dvh;
+                border:0;
+                border-radius:0;
+                box-shadow:none;
             }
 
             .desktop-login-showcase{
                 position:relative;
-                display:block;
+                display:flex;
+                flex-direction:column;
+                justify-content:center;
                 min-width:0;
                 overflow:hidden;
                 isolation:isolate;
@@ -511,8 +521,10 @@
             .desktop-showcase-content{
                 position:relative;
                 z-index:3;
-                width:58%;
-                padding:54px 0 0 50px;
+                box-sizing:border-box;
+                width:78%;
+                max-width:620px;
+                padding:80px 0 100px clamp(40px,6vw,110px);
             }
 
             .desktop-showcase-badge{
@@ -531,7 +543,7 @@
             .desktop-showcase-badge i{color:#7ee6d8}
             .desktop-showcase-content h1{
                 margin:24px 0 12px;
-                font-size:38px;
+                font-size:clamp(38px,3.5vw,60px);
                 font-weight:950;
                 line-height:1.06;
                 letter-spacing:-.045em;
@@ -540,12 +552,33 @@
             .desktop-showcase-content p{
                 margin:0;
                 color:rgba(241,246,255,.84);
-                font-size:13px;
+                font-size:14px;
                 line-height:1.65;
             }
 
-            .desktop-login-form-column{min-height:0;padding:clamp(32px,5vh,46px) 48px}
+            .desktop-login-form-column{
+                display:grid;
+                grid-template-rows:auto 1fr auto;
+                justify-content:stretch;
+                min-height:100dvh;
+                padding:clamp(32px,6vh,64px) clamp(32px,4vw,80px);
+                background:#fff;
+            }
+            .desktop-login-form-column > *{width:100%;max-width:360px;margin-inline:auto}
+            .login-desktop-brand{margin-bottom:48px !important}
+            .desktop-brand-logo{width:44px;height:44px;flex-basis:44px;border-radius:12px;box-shadow:none}
+            .eprospek-login-card{align-self:center;margin-block:20px 48px}
+            .login-card-heading h2{font-size:28px}
+            .desktop-login-footer{text-align:left !important;margin-top:0 !important}
+            .desktop-showcase-footer{
+                position:absolute;
+                bottom:36px;
+                left:clamp(40px,6vw,110px);
+                color:rgba(255,255,255,.65);
+                font-size:11px;
+            }
         }
+        @media (max-width:991px){.desktop-showcase-footer{display:none}}
     </style>
   @include('partials.ios-compat')
 </head>
@@ -590,7 +623,7 @@
                     <h1>Kelola setiap peluang lebih cepat.</h1>
                     <p>Pantau prospek, lanjutkan follow up, dan jaga peluang closing tetap bergerak dalam satu aplikasi.</p>
                 </div>
-
+                <div class="desktop-showcase-footer">&copy; {{ date('Y') }} E-Prospek &middot; PT BPR BKK Jawa Tengah</div>
             </section>
 
             <div class="desktop-login-form-column">

@@ -18,9 +18,9 @@
       --bg: #f5f7fb;
       --shadow: 0 10px 30px rgba(15,23,42,.08);
       --radius: 18px;
-      --desktop-scale: .65;
-      --desktop-scale-width: 153.846153846vw;
-      --desktop-scale-height: 153.846153846vh;
+      --desktop-scale: .585;
+      --desktop-scale-width: 170.940170940vw;
+      --desktop-scale-height: 170.940170940vh;
     }
 
     html,
@@ -42,7 +42,7 @@
     }
 
     /*
-      DESKTOP DEFAULT ZOOM OUT 65%
+      DESKTOP DEFAULT ZOOM OUT 58.5%
       Tidak berlaku di mobile karena hanya aktif min-width 768px.
     */
     @media (min-width: 768px){
@@ -54,32 +54,32 @@
       }
 
       /*
-        DESKTOP ZOOM 65% YANG AMAN UNTUK LIVEWIRE
+        DESKTOP ZOOM 58.5% YANG AMAN UNTUK LIVEWIRE
         Jangan pakai transform:scale pada .app-shell karena membuat modal Bootstrap
         dan wire:click/wire:model Livewire sering bermasalah.
       */
       body{
-        zoom:65%;
-        width:153.846153846%;
-        height:153.846153846%;
+        zoom:var(--desktop-scale);
+        width:170.940170940%;
+        height:170.940170940%;
       }
 
       .app-shell{
         width:100%;
-        min-height:153.846153846vh;
+        min-height:var(--desktop-scale-height);
         transform:none !important;
       }
 
       .sidebar{
-        height:153.846153846vh !important;
+        height:var(--desktop-scale-height) !important;
       }
 
       .main{
-        height:153.846153846vh !important;
+        height:var(--desktop-scale-height) !important;
       }
 
       .main-scroll{
-        height:calc(153.846153846vh - var(--header-h)) !important;
+        height:calc(var(--desktop-scale-height) - var(--header-h)) !important;
       }
     }
 
@@ -1366,7 +1366,7 @@
     /* ==========================================================
        FIX FINAL MODAL MOBILE NGEBLINK / KEDIP
        - Matikan fade/transition modal hanya di mobile
-       - Desktop tetap aman dengan zoom 65%
+       - Desktop tetap aman dengan zoom 58.5%
        ========================================================== */
     @media (max-width: 767.98px){
       .modal.fade,
@@ -1407,7 +1407,7 @@
 
 
     /* ==========================================================
-       FIX FINAL DESKTOP ZOOM 65% TANPA POTONG & TANPA RUSAK LIVEWIRE
+       FIX FINAL DESKTOP ZOOM 58.5% TANPA POTONG & TANPA RUSAK LIVEWIRE
        Catatan:
        - Jangan zoom BODY, karena membuat sidebar/area konten bergeser.
        - Zoom hanya app-shell, lalu lebar app-shell diperbesar agar hasil visual tetap full layar.
@@ -1431,21 +1431,21 @@
       }
 
       .app-shell{
-        zoom:65% !important;
-        width:153.846153846vw !important;
-        min-width:153.846153846vw !important;
-        max-width:153.846153846vw !important;
-        height:153.846153846vh !important;
-        min-height:153.846153846vh !important;
-        max-height:153.846153846vh !important;
+        zoom:var(--desktop-scale) !important;
+        width:var(--desktop-scale-width) !important;
+        min-width:var(--desktop-scale-width) !important;
+        max-width:var(--desktop-scale-width) !important;
+        height:var(--desktop-scale-height) !important;
+        min-height:var(--desktop-scale-height) !important;
+        max-height:var(--desktop-scale-height) !important;
         transform:none !important;
         overflow:hidden !important;
       }
 
       .sidebar{
-        height:153.846153846vh !important;
-        min-height:153.846153846vh !important;
-        max-height:153.846153846vh !important;
+        height:var(--desktop-scale-height) !important;
+        min-height:var(--desktop-scale-height) !important;
+        max-height:var(--desktop-scale-height) !important;
         flex:0 0 var(--sidebar-w) !important;
       }
 
@@ -1454,9 +1454,9 @@
       }
 
       .main{
-        height:153.846153846vh !important;
-        min-height:153.846153846vh !important;
-        max-height:153.846153846vh !important;
+        height:var(--desktop-scale-height) !important;
+        min-height:var(--desktop-scale-height) !important;
+        max-height:var(--desktop-scale-height) !important;
         width:auto !important;
         min-width:0 !important;
         flex:1 1 auto !important;
@@ -1464,7 +1464,7 @@
       }
 
       .main-scroll{
-        height:calc(153.846153846vh - var(--header-h)) !important;
+        height:calc(var(--desktop-scale-height) - var(--header-h)) !important;
         min-height:0 !important;
         overflow-y:auto !important;
         overflow-x:auto !important;
@@ -1499,10 +1499,10 @@
         -webkit-overflow-scrolling:touch !important;
       }
 
-      /* Modal dinormalkan karena parent .app-shell dizoom 65%. */
+      /* Overlay tetap memenuhi layar; ukuran dialog diperkecil 10% di bawah. */
       .modal,
       .modal-backdrop{
-        zoom:153.846153846% !important;
+        zoom:170.940170940% !important;
       }
 
       .modal{
@@ -1527,6 +1527,7 @@
       }
 
       .modal-dialog{
+        zoom:.9;
         transform:none !important;
         opacity:1 !important;
       }
@@ -1554,7 +1555,7 @@
 
 
     /* ==========================================================
-       FIX DASHBOARD AREA KETIKA DESKTOP ZOOM 65%
+       FIX DASHBOARD AREA KETIKA DESKTOP ZOOM 58.5%
        - Konten tidak terpotong.
        - Chart card tetap punya tinggi minimal agar render tidak blank.
        ========================================================== */
