@@ -11,7 +11,7 @@ class AuditLogExportController extends Controller
     {
         $search = trim((string) $request->get('search', ''));
 
-        $q = AuditLog::query()->with('user')->latest('id');
+        $q = AuditLog::query()->with('user.cabang')->latest('id');
 
         if ($search !== '') {
             $s = '%' . $search . '%';
@@ -22,6 +22,15 @@ class AuditLogExportController extends Controller
                   ->orWhere('ip', 'like', $s)
                   ->orWhere('ip_address', 'like', $s)
                   ->orWhere('actor_name', 'like', $s)
+                  ->orWhereHas('user', function ($user) use ($s) {
+                      $user->where('name', 'like', $s)
+                          ->orWhere('nama_lengkap', 'like', $s)
+                          ->orWhere('branch_name', 'like', $s)
+                          ->orWhereHas('cabang', function ($cabang) use ($s) {
+                              $cabang->where('kode_cabang', 'like', $s)
+                                  ->orWhere('nama_cabang', 'like', $s);
+                          });
+                  })
                   ->orWhere('auditable_type', 'like', $s)
                   ->orWhere('auditable_id', 'like', $s)
                   ->orWhere('meta', 'like', $s);
@@ -38,7 +47,9 @@ class AuditLogExportController extends Controller
             fputcsv($handle, [
                 'Waktu',
                 'Action',
-                'Actor',
+                'Username',
+                'Nama User',
+                'Cabang',
                 'Actor ID',
                 'Type',
                 'Auditable Type',
@@ -56,7 +67,11 @@ class AuditLogExportController extends Controller
                     fputcsv($handle, [
                         optional($l->created_at)->format('d/m/Y H:i:s'),
                         $l->action,
-                        $l->actor_name ?? ($l->user->name ?? '-'),
+                        $l->actor_name ?: ($l->user?->name ?: '-'),
+                        $l->user?->nama_lengkap ?: '-',
+                        $l->user?->cabang
+                            ? $l->user->cabang->kode_cabang . ' - ' . $l->user->cabang->nama_cabang
+                            : ($l->user?->branch_name ?: '-'),
                         $l->actor_id,
                         $l->type,
                         $l->auditable_type,

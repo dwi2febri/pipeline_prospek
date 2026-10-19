@@ -22,7 +22,7 @@ class Index extends Component
 
     public function render()
     {
-        $q = AuditLog::query()->with('user')->latest('id');
+        $q = AuditLog::query()->with('user.cabang')->latest('id');
 
         if (trim($this->search) !== '') {
             $s = '%' . trim($this->search) . '%';
@@ -33,6 +33,15 @@ class Index extends Component
                   ->orWhere('ip', 'like', $s)
                   ->orWhere('ip_address', 'like', $s)
                   ->orWhere('actor_name', 'like', $s)
+                  ->orWhereHas('user', function ($user) use ($s) {
+                      $user->where('name', 'like', $s)
+                          ->orWhere('nama_lengkap', 'like', $s)
+                          ->orWhere('branch_name', 'like', $s)
+                          ->orWhereHas('cabang', function ($cabang) use ($s) {
+                              $cabang->where('kode_cabang', 'like', $s)
+                                  ->orWhere('nama_cabang', 'like', $s);
+                          });
+                  })
                   ->orWhere('auditable_type', 'like', $s)
                   ->orWhere('auditable_id', 'like', $s)
                   ->orWhere('meta', 'like', $s);

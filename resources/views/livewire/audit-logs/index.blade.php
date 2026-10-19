@@ -18,8 +18,8 @@
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
           <input class="form-control" style="border-left:0"
-                 placeholder="Cari action/type/id/ip/nama..."
-                 wire:model.debounce.400ms="search">
+                 placeholder="Cari action/username/nama user/cabang/ip..."
+                 wire:model.live.debounce.400ms="search">
         </div>
       </div>
       <div class="col-12 col-md-5 text-md-end text-muted small">
@@ -35,7 +35,9 @@
           <tr>
             <th style="min-width:170px;">Waktu</th>
             <th style="min-width:320px;">Action</th>
-            <th style="min-width:160px;">Actor</th>
+            <th style="min-width:160px;">Username</th>
+            <th style="min-width:210px;">Nama User</th>
+            <th style="min-width:220px;">Cabang</th>
             <th style="min-width:140px;">IP</th>
             <th style="min-width:220px;">Type / ID</th>
             <th style="min-width:320px;">Meta</th>
@@ -56,7 +58,19 @@
               </td>
 
               <td class="small">
-                {{ $l->actor_name ?? ($l->user->name ?? '-') }}
+                {{ $l->actor_name ?: ($l->user?->name ?: '-') }}
+              </td>
+
+              <td class="small">
+                {{ $l->user?->nama_lengkap ?: '-' }}
+              </td>
+
+              <td class="small">
+                @if($l->user?->cabang)
+                  {{ $l->user->cabang->kode_cabang }} - {{ $l->user->cabang->nama_cabang }}
+                @else
+                  {{ $l->user?->branch_name ?: '-' }}
+                @endif
               </td>
 
               <td class="small">
@@ -78,7 +92,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="text-center text-muted p-5">
+              <td colspan="8" class="text-center text-muted p-5">
                 Belum ada log. Coba lakukan aksi lalu refresh.
               </td>
             </tr>
