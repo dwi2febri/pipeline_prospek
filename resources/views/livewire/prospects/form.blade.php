@@ -1149,6 +1149,7 @@
                   <span class="input-group-text bg-white"><i class="bi bi-calendar-event"></i></span>
                   <input type="date" class="form-control d-none d-md-block" wire:model="tanggal_prospek" id="tanggal_prospek">
                   <button type="button"
+                          wire:ignore
                           class="prospect-date-trigger d-md-none"
                           id="btnOpenProspectDate"
                           aria-haspopup="dialog"
@@ -1179,7 +1180,7 @@
                         type="text"
                         inputmode="numeric"
                         pattern="[0-9]*"
-                        wire:model.live="no_hp"
+                        wire:model="no_hp"
                         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
                         placeholder="08xxxx">
 
@@ -1206,7 +1207,7 @@
                         type="text"
                         inputmode="numeric"
                         pattern="[0-9]*"
-                        wire:model.live="nik"
+                        wire:model="nik"
                         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
                         placeholder="boleh dikosongi">
                 </div>
@@ -1215,6 +1216,7 @@
 
               <div class="col-12">
                 <label class="form-label fw-semibold">Cabang</label>
+                <div wire:ignore>
                 <select id="cabangSelect" class="form-select" wire:model="cabang_id" data-mobile-title="Pilih Cabang">
                   <option value="">-- Pilih Cabang --</option>
                   @if(!empty($cabangOptions))
@@ -1229,6 +1231,7 @@
                     @endforeach
                   @endif
                 </select>
+                </div>
                 @error('cabang_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                 <div class="hint-soft mt-2">Pegawai bebas memilih cabang.</div>
               </div>
@@ -1243,22 +1246,26 @@
             <div class="row g-3">
               <div class="col-12 col-md-6">
                 <label class="form-label fw-semibold">Jenis Usaha</label>
+                <div wire:ignore>
                 <select id="jenisUsahaSelect" class="form-select" wire:model="jenis_usaha" data-mobile-title="Pilih Jenis Usaha">
                   <option value="">-- Pilih Jenis Usaha --</option>
                   @foreach($jenisUsahaOptions as $opt)
                     <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
                   @endforeach
                 </select>
+                </div>
                 @error('jenis_usaha')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
               </div>
 
               <div class="col-12 col-md-6">
                 <label class="form-label fw-semibold">Rekomendasi Produk</label>
+                <div wire:ignore>
                 <select id="jenisProdukSelect" class="form-select" wire:model="jenis_produk" data-mobile-title="Pilih Produk">
                   @foreach($produkOptions as $opt)
                     <option value="{{ $opt['kode'] }}">{{ $opt['nama'] }}</option>
                   @endforeach
                 </select>
+                </div>
                 @error('jenis_produk')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
               </div>
 
@@ -1684,8 +1691,6 @@
   @endif
 
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
   (function () {
     if (window.__prospectFormLocationBound) return;
@@ -2543,11 +2548,12 @@
       const latEl = getEl('pickedLatPreview');
       const lngEl = getEl('pickedLngPreview');
 
-      if (addrEl) addrEl.textContent = pickedAddress || (pickedLat && pickedLng
+      const address = pickedAddress || (pickedLat && pickedLng
         ? 'Titik sudah dipilih. Alamat belum tersedia.'
         : 'Belum ada titik dipilih.');
-      if (latEl) latEl.textContent = pickedLat || '-';
-      if (lngEl) lngEl.textContent = pickedLng || '-';
+      if (addrEl && addrEl.textContent !== address) addrEl.textContent = address;
+      if (latEl && latEl.textContent !== (pickedLat || '-')) latEl.textContent = pickedLat || '-';
+      if (lngEl && lngEl.textContent !== (pickedLng || '-')) lngEl.textContent = pickedLng || '-';
     }
 
     let pickedPointRequest = 0;
@@ -2575,14 +2581,46 @@
       updatePickedPreview();
     }
 
+    let mapAssetsPromise = null;
+    function loadMapAssets() {
+      if (mapAssetsPromise) return mapAssetsPromise;
+      mapAssetsPromise = Promise.all([
+        new Promise(function(resolve, reject) {
+          if (document.getElementById('prospect-map-css')) return resolve();
+          const link = document.createElement('link');
+          link.id = 'prospect-map-css';
+          link.rel = 'stylesheet';
+          link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+          link.onload = resolve;
+          link.onerror = function() { link.remove(); reject(new Error('Peta gagal dimuat. Coba buka peta kembali.')); };
+          document.head.appendChild(link);
+        }),
+        new Promise(function(resolve, reject) {
+          if (window.L) return resolve();
+          const script = document.createElement('script');
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          script.onload = resolve;
+          script.onerror = function() { script.remove(); reject(new Error('Peta gagal dimuat. Coba buka peta kembali.')); };
+          document.head.appendChild(script);
+        })
+      ]).catch(function(error) {
+        mapAssetsPromise = null;
+        throw error;
+      });
+      return mapAssetsPromise;
+    }
+
     async function initMapPicker() {
       const mapEl = getEl('mapPicker');
       if (!mapEl) return;
-      if (!window.L) {
+      try {
+        await loadMapAssets();
+      } catch (error) {
         const hint = getEl('mapSearchHint');
-        if (hint) hint.textContent = 'Peta gagal dimuat. Periksa koneksi lalu muat ulang halaman.';
+        if (hint) hint.textContent = error.message;
         return;
       }
+      if (!mapEl.isConnected || getEl('mapPicker') !== mapEl) return;
       if (!mapPickerInstance || mapPickerInstance.getContainer() !== mapEl) {
         if (mapPickerInstance) mapPickerInstance.remove();
         mapPickerMarker = null;
@@ -2874,7 +2912,8 @@
     function updateProspectDateDisplay() {
       const input = getEl('tanggal_prospek');
       const display = getEl('prospectDateDisplay');
-      if (display) display.textContent = formatProspectDate(input ? input.value : '');
+      const next = formatProspectDate(input ? input.value : '');
+      if (display && display.textContent !== next) display.textContent = next;
     }
 
     function selectedOptionText(select) {
@@ -2891,7 +2930,8 @@
 
       const label = button.querySelector('.prospect-mobile-select-label');
       const isDisabled = select.matches(':disabled');
-      if (label) label.textContent = selectedOptionText(select);
+      const nextLabel = selectedOptionText(select);
+      if (label && label.textContent !== nextLabel) label.textContent = nextLabel;
       button.disabled = isDisabled;
       button.classList.toggle('is-placeholder', !select.value);
       button.setAttribute('aria-label', (select.dataset.mobileTitle || 'Pilih data') + ': ' + selectedOptionText(select));
@@ -3419,6 +3459,7 @@
     }
 
     function bootAll() {
+      if (!document.querySelector('.prospect-form-page')) return;
       initTanggalDefault();
       bindProspectDatePicker();
       bindMobileSelectSheets();
@@ -3432,15 +3473,24 @@
       updatePickedPreview();
     }
 
-    document.addEventListener('DOMContentLoaded', bootAll);
-    document.addEventListener('livewire:navigated', function() {
-      setTimeout(bootAll, 100);
-    });
+    let bootFrame = null;
+    function scheduleFormBoot() {
+      if (bootFrame !== null) return;
+      bootFrame = requestAnimationFrame(function() {
+        bootFrame = null;
+        bootAll();
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', scheduleFormBoot);
+    document.addEventListener('livewire:navigated', scheduleFormBoot);
 
     document.addEventListener('livewire:init', function() {
       if (!window.Livewire) return;
-      Livewire.hook('morphed', function() {
-        setTimeout(bootAll, 100);
+      Livewire.hook('morphed', function({ component }) {
+        // Polling notifikasi tidak perlu menginisialisasi ulang form.
+        if (!component.el.matches('.prospect-form-page')) return;
+        scheduleFormBoot();
       });
     });
   })();

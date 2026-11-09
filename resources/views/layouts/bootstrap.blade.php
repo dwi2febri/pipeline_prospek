@@ -1649,32 +1649,6 @@
         padding:0 10px 28px !important;
       }
 
-      body.mobile-page-entering .main-scroll{
-        overflow-x:hidden !important;
-      }
-
-      body.mobile-page-entering .page-wrap > * > *:not(style):not(script):not(.mobile-fab-stack){
-        animation:mobilePageSlideIn .38s cubic-bezier(.2,.82,.24,1);
-        will-change:transform,opacity;
-      }
-
-      @keyframes mobilePageSlideIn{
-        from{
-          opacity:.72;
-          transform:translate3d(100%,0,0);
-        }
-        to{
-          opacity:1;
-          transform:translate3d(0,0,0);
-        }
-      }
-
-      @media (prefers-reduced-motion:reduce){
-        body.mobile-page-entering .page-wrap > * > *:not(style):not(script):not(.mobile-fab-stack){
-          animation:none !important;
-        }
-      }
-
       .bottom-nav{
         left:50% !important;
         right:auto !important;
@@ -1926,8 +1900,8 @@
        * bergerak bersamaan dengan hero. Warna solid transparan memberikan
        * tampilan yang sama ringan tanpa repaint blur di setiap frame.
        */
-      body.mobile-dashboard-home .bottom-nav,
-      body.mobile-prospects-home .bottom-nav{
+      body.mobile-app-density .bottom-nav,
+      body.mobile-app-density .sticky-action-bar{
         background:rgba(248,251,255,.96) !important;
         backdrop-filter:none !important;
         -webkit-backdrop-filter:none !important;
@@ -1946,26 +1920,6 @@
       body.mobile-prospects-home .main-scroll{
         scroll-behavior:auto !important;
         overflow-anchor:none !important;
-      }
-
-      body.mobile-dashboard-home.mobile-page-entering .page-wrap > * > *:not(style):not(script),
-      body.mobile-prospects-home.mobile-page-entering .page-wrap > * > *:not(style):not(script){
-        animation:none !important;
-        will-change:auto !important;
-      }
-
-      body.mobile-dashboard-home.mobile-page-entering .page-wrap > *,
-      body.mobile-prospects-home.mobile-page-entering .page-wrap > *{
-        animation:mobilePageSlideIn .38s cubic-bezier(.2,.82,.24,1);
-        will-change:transform,opacity;
-        backface-visibility:hidden;
-      }
-
-      @media (prefers-reduced-motion:reduce){
-        body.mobile-dashboard-home.mobile-page-entering .page-wrap > *,
-        body.mobile-prospects-home.mobile-page-entering .page-wrap > *{
-          animation:none !important;
-        }
       }
 
       body.mobile-app-density.mobile-launcher-shell .bottom-nav{
@@ -3107,7 +3061,7 @@
   @include('partials.ios-compat')
 </head>
 
-<body class="mobile-app-density mobile-page-entering {{ request()->is('dashboard') ? 'mobile-dashboard-home ' : '' }}{{ request()->is('prospects') ? 'mobile-prospects-home ' : '' }}{{ request()->is('dashboard') || request()->is('prospects') ? 'mobile-has-quick-actions' : '' }}">
+<body class="mobile-app-density {{ request()->is('dashboard') ? 'mobile-dashboard-home ' : '' }}{{ request()->is('prospects') ? 'mobile-prospects-home ' : '' }}{{ request()->is('dashboard') || request()->is('prospects') ? 'mobile-has-quick-actions' : '' }}">
 <script>
   (function(){
     var userAgent = navigator.userAgent || '';
@@ -4578,6 +4532,9 @@
         lastScrollTop = Math.max(0, scroller.scrollTop || 0);
         setMobileHeaderHidden(header, false);
 
+        // Tinggi header form harus tetap saat keyboard/scroll menggeser viewport.
+        if(document.querySelector('.prospect-form-page')) return;
+
         scroller.addEventListener('scroll', function(){
           if(ticking) return;
           ticking = true;
@@ -4588,8 +4545,12 @@
             var menuOpen = document.body.classList.contains('mobile-sheet-open');
             var profileOpen = document.getElementById('mobileProfileMenu')?.classList.contains('show');
             var transitionLocked = Date.now() < headerTransitionLockedUntil;
+            var editing = document.activeElement && document.activeElement.matches('input, textarea, select, [contenteditable="true"]');
 
-            if(current <= 10 || menuOpen || profileOpen){
+            if(editing){
+              accumulatedDown = 0;
+              accumulatedUp = 0;
+            }else if(current <= 10 || menuOpen || profileOpen){
               setMobileHeaderHidden(header, false);
               accumulatedDown = 0;
               accumulatedUp = 0;
@@ -4630,53 +4591,6 @@
         setTimeout(bindMobileHeaderScroll, 80);
       });
       setTimeout(bindMobileHeaderScroll, 250);
-    })();
-  </script>
-
-  <script>
-    /* Transisi masuk halaman mobile seperti perpindahan layar Android. */
-    (function(){
-      function isMobile(){
-        return window.matchMedia && window.matchMedia('(max-width: 767.98px)').matches;
-      }
-
-      function finishMobilePageTransition(){
-        document.body.classList.remove('mobile-page-entering');
-      }
-
-      function replayMobilePageTransition(){
-        if(!isMobile()) return;
-
-        document.body.classList.remove('mobile-page-entering');
-        void document.body.offsetWidth;
-        document.body.classList.add('mobile-page-entering');
-
-        window.setTimeout(finishMobilePageTransition, 460);
-      }
-
-      var pageWrap = document.querySelector('.page-wrap');
-
-      if(pageWrap){
-        pageWrap.addEventListener('animationend', finishMobilePageTransition, {once:true});
-      }
-
-      if(!isMobile()){
-        finishMobilePageTransition();
-      }else{
-        window.setTimeout(finishMobilePageTransition, 460);
-      }
-
-      window.addEventListener('pageshow', function(event){
-        if(event.persisted){
-          replayMobilePageTransition();
-        }
-      });
-
-      document.addEventListener('livewire:navigated', function(){
-        if(!document.body.classList.contains('mobile-page-entering')){
-          replayMobilePageTransition();
-        }
-      });
     })();
   </script>
 
@@ -5090,7 +5004,15 @@
       document.addEventListener('livewire:init', scheduleRefresh);
       document.addEventListener('livewire:navigated', scheduleRefresh);
 
-      new MutationObserver(scheduleRefresh).observe(document.documentElement, {
+      new MutationObserver(function(records){
+        var changed = records.some(function(record){
+          if(record.target.nodeType === 1 && record.target.closest('select')) return true;
+          return Array.from(record.addedNodes).concat(Array.from(record.removedNodes)).some(function(node){
+            return node.nodeType === 1 && (node.matches('select') || node.querySelector('select'));
+          });
+        });
+        if(changed) scheduleRefresh();
+      }).observe(document.documentElement, {
         childList:true,
         subtree:true
       });
@@ -5218,7 +5140,15 @@
       document.addEventListener('livewire:navigated', scheduleRefresh);
       window.addEventListener('resize', scheduleRefresh);
 
-      new MutationObserver(scheduleRefresh).observe(document.documentElement, {
+      new MutationObserver(function(records){
+        var changed = records.some(function(record){
+          if(record.target.nodeType === 1 && record.target.closest('[data-mobile-filter-panel]')) return true;
+          return Array.from(record.addedNodes).concat(Array.from(record.removedNodes)).some(function(node){
+            return node.nodeType === 1 && (node.matches('[data-mobile-filter-panel]') || node.querySelector('[data-mobile-filter-panel]'));
+          });
+        });
+        if(changed) scheduleRefresh();
+      }).observe(document.documentElement, {
         childList:true,
         subtree:true
       });
