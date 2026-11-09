@@ -9,11 +9,20 @@
     </button>
 
     @if($open)
-        <div
-            class="notification-panel position-absolute end-0 mt-2 bg-white border rounded-4 shadow"
-            style="width:360px; max-width:90vw; z-index:6000; overflow:hidden;"
-            wire:click.outside="$set('open', false)"
-        >
+        @if($mobileOverlay)
+            <dialog
+                class="notification-panel notification-panel-overlay bg-white border rounded-4 shadow"
+                x-init="if (!$el.open) $el.showModal()"
+                x-on:click="if ($event.target === $el) $wire.set('open', false)"
+                x-on:cancel.prevent="$wire.set('open', false)"
+            >
+        @else
+            <div
+                class="notification-panel position-absolute end-0 mt-2 bg-white border rounded-4 shadow"
+                style="width:360px; max-width:90vw; z-index:6000; overflow:hidden;"
+                wire:click.outside="$set('open', false)"
+            >
+        @endif
             <div class="notification-panel-head p-3 border-bottom d-flex justify-content-between align-items-center">
                 <div>
                     <div class="fw-bold">Notifikasi</div>
@@ -24,6 +33,11 @@
                     <button class="btn btn-sm btn-light rounded-pill" wire:click="markAllAsRead">
                         Tandai dibaca
                     </button>
+                @endif
+
+                @if($mobileOverlay)
+                    <button type="button" class="btn-close ms-auto" aria-label="Tutup notifikasi"
+                            wire:click="$set('open', false)"></button>
                 @endif
             </div>
 
@@ -63,6 +77,10 @@
                     </div>
                 @endforelse
             </div>
-        </div>
+        @if($mobileOverlay)
+            </dialog>
+        @else
+            </div>
+        @endif
     @endif
 </div>

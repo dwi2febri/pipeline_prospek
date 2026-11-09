@@ -1184,6 +1184,41 @@
         font-size:.68rem !important;
       }
 
+      dialog.notification-panel-overlay[open]{
+        position:fixed !important;
+        top:calc(72px + env(safe-area-inset-top)) !important;
+        bottom:auto !important;
+        left:12px !important;
+        right:12px !important;
+        width:auto !important;
+        max-width:420px !important;
+        max-height:calc(100dvh - 92px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+        margin:0 auto !important;
+        padding:0 !important;
+        z-index:12100 !important;
+        display:flex;
+        flex-direction:column;
+        overflow:hidden !important;
+        color:#1e293b !important;
+        background:#fff !important;
+      }
+
+      dialog.notification-panel-overlay::backdrop{
+        background:rgba(15,23,42,.18);
+      }
+
+      .notification-panel-overlay .notification-panel-head{
+        flex:0 0 auto;
+        gap:8px;
+      }
+
+      .notification-panel-overlay .notification-panel-list{
+        min-height:0;
+        max-height:none !important;
+        overflow-y:auto !important;
+        -webkit-overflow-scrolling:touch;
+      }
+
       .btn-add-prospect,
       .add-prospect-btn,
       .btn-create-prospect,
@@ -3517,7 +3552,7 @@
 
           <div class="mobile-header-actions">
             <div class="notif-wrap" data-notif-redirect="{{ $notificationRedirectUrl }}">
-              @livewire('notifications.bell', [], key('mobile-bell-' . auth()->id()))
+              @livewire('notifications.bell', ['mobileOverlay' => true], key('mobile-bell-' . auth()->id()))
             </div>
 
             <div class="profile-dropdown-wrap" id="mobileProfileWrap">

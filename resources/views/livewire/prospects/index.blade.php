@@ -1050,21 +1050,6 @@
         min-width:18px;padding:4px 5px !important;transform:none !important;border:2px solid #6785dc;
       }
 
-      .prospect-hero-notification .notification-panel{
-        position:fixed !important;top:60px !important;right:12px !important;left:12px !important;
-        width:auto !important;max-width:none !important;max-height:calc(100dvh - 84px) !important;
-        margin:0 !important;overflow:hidden !important;border:1px solid rgba(255,255,255,.3) !important;
-        border-radius:24px !important;color:#fff !important;
-        background:linear-gradient(142deg,#7196e5 0%,#5d78d6 55%,#4b61c4 100%) !important;
-        box-shadow:0 24px 60px rgba(34,47,111,.34) !important;z-index:11050 !important;
-      }
-
-      .prospect-hero-notification .notification-panel .text-muted{color:rgba(255,255,255,.74) !important}
-      .prospect-hero-notification .notification-panel-head,
-      .prospect-hero-notification .notification-panel-item{border-color:rgba(255,255,255,.16) !important}
-      .prospect-hero-notification .notification-panel-item,
-      .prospect-hero-notification .notification-panel-item.bg-light{background:rgba(255,255,255,.09) !important}
-
       .prospect-hero-avatar{
         width:40px;height:40px;display:grid;place-items:center;border:3px solid rgba(255,255,255,.5);
         border-radius:50%;color:#4b61c4;background:#f3f5ff;font-weight:900;text-decoration:none;
@@ -1902,7 +1887,7 @@
 
       <div class="prospect-hero-toolbar">
         <div class="prospect-hero-notification notif-wrap" data-notif-redirect="{{ url('/prospects') }}">
-          @livewire('notifications.bell', [], key('prospects-mobile-hero-bell-' . auth()->id()))
+          @livewire('notifications.bell', ['mobileOverlay' => true], key('prospects-mobile-hero-bell-' . auth()->id()))
         </div>
 
         <a class="prospect-hero-avatar" href="{{ route('profile.index') }}" aria-label="Buka profil">

@@ -8,6 +8,12 @@ use App\Models\ProspectNotification;
 class Bell extends Component
 {
     public bool $open = false;
+    public bool $mobileOverlay = false;
+
+    public function mount(bool $mobileOverlay = false): void
+    {
+        $this->mobileOverlay = $mobileOverlay;
+    }
 
     public function toggle(): void
     {
