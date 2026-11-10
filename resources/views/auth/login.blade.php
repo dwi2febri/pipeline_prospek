@@ -54,6 +54,9 @@
         .login-alert{margin:0 0 22px;padding:13px 15px;border:1px solid #efcbd0;border-radius:9px;background:#fff5f6;color:#a42738;font-size:13px}
         .login-alert ul{margin:5px 0 0;padding-left:18px}
         .login-status{border-color:#c4e3d8;background:#f0faf6;color:#236b51}
+        .login-mobile-accents{display:none}
+        .login-mobile-text{display:none}
+        .login-visual picture{display:contents}
         @media(min-width:992px) and (max-height:760px){
             .login-page{padding-block:20px}.login-topbar{margin-bottom:16px}
             .login-visual{gap:22px}.login-visual img{max-height:275px}
@@ -94,6 +97,45 @@
             .login-main{padding:26px 20px 22px}.login-heading{font-size:26px}
             .login-aside{padding:16px 20px}.login-copy h2{font-size:14px}
         }
+        @media(max-width:991.98px){
+            .login-page{padding:0;background:#eef2fb}
+            .login-topbar{margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) 24px 8px;background:#29327e;color:#fff}
+            .login-brand{gap:10px}
+            .login-brand img{width:42px;height:42px;border:0;background:rgba(255,255,255,.12);padding:4px}
+            .login-brand-name{font-size:24px;letter-spacing:-.5px}
+            .login-brand-caption{color:#d9dff7;max-width:none;font-size:11px}
+            .login-layout{grid-template-areas:'visual' 'form';border:0;border-radius:0;box-shadow:none;background:#29327e}
+            .login-aside{position:relative;display:block;height:248px;padding:0;border:0;border-radius:0;background:#29327e;overflow:hidden}
+            .login-visual{position:relative;z-index:1;display:flex;justify-content:flex-end;height:100%;gap:0}
+            .login-visual img{width:100%;max-width:340px;height:248px;max-height:none;object-fit:contain;object-position:center bottom;flex-shrink:1}
+            .login-copy{display:none}
+            .login-mobile-accents{position:absolute;display:block;inset:0;pointer-events:none}
+            .login-glass-ring{position:absolute;right:11%;top:9%;width:190px;height:190px;border:1px solid rgba(220,229,255,.35);border-radius:50%}
+            .login-glass-card{position:absolute;left:7%;top:26%;width:112px;height:94px;padding:16px 12px;border:1px solid rgba(220,229,255,.3);border-radius:16px;background:rgba(224,232,255,.09);transform:rotate(-8deg)}
+            .login-glass-card i{display:block;width:24px;height:24px;margin-bottom:10px;border-radius:50%;background:rgba(220,229,255,.35)}
+            .login-glass-card span{display:block;width:75%;height:5px;margin-top:8px;border-radius:3px;background:rgba(220,229,255,.35)}
+            .login-glass-card-right{left:auto;right:6%;top:50%;width:88px;height:80px;transform:rotate(7deg)}
+            .login-glass-card-right i{width:18px;height:18px;border:1px solid rgba(220,229,255,.7);border-radius:4px;background:transparent}
+            .login-main{position:relative;z-index:2;margin-top:-18px;padding:28px 26px 20px;background:#fff;border-radius:28px 28px 0 0}
+            .login-eyebrow{display:none}
+            .login-desktop-text{display:none}.login-mobile-text{display:inline}
+            .login-heading{font-size:29px;line-height:1.25;letter-spacing:-.8px}
+            .login-description{margin:10px 0 24px;line-height:1.5}
+            .login-field{margin-bottom:18px}
+            .login-label{margin-bottom:7px}
+            .login-input{height:52px;background:#fff;border-color:#d5dcec}
+            .login-options{margin:2px 0 21px;min-height:28px}
+            .login-submit{height:52px;background:#29327e;border-color:#29327e;box-shadow:none}
+            .login-help{margin:20px 0 0;padding:0;border:0;text-align:center;font-size:12px}
+            .login-help i{display:none}
+            .login-footer{margin:0 auto;padding:8px 20px max(22px,env(safe-area-inset-bottom));background:#fff}
+        }
+        @media(max-width:359.98px){
+            .login-topbar{padding-inline:20px}
+            .login-main{padding:25px 20px 18px}.login-heading{font-size:26px}
+            .login-aside,.login-visual img{height:218px}
+            .login-options{font-size:12px;gap:8px}
+        }
         @media(prefers-reduced-motion:reduce){.login-input,.login-submit{transition:none}}
     </style>
     @include('partials.ios-compat')
@@ -114,8 +156,8 @@
             <div class="login-content">
                 <header>
                     <p class="login-eyebrow">Selamat datang di E-Prospek</p>
-                    <h1 class="login-heading" id="loginHeading">Masuk ke akun Anda</h1>
-                    <p class="login-description">Gunakan username dan password akun Anda.</p>
+                    <h1 class="login-heading" id="loginHeading"><span class="login-desktop-text">Masuk ke akun Anda</span><span class="login-mobile-text">Selamat datang</span></h1>
+                    <p class="login-description"><span class="login-desktop-text">Gunakan username dan password akun Anda.</span><span class="login-mobile-text">Masuk untuk kelola prospek Anda.</span></p>
                 </header>
 
                 @if(session('status'))
@@ -171,8 +213,16 @@
             </div>
         </section>
         <section class="login-aside" aria-label="Tentang E-Prospek">
+            <div class="login-mobile-accents" aria-hidden="true">
+                <div class="login-glass-ring"></div>
+                <div class="login-glass-card"><i></i><span></span><span></span></div>
+                <div class="login-glass-card login-glass-card-right"><i></i><span></span><span></span></div>
+            </div>
             <figure class="login-visual">
+                <picture>
+                <source media="(max-width: 991.98px)" srcset="{{ asset('images/login/eprospek-mobile-woman-cartoon-v2.webp') }}">
                 <img src="{{ asset('images/login/eprospek-team-v1.webp') }}" alt="" width="1200" height="900" decoding="async" fetchpriority="high">
+                </picture>
                 <figcaption class="login-copy">
                     <h2>Prospek tercatat.<br><span>Tindak lanjut terpantau.</span></h2>
                     <p>Kelola calon nasabah, penugasan, dan status pengajuan dalam satu tempat.</p>
