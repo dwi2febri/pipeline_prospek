@@ -74,7 +74,7 @@
             .login-layout{display:flex;flex-direction:column;flex:1 0 auto;min-height:0;max-width:520px;border:0;border-radius:0;box-shadow:none;background:#29327e}
             .login-aside{order:0;position:relative;display:block;flex:1 1 0;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:#29327e;overflow:hidden}
             .login-visual{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:0}
-            .login-visual img{display:block;width:100%;max-width:380px;height:100%;max-height:360px;object-fit:contain;object-position:center bottom;flex-shrink:1}
+            .login-visual img{display:block;width:100%;max-width:none;height:100%;max-height:none;object-fit:contain;object-position:center bottom;flex-shrink:1}
             .login-copy,.login-eyebrow,.login-desktop-text{display:none}
             .login-mobile-text{display:inline}
             .login-main{order:1;position:relative;flex:none;margin:0;padding:26px max(26px,env(safe-area-inset-right)) 16px max(26px,env(safe-area-inset-left));background:#fff;border-radius:28px 28px 0 0}
@@ -205,7 +205,7 @@
         <section class="login-aside" aria-label="Tentang E-Prospek">
             <figure class="login-visual">
                 <picture>
-                <source media="(max-width: 991.98px)" srcset="{{ asset('images/login/eprospek-mobile-woman-cartoon-v2.webp') }}">
+                <source media="(max-width: 991.98px)" srcset="{{ asset('images/login/eprospek-mobile-hero-v3.webp') }}">
                 <img src="{{ asset('images/login/eprospek-team-v1.webp') }}" alt="" width="1200" height="900" decoding="async" fetchpriority="high">
                 </picture>
                 <figcaption class="login-copy">
