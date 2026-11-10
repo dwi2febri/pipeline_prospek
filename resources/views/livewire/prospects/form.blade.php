@@ -1717,7 +1717,7 @@
     function setContactHint(msg, isError) {
       var hint = getEl('contactHint');
       if (!hint) return;
-      hint.innerHTML = msg;
+      hint.textContent = msg;
       hint.className = 'small mt-1 ' + (isError ? 'text-danger' : 'text-muted');
     }
 
@@ -1821,15 +1821,11 @@
     }
 
     function normalizePhoneNumber(phone) {
-      let cleaned = String(phone || '').trim();
+      let cleaned = String(phone || '').trim().replace(/^tel:/i, '').split(/[;,]/)[0].replace(/[^0-9]/g, '');
 
-      if (cleaned.indexOf('+62') === 0) {
-        cleaned = '0' + cleaned.substring(3);
-      }
-
-      cleaned = cleaned.replace(/[^0-9]/g, '');
-
-      if (cleaned.indexOf('62') === 0) {
+      if (cleaned.indexOf('0062') === 0) {
+        cleaned = '0' + cleaned.substring(4);
+      } else if (cleaned.indexOf('62') === 0) {
         cleaned = '0' + cleaned.substring(2);
       }
 
@@ -1842,20 +1838,32 @@
       return cleaned;
     }
 
-    window.setPickedContactFromAndroid = function(name, phone) {
+    function applyContactPhone(name, phone, expectedComponentId) {
+      // The native picker may return after Livewire has replaced the original input.
       const input = getEl('no_hp_input');
-
-      if (!input) return;
+      if (!input) return false;
+      const owner = input.closest('[wire\\:id]');
+      const componentId = owner ? owner.getAttribute('wire:id') : null;
+      if (expectedComponentId && componentId !== expectedComponentId) return false;
 
       const cleanPhone = normalizePhoneNumber(phone || '');
 
       if (!cleanPhone) {
         setContactHint('Tidak ada kontak yang dipilih.', true);
-        return;
+        return false;
       }
 
       setInputValue(input, cleanPhone);
+      if (componentId && window.Livewire && typeof window.Livewire.find === 'function') {
+        const wire = window.Livewire.find(componentId);
+        if (wire) wire.$set('no_hp', cleanPhone, false);
+      }
       setContactHint('Nomor dari kontak "' + (name || 'Kontak') + '" berhasil diisi ✅', false);
+      return true;
+    }
+
+    window.setPickedContactFromAndroid = function(name, phone) {
+      applyContactPhone(name, phone);
     };
 
     async function fetchMapData(url) {
@@ -1886,6 +1894,8 @@
       const input = getEl('no_hp_input');
 
       if (!input) return;
+      const owner = input.closest('[wire\\:id]');
+      const componentId = owner ? owner.getAttribute('wire:id') : null;
 
       if (window.Android && typeof window.Android.pickContact === 'function') {
         setContactHint('Membuka daftar kontak...', false);
@@ -1935,18 +1945,16 @@
         }
 
         const picked = contacts[0];
-        const telList = Array.isArray(picked.tel) ? picked.tel : [];
-        const firstPhone = telList.length ? normalizePhoneNumber(telList[0]) : '';
+        const telList = Array.isArray(picked.tel) ? picked.tel : [picked.tel];
+        const firstPhone = telList.map(normalizePhoneNumber).find(Boolean) || '';
 
         if (!firstPhone) {
           setContactHint('Kontak terpilih tidak memiliki nomor telepon.', true);
           return;
         }
 
-        setInputValue(input, firstPhone);
-
-        const pickedName = Array.isArray(picked.name) && picked.name.length ? picked.name[0] : 'Kontak';
-        setContactHint('Nomor dari kontak "' + pickedName + '" berhasil diisi ✅', false);
+        const pickedName = Array.isArray(picked.name) ? picked.name[0] : picked.name;
+        applyContactPhone(pickedName || 'Kontak', firstPhone, componentId);
       } catch (err) {
         console.error('Contact picker error:', err);
 
