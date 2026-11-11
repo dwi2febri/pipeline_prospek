@@ -56,12 +56,43 @@
         .login-status{border-color:#c4e3d8;background:#f0faf6;color:#236b51}
         .login-mobile-text{display:none}
         .login-visual picture{display:contents}
-        @media(min-width:992px) and (max-height:760px){
-            .login-page{padding-block:20px}.login-topbar{margin-bottom:16px}
-            .login-visual{gap:22px}.login-visual img{max-height:275px}
-            .login-main{padding-block:28px}.login-aside{padding:32px}
-            .login-field{margin-bottom:18px}.login-description{margin-bottom:24px}
-            .login-help{margin-top:24px;padding-top:18px}.login-footer{margin-top:16px}
+        @media(min-width:992px){
+            .login-page{box-sizing:border-box;min-height:0;height:100vh;height:100dvh;padding:clamp(14px,3vh,28px) 28px;background:radial-gradient(ellipse at top right,#e3eafb,transparent 60%),#f4f6fa}
+            .login-topbar{flex:none;margin-bottom:clamp(12px,2vh,20px)}
+            .login-brand img{width:42px;height:42px;padding:0;border:0;border-radius:0;background:transparent}
+            .login-layout{grid-template-columns:54% 46%;grid-template-areas:'visual form';flex:1 1 0;min-height:0;max-height:680px}
+            .login-main{min-height:0;padding:24px clamp(28px,3vw,46px);overflow-y:auto}
+            .login-content{margin-block:auto}
+            .login-aside{position:relative;min-height:0;padding:clamp(24px,3vh,40px);overflow:hidden;border:0;border-radius:25px 0 0 25px;background:linear-gradient(145deg,#344596,#252d72);color:#fff}
+            .login-aside::before,.login-aside::after{content:'';position:absolute;pointer-events:none;border:1px solid rgba(196,215,255,.24)}
+            .login-aside::before{width:440px;height:440px;right:-140px;top:18%;border-radius:50%;box-shadow:0 0 0 65px rgba(158,186,255,.035)}
+            .login-aside::after{width:250px;height:180px;left:-65px;bottom:30px;border-radius:30px;background:rgba(162,190,255,.06);transform:rotate(-18deg)}
+            .login-visual{position:relative;z-index:1;gap:clamp(16px,3vh,30px);max-height:100%}
+            .login-visual img{max-height:min(34vh,320px);min-height:0}
+            .login-copy h2{font-size:clamp(26px,2.2vw,32px)}
+            .login-copy h2 span{color:#b9d6ff}
+            .login-copy p{margin-top:12px;color:#d6e0fa;line-height:1.6}
+            .login-description{margin-bottom:24px}
+            .login-field{margin-bottom:18px}
+            .login-help{margin-top:22px;padding-top:18px}
+            .login-footer{flex:none;margin-top:clamp(10px,2vh,18px)}
+        }
+        @media(min-width:992px) and (max-height:740px){
+            .login-main{padding-block:18px}.login-heading{font-size:29px}
+            .login-eyebrow{margin-bottom:6px}
+            .login-description{margin:10px 0 18px;font-size:13px}
+            .login-field{margin-bottom:12px}.login-label{margin-bottom:6px;font-size:13px}
+            .login-input{height:46px}.login-submit{min-height:46px}
+            .login-options{margin-bottom:16px}
+            .login-help{margin-top:16px;padding-top:14px;font-size:12px}
+        }
+        @media(min-width:992px) and (max-height:580px){
+            .login-page{padding-block:10px}.login-topbar{margin-bottom:10px}
+            .login-main{padding-block:12px}.login-eyebrow{display:none}
+            .login-description{margin:6px 0 12px}.login-field{margin-bottom:10px}
+            .login-help{margin-top:12px;padding-top:10px}
+            .login-copy h2{font-size:24px}.login-copy p{font-size:12px}
+            .login-footer{margin-top:8px;font-size:11px}
         }
         @media(max-width:991.98px){
             .login-page{justify-content:flex-start;min-height:0;height:100vh;height:100dvh;padding:0;background:#eef2fb}
