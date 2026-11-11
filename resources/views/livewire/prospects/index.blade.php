@@ -936,7 +936,7 @@
         padding:12px 14px 25px;
         border-radius:0 0 32px 32px;
         color:#fff;
-        background:linear-gradient(142deg,#7196e5 0%,#5d78d6 55%,#4b61c4 100%);
+        background:#3042cc;
         touch-action:pan-y;
         overflow-anchor:none;
         transition:
@@ -986,16 +986,12 @@
       }
 
       .prospect-mobile-hero::after{
-        content:"";position:absolute;z-index:-1;left:-12%;right:-12%;bottom:32px;height:72px;
-        border-radius:48% 52% 46% 54% / 62% 44% 56% 38%;
-        background:rgba(255,255,255,.09);transform:rotate(-7deg);
+        content:none;
       }
 
       .prospect-hero-art{
         position:absolute;z-index:-1;right:-4px;bottom:0;width:57%;height:100%;
         object-fit:cover;object-position:61% 55%;
-        -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 24%,#000 100%);
-        mask-image:linear-gradient(90deg,transparent 0%,#000 24%,#000 100%);
         will-change:transform,opacity;
         backface-visibility:hidden;
         transition:opacity .34s ease,transform .62s cubic-bezier(.16,1,.3,1);
@@ -1262,73 +1258,25 @@
         display:none;
       }
 
-      .glass-head > .d-md-none{
-        display:grid !important;
-        grid-template-columns:repeat(5,minmax(0,1fr));
-        gap:5px;
-      }
-
-      .mobile-summary-total{
-        display:contents;
-      }
-
-      .mobile-summary-total .summary-btn{
-        min-height:96px;
-      }
-
-      .mobile-summary-grid{
-        display:contents;
-      }
-
-      .summary-btn{
-        --summary-accent:#2f73e8;
-        min-width:0;
-        min-height:96px;
-        padding:49px 5px 7px;
-        border:1px solid color-mix(in srgb,var(--summary-accent) 24%,white) !important;
-        border-bottom:2px solid var(--summary-accent) !important;
-        border-radius:15px;
-        color:#142a52 !important;
-        background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--summary-accent) 8%,white) 100%) !important;
-        box-shadow:
-          0 6px 15px rgba(47,115,232,.07),
-          inset 0 1px 0 rgba(255,255,255,.85);
-      }
-
-      .summary-btn.is-active{
-        border-color:color-mix(in srgb,var(--summary-accent) 58%,white) !important;
-        border-bottom-color:var(--summary-accent) !important;
-        background:color-mix(in srgb,var(--summary-accent) 14%,white) !important;
-        box-shadow:
-          0 0 0 2px color-mix(in srgb,var(--summary-accent) 16%,transparent),
-          0 8px 18px color-mix(in srgb,var(--summary-accent) 16%,transparent) !important;
-      }
-
-      .summary-value{
-        margin-top:4px;
-        color:var(--summary-accent);
-        font-size:1.1rem;
-      }
-
-      .summary-label{
-        overflow:hidden;
-        color:#53617b;font-size:.47rem;
-        line-height:1.2;
-        white-space:nowrap;
-        text-overflow:ellipsis;
-      }
-
-      .summary-icon{
-        left:6px;right:auto;top:6px;bottom:auto;width:39px;height:39px;
-        display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--summary-accent) 24%,white);border-radius:10px;
-        color:var(--summary-accent);background:color-mix(in srgb,var(--summary-accent) 11%,white);
-        opacity:1;
-      }
-
-      .summary-icon .summary-svg-icon{
-        width:27px;
-        height:27px;
-      }
+      .glass-head{padding:16px;border-color:#dfe4ec;border-radius:16px;box-shadow:0 3px 12px rgba(20,42,82,.035)}
+      .mobile-summary-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+      .mobile-summary-heading{margin:0;color:#15243f;font-size:14px;font-weight:700;line-height:1.4}
+      .mobile-summary-period{display:inline-flex;align-items:center;gap:5px;color:#727b8b;font-size:10px;white-space:nowrap}
+      .mobile-summary-total{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin:0;padding:18px 0 20px;border:0;border-bottom:1px solid #e8ecf2;background:transparent;text-align:left;color:#14284d;cursor:pointer}
+      .mobile-summary-total-label{display:block;margin-bottom:3px;color:#6d7789;font-size:12px}
+      .mobile-summary-total-number{display:inline-flex;align-items:baseline;gap:8px;font-size:40px;font-weight:750;line-height:1.15;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+      .mobile-summary-total-number small{color:#7b8391;font-size:13px;font-weight:400;letter-spacing:0}
+      .mobile-summary-total-icon{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:12px;background:#edf2ff;color:#3042cc}
+      .mobile-summary-total-icon .summary-svg-icon{width:25px;height:25px}
+      .mobile-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding-top:16px}
+      .mobile-summary-status{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:0 3px 10px;border:0;border-radius:0;background:transparent;color:var(--status-color);font:inherit;cursor:pointer}
+      .mobile-summary-status + .mobile-summary-status{border-left:1px solid #e8ecf2}
+      .mobile-summary-status .summary-svg-icon{width:21px;height:21px}
+      .mobile-summary-status-number{color:var(--status-color);font-size:23px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+      .mobile-summary-status-label{color:#697386;font-size:11px;line-height:1.3;white-space:nowrap}
+      .mobile-summary-status.is-active .mobile-summary-status-label{color:var(--status-color);font-weight:600}
+      .mobile-summary-status.is-active::after{content:'';position:absolute;left:20%;right:20%;bottom:0;height:3px;border-radius:2px;background:var(--status-color)}
+      .mobile-summary-status:focus-visible,.mobile-summary-total:focus-visible{outline:2px solid #3042cc;outline-offset:3px;border-radius:4px}
 
       .filter-card-modern{
         border:1px solid rgba(188,199,225,.48);
@@ -1728,6 +1676,44 @@
       .prospect-flash-title{font-size:17px}
       .prospect-flash-message{font-size:11px}
     }
+
+    @media(max-width:767.98px){
+      .product-catalog-section,.tips-library-section{margin-top:24px}
+      .content-section-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+      .content-section-header .section-title-modern{margin:0;font-size:16px;font-weight:700;line-height:1.4;letter-spacing:-.2px}
+      .content-section-header .section-title-modern::before{display:none}
+      .content-section-toggle{flex:none;min-height:32px;padding:4px 0 4px 8px;border:0;background:transparent;color:#3042cc;font:inherit;font-size:11px;font-weight:600}
+      .product-catalog-row{gap:12px;margin:0;padding:0 0 6px;scroll-padding-left:0}
+      .product-catalog-section .catalog-card{display:flex;flex-direction:column;flex:0 0 84%;min-width:0;max-width:340px;border:1px solid #dfe4ec;border-radius:16px;background:#fff;box-shadow:0 3px 10px rgba(20,42,82,.035);content-visibility:visible;contain-intrinsic-size:none}
+      .product-catalog-section .catalog-card::after{display:none}
+      .product-catalog-section .catalog-top{display:flex;flex-direction:column;flex:1;min-height:0}
+      .product-catalog-section .catalog-visual{display:grid;place-items:center;width:100%;height:150px;flex:0 0 150px;border:0;background:#edf2f8;color:#8b98ad;font-size:32px}
+      .product-catalog-section .catalog-image img{width:100%;height:100%;object-fit:cover;object-position:center}
+      .product-catalog-section .catalog-body{min-width:0;padding:14px 14px 12px}
+      .product-catalog-section .catalog-badge{display:block;margin:0 0 6px;padding:0;border:0;border-radius:0;background:none;color:#3042cc;font-size:10px;font-weight:700;line-height:1.4;letter-spacing:.04em;text-transform:uppercase}
+      .product-catalog-section .catalog-badge i{display:none}
+      .product-catalog-section .catalog-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;margin:0 0 7px;color:#18243c;font-size:16px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+      .product-catalog-section .catalog-desc{min-height:36px;margin:0;color:#647084;font-size:12px;line-height:1.5;-webkit-line-clamp:2}
+      .product-catalog-section .catalog-footer{margin:0 14px;padding:0;border-top:1px solid #e8ecf2}
+      .product-catalog-section .catalog-link{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;color:#3042cc;font-size:12px;font-weight:600}
+      .product-catalog-section.is-expanded .product-catalog-row{display:grid;grid-template-columns:minmax(0,1fr);overflow:visible}
+      .product-catalog-section.is-expanded .catalog-card{width:100%;max-width:none}
+      .tips-library-list{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:0;padding:0;overflow:visible;scroll-snap-type:none}
+      .tips-library-section .tips-card{display:grid;grid-template-columns:88px minmax(0,1fr);gap:12px;width:100%;min-width:0;max-width:none;min-height:120px;padding:12px;border:1px solid #dfe4ec;border-radius:16px;background:#fff;box-shadow:0 3px 10px rgba(20,42,82,.035);content-visibility:visible;contain-intrinsic-size:none}
+      .tips-library-section .tips-card::before{display:none}
+      .tips-library-section:not(.is-expanded) .tips-card:nth-child(n+3){display:none}
+      .tips-library-section .tips-image{position:relative;min-height:96px;height:auto;border-radius:10px;background:#edf2f8}
+      .tips-library-section .tips-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+      .tips-library-section .tips-icon-placeholder{font-size:28px;color:#8b98ad}
+      .tips-library-section .tips-body{display:flex;flex-direction:column;min-width:0;padding:0}
+      .tips-library-section .tips-kategori{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;margin:0 0 4px;color:#3042cc;font-size:9px;font-weight:700;line-height:1.4;letter-spacing:.04em}
+      .tips-library-section .tips-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:0;margin:0 0 5px;color:#18243c;font-size:14px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+      .tips-library-section .tips-desc{min-height:0;color:#727c8d;font-size:11px;line-height:1.4;-webkit-line-clamp:1}
+      .tips-library-section .tips-link{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:28px;margin-top:auto;padding-top:6px;color:#3042cc;font-size:11px;font-weight:600}
+      .tips-library-section .tips-link::after{content:'';position:absolute;inset:0}
+      .tips-library-more{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:44px;margin-top:14px;padding:10px 14px;border:1px solid #cbd4eb;border-radius:12px;background:transparent;color:#3042cc;font:inherit;font-size:12px;font-weight:600}
+      .content-section-toggle:focus-visible,.tips-library-more:focus-visible,.catalog-link:focus-visible,.tips-card:focus-within{outline:2px solid #3042cc;outline-offset:3px}
+    }
   </style>
 
   @if(session('ok'))
@@ -1784,7 +1770,6 @@
       return '<span class="summary-svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24">'.$svg.'</svg></span>';
     };
 
-    $mobileTop = $summaryCards[0];
     $mobileBottom = [
       $summaryCards[1],
       $summaryCards[2],
@@ -1871,7 +1856,7 @@
   <div class="mobile-flyer-wrap d-md-none" id="prospectMobileStory">
     <section class="prospect-mobile-hero" id="prospectMobileHero" aria-label="Hero Prospek Saya">
       <img class="prospect-hero-art"
-           src="{{ asset('images/mobile/prospects-hero-v1.webp') }}"
+           src="{{ asset('images/mobile/prospects-hero-woman-v3.webp') }}"
            alt=""
            decoding="async"
            fetchpriority="high"
@@ -2002,35 +1987,40 @@
       </div>
     </div>
 
-    <div class="d-md-none">
-      <div class="mobile-summary-total">
-        <button
-          type="button"
-          wire:click="setStatus('{{ $mobileTop['key'] }}')"
-          class="summary-btn {{ $status === $mobileTop['key'] ? 'is-active' : '' }}"
-          style="--summary-accent:{{ $mobileTop['accent'] }}"
-        >
-          <div class="summary-label">{{ $mobileTop['label'] }}</div>
-          <div class="summary-value">{{ $summary[$mobileTop['count_key']] ?? 0 }}</div>
-          <div class="summary-icon">
-            {!! $summaryIcon($mobileTop['icon']) !!}
-          </div>
-        </button>
+    <div class="mobile-banking-summary d-md-none">
+      <div class="mobile-summary-header">
+        <h2 class="mobile-summary-heading">Ringkasan prospek</h2>
+        <span class="mobile-summary-period"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/></svg>Semua periode</span>
       </div>
+      <button type="button"
+              wire:click="setStatus('ALL')"
+              class="mobile-summary-total"
+              aria-label="Tampilkan semua prospek"
+              aria-pressed="{{ $status === 'ALL' ? 'true' : 'false' }}">
+        <span>
+          <span class="mobile-summary-total-label">Total pengajuan</span>
+          <span class="mobile-summary-total-number">{{ $summary['TOTAL'] ?? 0 }} <small>prospek</small></span>
+        </span>
+        <span class="mobile-summary-total-icon" aria-hidden="true">{!! $summaryIcon('total') !!}</span>
+      </button>
 
       <div class="mobile-summary-grid">
         @foreach($mobileBottom as $c)
           <button
             type="button"
             wire:click="setStatus('{{ $c['key'] }}')"
-            class="summary-btn {{ $status === $c['key'] ? 'is-active' : '' }}"
-            style="--summary-accent:{{ $c['accent'] }}"
+            class="mobile-summary-status {{ $status === $c['key'] ? 'is-active' : '' }}"
+            style="--status-color:{{ match($c['key']) {
+              'OPEN' => '#a36b0a',
+              'FOLLOW UP' => '#087f72',
+              'REJECTED' => '#c03a53',
+              'CLOSING' => '#285cc4',
+            } }}"
+            aria-pressed="{{ $status === $c['key'] ? 'true' : 'false' }}"
           >
-            <div class="summary-label">{{ $c['label'] }}</div>
-            <div class="summary-value">{{ $summary[$c['count_key']] ?? 0 }}</div>
-            <div class="summary-icon">
-              {!! $summaryIcon($c['icon']) !!}
-            </div>
+            <span aria-hidden="true">{!! $summaryIcon($c['icon']) !!}</span>
+            <span class="mobile-summary-status-number">{{ $summary[$c['count_key']] ?? 0 }}</span>
+            <span class="mobile-summary-status-label">{{ $c['key'] === 'FOLLOW UP' ? 'Follow up' : $c['label'] }}</span>
           </button>
         @endforeach
       </div>
@@ -2192,17 +2182,24 @@
     </div>
   </div>
 
-  <div class="section-shell">
-    <div class="section-title-modern">Katalog Produk</div>
+  <div class="section-shell product-catalog-section" x-data="{ expanded: false }" :class="{ 'is-expanded': expanded }">
+    <div class="content-section-header">
+      <div class="section-title-modern">Katalog Produk</div>
+      @if(isset($katalogProduk) && $katalogProduk->count() > 1)
+        <button type="button" class="content-section-toggle d-md-none" @click="expanded = !expanded" :aria-expanded="expanded" aria-controls="prospectProductCatalog" x-text="expanded ? 'Ringkas' : 'Lihat semua'">Lihat semua</button>
+      @endif
+    </div>
 
     @if(isset($katalogProduk) && $katalogProduk->count())
-      <div class="mobile-scroll-row">
+      <div class="mobile-scroll-row product-catalog-row" id="prospectProductCatalog" aria-label="Katalog produk">
         @foreach($katalogProduk as $kp)
           <div class="catalog-card">
             <div class="catalog-top">
               <div class="catalog-visual {{ !empty($kp->gambar_url) ? 'catalog-image' : '' }}">
                 @if(!empty($kp->gambar_url))
-                  <img src="{{ $kp->gambar_url }}" alt="{{ $kp->judul }}">
+                  <img src="{{ $kp->gambar_url }}" alt="{{ $kp->judul }}" loading="lazy" decoding="async">
+                @else
+                  <i class="bi bi-image" aria-hidden="true"></i>
                 @endif
               </div>
 
@@ -2220,7 +2217,7 @@
 
             <div class="catalog-footer">
               <a href="{{ $kp->detail_url ?? '#' }}" class="catalog-link">
-                Lihat lebih banyak <i class="bi bi-chevron-right"></i>
+                Lihat produk <i class="bi bi-arrow-right" aria-hidden="true"></i>
               </a>
             </div>
           </div>
@@ -2233,16 +2230,21 @@
     @endif
   </div>
 
-  <div class="section-shell">
-    <div class="section-title-modern">Tips & Trik</div>
+  <div class="section-shell tips-library-section" x-data="{ expanded: false }" :class="{ 'is-expanded': expanded }">
+    <div class="content-section-header">
+      <div class="section-title-modern">Tips & Trik</div>
+      @if(isset($tipsTrik) && $tipsTrik->count() > 2)
+        <button type="button" class="content-section-toggle d-md-none" @click="expanded = !expanded" :aria-expanded="expanded" aria-controls="prospectTipsLibrary" x-text="expanded ? 'Ringkas' : 'Lihat semua'">Lihat semua</button>
+      @endif
+    </div>
 
     @if(isset($tipsTrik) && $tipsTrik->count())
-      <div class="mobile-scroll-row">
+      <div class="mobile-scroll-row tips-library-list" id="prospectTipsLibrary">
         @foreach($tipsTrik as $tip)
           <div class="tips-card">
             <div class="tips-image">
               @if(!empty($tip->gambar_url))
-                <img src="{{ $tip->gambar_url }}" alt="{{ $tip->judul }}">
+                <img src="{{ $tip->gambar_url }}" alt="{{ $tip->judul }}" loading="lazy" decoding="async">
               @else
                 <div class="tips-icon-placeholder">
                   <i class="bi bi-lightbulb"></i>
@@ -2265,6 +2267,12 @@
           </div>
         @endforeach
       </div>
+      @if($tipsTrik->count() > 2)
+        <button type="button" class="tips-library-more d-md-none" @click="expanded = !expanded" :aria-expanded="expanded" aria-controls="prospectTipsLibrary">
+          <span x-text="expanded ? 'Tampilkan lebih sedikit' : 'Jelajahi semua tips'">Jelajahi semua tips</span>
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </button>
+      @endif
     @else
       <div class="empty-mini-card">
         Belum ada konten tips & trik.

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Contents;
 
+use App\Support\ContentImage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -292,7 +293,7 @@ class Manager extends Component
         $this->urutan = (int) ($row->urutan ?? 1);
         $this->aktif = (int) ($row->aktif ?? 1);
         $this->gambar = null;
-        $this->existingGambar = !empty($row->gambar) ? Storage::url($row->gambar) : null;
+        $this->existingGambar = ContentImage::url($row->gambar);
 
         $this->resetValidation();
         $this->dispatch('open-content-modal');
@@ -354,7 +355,7 @@ class Manager extends Component
             ->orderByDesc('id')
             ->get()
             ->map(function ($row) {
-                $row->gambar_url = !empty($row->gambar) ? Storage::url($row->gambar) : null;
+                $row->gambar_url = ContentImage::url($row->gambar);
                 $row->detail_url = route('contents.show', ['jenis' => 'produk', 'slug' => $row->slug]);
                 return $row;
             });
@@ -364,7 +365,7 @@ class Manager extends Component
             ->orderByDesc('id')
             ->get()
             ->map(function ($row) {
-                $row->gambar_url = !empty($row->gambar) ? Storage::url($row->gambar) : null;
+                $row->gambar_url = ContentImage::url($row->gambar);
                 $row->detail_url = route('contents.show', ['jenis' => 'tips', 'slug' => $row->slug]);
                 return $row;
             });

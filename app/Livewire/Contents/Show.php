@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Contents;
 
+use App\Support\ContentImage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 
 class Show extends Component
@@ -65,7 +65,7 @@ class Show extends Component
             abort(404);
         }
 
-        $row->gambar_url = !empty($row->gambar) ? Storage::url($row->gambar) : null;
+        $row->gambar_url = ContentImage::url($row->gambar);
         $this->item = $row;
 
         $this->relatedItems = DB::table($table)
@@ -76,7 +76,7 @@ class Show extends Component
             ->limit(6)
             ->get()
             ->map(function ($x) use ($jenis) {
-                $x->gambar_url = !empty($x->gambar) ? Storage::url($x->gambar) : null;
+                $x->gambar_url = ContentImage::url($x->gambar);
                 $x->detail_url = route('contents.show', [
                     'jenis' => $jenis,
                     'slug'  => $x->slug,

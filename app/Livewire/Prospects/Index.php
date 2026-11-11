@@ -3,9 +3,9 @@
 namespace App\Livewire\Prospects;
 
 use App\Models\Prospect;
+use App\Support\ContentImage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -160,10 +160,9 @@ class Index extends Component
             ->where('aktif', 1)
             ->orderBy('urutan')
             ->orderByDesc('id')
-            ->limit(10)
             ->get()
             ->map(function ($row) {
-                $row->gambar_url = !empty($row->gambar) ? Storage::url($row->gambar) : null;
+                $row->gambar_url = ContentImage::url($row->gambar);
                 $row->detail_url = route('contents.show', [
                     'jenis' => 'produk',
                     'slug'  => $row->slug,
@@ -175,10 +174,9 @@ class Index extends Component
             ->where('aktif', 1)
             ->orderBy('urutan')
             ->orderByDesc('id')
-            ->limit(10)
             ->get()
             ->map(function ($row) {
-                $row->gambar_url = !empty($row->gambar) ? Storage::url($row->gambar) : null;
+                $row->gambar_url = ContentImage::url($row->gambar);
                 $row->detail_url = route('contents.show', [
                     'jenis' => 'tips',
                     'slug'  => $row->slug,
