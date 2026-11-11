@@ -52,7 +52,15 @@
         .login-help i{margin-right:5px}
         .login-footer{width:100%;max-width:1120px;margin:22px auto 0;color:#69758a;font-size:12px;line-height:1.7;text-align:center}
         .login-alert{margin:0 0 22px;padding:13px 15px;border:1px solid #efcbd0;border-radius:9px;background:#fff5f6;color:#a42738;font-size:13px}
-        .login-alert ul{margin:5px 0 0;padding-left:18px}
+        .login-error-alert{position:fixed;z-index:1000;top:max(20px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;align-items:flex-start;gap:12px;width:calc(100% - 32px);max-width:430px;padding:16px;background:#fff;border:1px solid #f0d4d9;border-left:4px solid #d04456;border-radius:14px;box-shadow:0 12px 36px rgba(30,40,70,.16);color:#263149;font-size:13px;line-height:1.5}
+        .login-error-alert[hidden]{display:none}
+        .login-error-icon{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;background:#fff0f2;color:#c52d45;font-size:18px}
+        .login-error-copy{flex:1;min-width:0;padding-top:1px}
+        .login-error-copy strong{display:block;font-size:14px;color:#a8273c}
+        .login-error-copy p{margin:4px 0 0;color:#596477;overflow-wrap:anywhere}
+        .login-error-close{display:grid;place-items:center;flex:none;width:32px;height:32px;padding:0;border:0;border-radius:8px;background:transparent;color:#68738a;font-size:22px;cursor:pointer}
+        .login-error-close:hover{background:#f5f6fa;color:#263149}
+        .login-error-close:focus-visible{outline:3px solid #9eafea;outline-offset:2px}
         .login-status{border-color:#c4e3d8;background:#f0faf6;color:#236b51}
         .login-mobile-text{display:none}
         .login-visual picture{display:contents}
@@ -162,6 +170,24 @@
     @include('partials.ios-compat')
 </head>
 <body class="login-page">
+    @if($errors->any())
+        @php
+            $loginError = $errors->first();
+            if ($loginError === __('auth.failed')) {
+                $loginError = 'Username atau password tidak sesuai. Silakan periksa kembali.';
+            } elseif (str_contains(strtolower($loginError), 'too many login attempts')) {
+                $loginError = 'Terlalu banyak percobaan masuk. Tunggu sebentar, lalu coba kembali.';
+            }
+        @endphp
+        <div class="login-error-alert" id="loginErrorAlert" role="alert" aria-atomic="true">
+            <span class="login-error-icon" aria-hidden="true"><i class="bi bi-exclamation-circle"></i></span>
+            <div class="login-error-copy">
+                <strong>Login gagal</strong>
+                <p>{{ $loginError }}</p>
+            </div>
+            <button class="login-error-close" id="closeLoginError" type="button" aria-label="Tutup pesan login gagal"><i class="bi bi-x" aria-hidden="true"></i></button>
+        </div>
+    @endif
     <header class="login-topbar">
         <div class="login-brand">
             <img src="{{ asset('images/logo_eprospek.png') }}" alt="" width="52" height="52">
@@ -183,16 +209,6 @@
 
                 @if(session('status'))
                     <div class="login-alert login-status" role="status">{{ session('status') }}</div>
-                @endif
-                @if($errors->any())
-                    <div class="login-alert" role="alert">
-                        <strong>Login belum berhasil</strong>
-                        <ul>
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
                 @endif
 
                 <form method="POST" action="{{ route('login') }}" novalidate id="loginForm">
@@ -249,6 +265,13 @@
     <footer class="login-footer">&copy; {{ date('Y') }} PT BPR BKK Jateng (Perseroda)</footer>
     <script>
         (function(){
+            var closeError = document.getElementById('closeLoginError');
+            if (closeError) {
+                closeError.addEventListener('click', function(){
+                    document.getElementById('loginErrorAlert').hidden = true;
+                    document.getElementById('loginUsername').focus();
+                });
+            }
             var button = document.getElementById('btnTogglePass');
             var input = document.getElementById('passwordInput');
             button.addEventListener('click', function(){
